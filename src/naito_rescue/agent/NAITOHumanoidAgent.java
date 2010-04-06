@@ -59,6 +59,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	public void extinguish(EntityID target, int water){
 		sendExtinguish(time, target, water);
 	}
+	public void clear(EntityID target){
+		sendClear(time, target);
+	}
 	public void load(EntityID target){
 		sendLoad(time, target);
 	}

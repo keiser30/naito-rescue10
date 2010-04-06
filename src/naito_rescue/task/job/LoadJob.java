@@ -11,8 +11,11 @@ import java.io.*;
 
 public class LoadJob extends Job
 {
+	Civilian target;
+
 	@Override 
 	public void doJob(){
+		owner.load(target.getID());
 	}
 
 	@Override 
