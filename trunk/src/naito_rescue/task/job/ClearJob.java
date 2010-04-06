@@ -14,8 +14,12 @@ import java.io.*;
  */
 public class ClearJob extends Job
 {
-	Blockage target;
+	Blockade target;
 
+	public ClearJob(NAITOHumanoidAgent owner, StandardWorldModel world, Blockade target, PrintWriter logger){
+		super(owner, world, logger);
+		this.target = target;
+	}
 	@Override
 	public void doJob(){
 		owner.clear(target.getID());
@@ -23,5 +27,6 @@ public class ClearJob extends Job
 
 	@Override 
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
+		return false;
 	}
 }

@@ -13,6 +13,10 @@ public class LoadJob extends Job
 {
 	Civilian target;
 
+	public LoadJob(NAITOHumanoidAgent owner, StandardWorldModel world, Civilian target, PrintWriter logger){
+		super(owner, world, logger);
+		this.target = target;
+	}
 	@Override 
 	public void doJob(){
 		owner.load(target.getID());
@@ -20,5 +24,6 @@ public class LoadJob extends Job
 
 	@Override 
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel model){
+		return false;
 	}
 }

@@ -11,6 +11,10 @@ import java.io.*;
 
 public class RestJob extends Job
 {
+
+	public RestJob(NAITOHumanoidAgent owner, StandardWorldModel model, PrintWriter logger){
+		super(owner, model, logger);
+	}
 	@Override
 	public void doJob(){
 		owner.rest();
@@ -18,5 +22,6 @@ public class RestJob extends Job
 
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel model){
+		return false;
 	}
 }
