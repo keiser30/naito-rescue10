@@ -9,14 +9,18 @@ import naito_rescue.agent.*;
 import java.util.*;
 import java.io.*;
 
-public class UnLoadJob extends Job
+public class RescueJob extends Job
 {
+	Civilian target;
+
+
 	@Override
-	public void doJob(){
-		owner.unload();
+	public void doJob()
+	{
+		owner.rescue(target.getID());
 	}
 
 	@Override
-	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel model){
+	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
 	}
 }

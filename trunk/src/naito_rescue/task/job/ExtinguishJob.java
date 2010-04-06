@@ -11,8 +11,13 @@ import java.io.*;
 
 public class ExtinguishJob extends Job
 {
+	Building target;
+	int      power;
+
+
 	@Override
 	public void doJob(){
+		owner.extinguish(target.getID(), power);
 	}
 
 	@Override

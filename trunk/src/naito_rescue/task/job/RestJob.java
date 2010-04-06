@@ -13,6 +13,7 @@ public class RestJob extends Job
 {
 	@Override
 	public void doJob(){
+		owner.rest();
 	}
 
 	@Override
