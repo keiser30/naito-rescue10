@@ -112,7 +112,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			writer.println("    currentTask.isFinished()");
 		}
 		writer.println("}");
-		String locationURN = getLocation().getURN();
+		String locationURN = getLocation().getStandardURN().toString();
 		writer.println("####################");
 		writer.println("# Location = " + locationURN);
 		writer.println("# (id = " + getLocation().getID().getValue());
