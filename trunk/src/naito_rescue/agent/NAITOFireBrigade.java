@@ -27,6 +27,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	private HashSet<Building> visited;
 
 	private File fblog;
+	private FileOutputStream fbstream;
 	//private String LOGFILENAME = LOGFILE_BASE+"FB"+me().getID().getValue()+".log";
 	private String LOGFILENAME = LOGFILE_BASE+"FB"+(++fblog_num)+".log";
 	private PrintWriter writer;
@@ -48,7 +49,8 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		
 		try{
 			fblog = new File(LOGFILENAME);
-			writer = new PrintWriter(fblog);
+			fbstream = new FileOutputStream(fblog);
+			writer = new PrintWriter(fbstream, true);
 		}catch(IOException ioe){
 			System.err.println("IOException: NAITOFireBrigade");
 			System.exit(-1);
@@ -88,7 +90,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			writer.println("    target = " + target.toString());
 		}catch(Exception ioe){
 			System.err.println("Exception: NAITOFireBrigade, think();");
-			writer.flush();
 			writer.close();
 			System.exit(-1);
 		}
@@ -107,13 +108,15 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			Job currentJob = currentTask.currentJob();
 			writer.println("    currentJob.doJob();");
 			currentJob.doJob();
-			writer.flush();
 		}else{
 			writer.println("    currentTask.isFinished()");
-			writer.flush();
 		}
 		writer.println("}");
-		writer.flush();
+		String locationURN = getLocation().getURN();
+		writer.println("####################");
+		writer.println("# Location = " + locationURN);
+		writer.println("# (id = " + getLocation().getID().getValue());
+		writer.println("####################");
 	}
 
 	@Override

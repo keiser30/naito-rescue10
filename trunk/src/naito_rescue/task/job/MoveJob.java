@@ -23,7 +23,6 @@ public class MoveJob extends Job
 	public void doJob(){
 		owner.move(target);
 		logger.println("\t\t\t MoveJob.doJob(){ owner.move(" + target.toString() + ") }");
-		logger.flush();
 	}
 
 	@Override
@@ -40,10 +39,8 @@ public class MoveJob extends Job
 			try{
 				logger.println("\t\t\t    |_ return true;");
 				logger.println("\t\t\t }");
-				logger.flush();
 			}catch(Exception ioe){
 				logger.println("Exception at MoveJob.isFinished(){ if(...) }");
-				logger.flush();
 				logger.close();
 				System.exit(-1);
 			}
@@ -52,10 +49,8 @@ public class MoveJob extends Job
 			try{
 				logger.println("\t\t\t    |_ return false;");
 				logger.println("\t\t\t }");
-				logger.flush();
 			}catch(Exception ioe){
 				logger.println("Exception at MoveJob.isFinished(){ if(...) }");
-				logger.flush();
 				logger.close();
 				System.exit(-1);			
 			}

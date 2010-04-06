@@ -22,7 +22,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected Task    currentTask;
 	protected Job     currentJob;
 
-	protected static final String LOGFILE_BASE = "/Users/robocup/rescue/NAITO-Rescue10/";
+	//protected static final String LOGFILE_BASE = "/Users/robocup/rescue/NAITO-Rescue10/";
+	protected static final String LOGFILE_BASE = "/home/robocup/rescue/NAITO-Rescue10/";
+	
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		this.time = time;
