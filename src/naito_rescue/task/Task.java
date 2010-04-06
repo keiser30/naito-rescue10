@@ -28,7 +28,6 @@ public abstract class Task
 		try{
 			logger.println("\t\t Task() is constructed;");
 		}catch(Exception e){
-			logger.flush();
 			logger.close();
 		}
 	}
@@ -57,7 +56,6 @@ public abstract class Task
 				logger.println("\t\t     jobs.addAll(createJobList());");
 			}catch(Exception e){
 				logger.println("Exception at currentJob();");
-				logger.flush();
 				logger.close();
 				System.exit(-1);
 			}
@@ -69,7 +67,6 @@ public abstract class Task
 					logger.println("\t\t     !jobs.get(" + processIdx + ").isFinished();");
 				}catch(Exception e){
 					logger.println("IOException at currentJob(){ while(...)...} ");
-					logger.flush();
 					logger.close();
 					System.exit(-1);
 				}
