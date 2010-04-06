@@ -8,6 +8,7 @@ import naito_rescue.agent.*;
 
 import java.util.*;
 import java.io.*;
+
 public class MoveJob extends Job
 {
 	Area target;

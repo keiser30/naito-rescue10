@@ -13,6 +13,10 @@ public class RescueJob extends Job
 {
 	Civilian target;
 
+	public RescueJob(NAITOHumanoidAgent owner, StandardWorldModel world, Civilian target, PrintWriter logger){
+		super(owner, world, logger);
+		this.target = target;
+	}
 
 	@Override
 	public void doJob()
@@ -22,5 +26,6 @@ public class RescueJob extends Job
 
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
+		return false;
 	}
 }

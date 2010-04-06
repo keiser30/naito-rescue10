@@ -11,6 +11,11 @@ import java.io.*;
 
 public class UnLoadJob extends Job
 {
+
+	public UnLoadJob(NAITOHumanoidAgent owner, StandardWorldModel world, PrintWriter logger){
+		super(owner, world, logger);
+	}
+	
 	@Override
 	public void doJob(){
 		owner.unload();
@@ -18,5 +23,6 @@ public class UnLoadJob extends Job
 
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel model){
+		return false;
 	}
 }

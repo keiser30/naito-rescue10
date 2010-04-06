@@ -14,7 +14,11 @@ public class ExtinguishJob extends Job
 	Building target;
 	int      power;
 
-
+	public ExtinguishJob(NAITOHumanoidAgent owner, StandardWorldModel model, Building target, int power, PrintWriter logger){
+		super(owner, model, logger);
+		this.target = target;
+		this.power = power;
+	}
 	@Override
 	public void doJob(){
 		owner.extinguish(target.getID(), power);
@@ -22,5 +26,6 @@ public class ExtinguishJob extends Job
 
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel model){
+		return false;
 	}
 }

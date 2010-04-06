@@ -12,8 +12,8 @@ SOURCES := $(shell find $(SOURCEDIR) -name "*.java")
 PACKAGE_TOP := naito_rescue
 JARFILENAME := $(PACKAGE_TOP).jar
 
-KERNEL_BASE := /home/robocup/rescue/rescue-nightly/0401
-# KERNEL_BASE := /Users/robocup/rescue/rescue-nightly/0403
+# KERNEL_BASE := /home/robocup/rescue/rescue-nightly/0401
+KERNEL_BASE := /Users/robocup/rescue/rescue-nightly/0403
 CLASSPATH := $(shell find $(KERNEL_BASE)/jars -name "*.jar" | xargs | sed -e "s/ /:/g")
 
 all:
