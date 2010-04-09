@@ -26,12 +26,14 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	private Collection<StandardEntity> allArea;
 	private HashSet<Building> visited;
 
+/*
 	private File fblog;
 	private FileOutputStream fbstream;
 	//private String LOGFILENAME = LOGFILE_BASE+"FB"+me().getID().getValue()+".log";
 	private String LOGFILENAME = LOGFILE_BASE+"FB"+(++fblog_num)+".log";
 	private PrintWriter writer;
-	
+*/
+
 	@Override
     protected void postConnect() {
         super.postConnect();
@@ -40,7 +42,8 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
         maxDistance = config.getIntValue(MAX_DISTANCE_KEY);
         maxPower = config.getIntValue(MAX_POWER_KEY);
         Logger.info("NAITOFireBrigade connected: max extinguish distance = " + maxDistance + ", max power = " + maxPower + ", max tank = " + maxWater);
-    	
+
+/*
 		visited = new HashSet<Building>();
 		allArea = model.getEntitiesOfType(StandardEntityURN.BUILDING);
 		if(location() instanceof Building){
@@ -55,6 +58,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			System.err.println("IOException: NAITOFireBrigade");
 			System.exit(-1);
 		}
+*/
 	} 
 
 	@Override
@@ -64,9 +68,9 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
-		writer.println("---- " + time + " ----");
+		// writer.println("---- " + time + " ----");
 		super.think(time,changed,heard);
-
+/*
 		//TaskJobテストコード: MoveTask
 		//自分から遠い建物について巡っていく．
 		if(currentTask != null && !currentTask.isFinished()){
@@ -98,10 +102,12 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		writer.println("    act();");
 		writer.println("}");
 		act();
+*/
 	}
 
 	//yabAPIのスタイルを踏襲
 	protected void act(){
+/*
 		writer.println("NAITOFireBrigade.act(){");
 		if(!currentTask.isFinished()){
 			writer.println("    !currentTask.isFinished();");
@@ -117,6 +123,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		writer.println("# Location = " + locationURN);
 		writer.println("# (id = " + getLocation().getID().getValue());
 		writer.println("####################");
+*/
 	}
 
 	@Override
