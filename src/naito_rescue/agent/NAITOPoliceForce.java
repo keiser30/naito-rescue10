@@ -1,31 +1,26 @@
 package naito_rescue.agent;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
+import java.util.*;
+import java.io.*;
 
-import rescuecore2.worldmodel.EntityID;
-import rescuecore2.worldmodel.ChangeSet;
+import rescuecore2.worldmodel.*;
 import rescuecore2.messages.Command;
 import rescuecore2.log.Logger;
-import rescuecore2.misc.geometry.GeometryTools2D;
-import rescuecore2.misc.geometry.Point2D;
-import rescuecore2.misc.geometry.Line2D;
 
-import rescuecore2.standard.entities.StandardEntity;
-import rescuecore2.standard.entities.StandardEntityURN;
-import rescuecore2.standard.entities.Road;
-import rescuecore2.standard.entities.Blockade;
-import rescuecore2.standard.entities.PoliceForce;
-import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.*;
 
 public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 {
     private static final String DISTANCE_KEY = "clear.repair.distance";
 
-	private int distance;
+	private int distance; //閉塞解除が可能な距離...?
+
+
+	private File pflog;
+	private static int pflog_num = 0;
+	private FileOutputStream pflog_stream;
+	private PrintWriter logger;
+	// private String LOGFILENAME = LOGFILENAME_BASE + (++pflog_num) + ".log";
 
 	@Override
 	public String toString(){
@@ -37,6 +32,11 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
         super.postConnect();
 		model.indexClass(StandardEntityURN.ROAD);
 		distance = config.getIntValue(DISTANCE_KEY);
+		
+		try{
+			
+		}catch(Exception e){
+		}
 	}
 
 	@Override
