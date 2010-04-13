@@ -42,7 +42,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		return time;
 	}
 
-	//なんでStandardAgentのlocation()はprotectedなんだ...
 	public StandardEntity getLocation(){
 		return location();
 	}
