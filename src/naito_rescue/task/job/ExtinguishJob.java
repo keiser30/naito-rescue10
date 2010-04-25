@@ -14,8 +14,8 @@ public class ExtinguishJob extends Job
 	Building target;
 	int      power;
 
-	public ExtinguishJob(NAITOHumanoidAgent owner, StandardWorldModel model, Building target, int power, PrintWriter logger){
-		super(owner, model, logger);
+	public ExtinguishJob(NAITOHumanoidAgent owner, StandardWorldModel model, Building target, int power){
+		super(owner, model);
 		this.target = target;
 		this.power = power;
 	}

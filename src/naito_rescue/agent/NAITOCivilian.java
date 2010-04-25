@@ -79,7 +79,7 @@ public class NAITOCivilian extends NAITOHumanoidAgent<Civilian> {
             }
             else {
                 Logger.info("Moving randomly");
-                sendMove(time, randomWalk());
+                //sendMove(time, randomWalk());
                 return;
             }
         }

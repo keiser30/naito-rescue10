@@ -10,26 +10,17 @@ import java.io.*;
 
 public abstract class Task
 {
-	//Human -> StandardAgentに変更.
-	//sendMove()とか使いたいときのために
 	NAITOHumanoidAgent owner;
 	StandardWorldModel world;
 	PrintWriter        logger;
 	ArrayList<Job>     jobs;
 	int                processIdx;
 
-	public Task(NAITOHumanoidAgent owner, StandardWorldModel world, PrintWriter logger){
+	public Task(NAITOHumanoidAgent owner, StandardWorldModel world){
 		this.owner = owner;
 		this.world = world;
-		this.logger = logger;
 		jobs = new ArrayList<Job>();
 		processIdx = 0;
-		
-		try{
-			logger.println("\t\t Task() is constructed;");
-		}catch(Exception e){
-			logger.close();
-		}
 	}
 
 	// 各タスクで実装
@@ -38,10 +29,6 @@ public abstract class Task
 
 	public boolean isFinished(){
 		if(jobs.size() > 0  && processIdx+1 > jobs.size()){
-			logger.println("\t\t Task.isFinished(){");
-			logger.println("\t\t     processIdx+1 > jobs.size()");
-			logger.println("\t\t     (processIdx=" + processIdx + ",jobs.size()=" + jobs.size() + ")");
-			logger.println("\t\t }");
 			return true;
 		}
 		else return isFinished(owner, world);
@@ -49,29 +36,11 @@ public abstract class Task
 	protected abstract boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world);
 
 	public Job currentJob(){
-		logger.println("\t\t Task.currentJob(){");
 		if(jobs.size() == 0){
-			try{
-				logger.println("\t\t     jobs.size() == 0;");
-				logger.println("\t\t     jobs.addAll(createJobList());");
-			}catch(Exception e){
-				logger.println("Exception at currentJob();");
-				logger.close();
-				System.exit(-1);
-			}
 			jobs.addAll(createJobList());
 		}
 		while(processIdx+1 <= jobs.size()){
 			if(!jobs.get(processIdx).isFinished()){
-				try{
-					logger.println("\t\t     !jobs.get(" + processIdx + ").isFinished();");
-				}catch(Exception e){
-					logger.println("IOException at currentJob(){ while(...)...} ");
-					logger.close();
-					System.exit(-1);
-				}
-				logger.println("\t\t     return jobs.get(" + processIdx + ")");
-				logger.println("\t\t }");
 				return jobs.get(processIdx);
 			}
 			processIdx++;

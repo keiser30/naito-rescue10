@@ -13,8 +13,8 @@ public class LoadJob extends Job
 {
 	Civilian target;
 
-	public LoadJob(NAITOHumanoidAgent owner, StandardWorldModel world, Civilian target, PrintWriter logger){
-		super(owner, world, logger);
+	public LoadJob(NAITOHumanoidAgent owner, StandardWorldModel world, Civilian target){
+		super(owner, world);
 		this.target = target;
 	}
 	@Override 

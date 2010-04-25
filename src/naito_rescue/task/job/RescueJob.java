@@ -13,8 +13,8 @@ public class RescueJob extends Job
 {
 	Civilian target;
 
-	public RescueJob(NAITOHumanoidAgent owner, StandardWorldModel world, Civilian target, PrintWriter logger){
-		super(owner, world, logger);
+	public RescueJob(NAITOHumanoidAgent owner, StandardWorldModel world, Civilian target){
+		super(owner, world);
 		this.target = target;
 	}
 
