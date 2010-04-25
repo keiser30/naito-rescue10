@@ -16,8 +16,8 @@ public class ClearJob extends Job
 {
 	Blockade target;
 
-	public ClearJob(NAITOHumanoidAgent owner, StandardWorldModel world, Blockade target, PrintWriter logger){
-		super(owner, world, logger);
+	public ClearJob(NAITOHumanoidAgent owner, StandardWorldModel world, Blockade target){
+		super(owner, world);
 		this.target = target;
 	}
 	@Override

@@ -13,8 +13,8 @@ public class MoveJob extends Job
 {
 	Area target;
 
-	public MoveJob(NAITOHumanoidAgent owner, StandardWorldModel world, Area target, PrintWriter logger){
-		super(owner, world, logger);
+	public MoveJob(NAITOHumanoidAgent owner, StandardWorldModel world, Area target){
+		super(owner, world);
 		this.target = target;
 	}
 	
@@ -23,38 +23,16 @@ public class MoveJob extends Job
 	@Override
 	public void doJob(){
 		owner.move(target);
-		logger.println("\t\t\t MoveJob.doJob(){ owner.move(" + target.toString() + ") }");
 	}
 
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
-		try{
-			logger.println("\t\t\t MoveJob.isFinished(){");
-		}catch(Exception ioe){
-			logger.println("Exception at MoveJob.isFinished();");
-		}
 		int location_id = owner.getLocation().getID().getValue();
 		int target_id = target.getID().getValue();
 
 		if(location_id == target_id){
-			try{
-				logger.println("\t\t\t    |_ return true;");
-				logger.println("\t\t\t }");
-			}catch(Exception ioe){
-				logger.println("Exception at MoveJob.isFinished(){ if(...) }");
-				logger.close();
-				System.exit(-1);
-			}
 			return true;
 		}else{
-			try{
-				logger.println("\t\t\t    |_ return false;");
-				logger.println("\t\t\t }");
-			}catch(Exception ioe){
-				logger.println("Exception at MoveJob.isFinished(){ if(...) }");
-				logger.close();
-				System.exit(-1);			
-			}
 			return false;
 		}
 	}

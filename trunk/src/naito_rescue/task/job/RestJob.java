@@ -12,8 +12,8 @@ import java.io.*;
 public class RestJob extends Job
 {
 
-	public RestJob(NAITOHumanoidAgent owner, StandardWorldModel model, PrintWriter logger){
-		super(owner, model, logger);
+	public RestJob(NAITOHumanoidAgent owner, StandardWorldModel model){
+		super(owner, model);
 	}
 	@Override
 	public void doJob(){

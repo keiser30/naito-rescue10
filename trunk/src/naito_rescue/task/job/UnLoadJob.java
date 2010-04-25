@@ -12,8 +12,8 @@ import java.io.*;
 public class UnLoadJob extends Job
 {
 
-	public UnLoadJob(NAITOHumanoidAgent owner, StandardWorldModel world, PrintWriter logger){
-		super(owner, world, logger);
+	public UnLoadJob(NAITOHumanoidAgent owner, StandardWorldModel world){
+		super(owner, world);
 	}
 	
 	@Override

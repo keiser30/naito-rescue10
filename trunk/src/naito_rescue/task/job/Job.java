@@ -9,16 +9,12 @@ import java.io.*;
 
 public abstract class Job
 {
-	// Ownerを持たせる
-	// ...WorldModelは別に持たせる必要がある?
 	NAITOHumanoidAgent owner;
 	StandardWorldModel world;
-	PrintWriter        logger;
 	
-	public Job(NAITOHumanoidAgent owner, StandardWorldModel world, PrintWriter logger){
+	public Job(NAITOHumanoidAgent owner, StandardWorldModel world){
 		this.owner = owner;
 		this.world = world;
-		this.logger = logger;
 	}
 	public StandardAgent getOwner(){
 		return owner;

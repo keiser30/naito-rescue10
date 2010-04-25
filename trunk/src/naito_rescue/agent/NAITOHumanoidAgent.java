@@ -3,6 +3,7 @@ package naito_rescue.agent;
 
 import java.util.*;
 
+import sample.*;
 import rescuecore2.messages.*;
 import rescuecore2.worldmodel.*;
 import rescuecore2.Constants;
@@ -22,14 +23,15 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected Task    currentTask;
 	protected Job     currentJob;
 
+	protected Set<StandardEntity> visited = new HashSet<StandardEntity>();
 	protected SampleSearch search;
 
-	//protected static final String LOGFILE_BASE = "/Users/robocup/rescue/NAITO-Rescue10/";
-	//protected static final String LOGFILE_BASE = "/home/robocup/rescue/NAITO-Rescue10/";
-	
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		this.time = time;
+		if(search == null){
+			search = new SampleSearch(model);
+		}
 		if(currentTask != null && !currentTask.isFinished()){
 		}
 	}
