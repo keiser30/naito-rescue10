@@ -51,6 +51,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		return "NAITOFireBrigade: " + me().getID() + "";
 	}
 
+// 建物探訪をどうするか?
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time,changed,heard);
@@ -59,10 +60,34 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		if(heard.size() > 0){
 			
 		}
-
-
+		List<Building> burnings = getBurningBuildings();
+		for(Building next : burnings){
+			currentTaskList.add(new ExtinguishTask(this, model, next, maxPower, maxDistance));
+		}
+		
+		taskRankUpdate();
+		currentTask = getHighestRankTask();
+		currentJob = currentTask.currentJob();
+		currentJob.doJob();
 	}
 
+	public void taskRankUpdate(){
+	}
+	private List<Building> getBurningBuildings(){
+		Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.BUILDING);
+		List<Building> result = new ArrayList<Building>();
+		for (StandardEntity next : e) {
+		    if (next instanceof Building) {
+		        Building b = (Building)next;
+		        if (b.isOnFire()) {
+		            result.add(b);
+		        }   
+		    }   
+		}   
+		// Sort by distance
+		Collections.sort(result, new DistanceSorter(location(), model));
+		return result;
+	}
 	@Override
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum(){
 		return EnumSet.of(StandardEntityURN.FIRE_BRIGADE);

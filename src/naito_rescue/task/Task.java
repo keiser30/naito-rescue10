@@ -15,18 +15,20 @@ public abstract class Task
 	PrintWriter        logger;
 	ArrayList<Job>     jobs;
 	int                processIdx;
+	int                rank;
 
 	public Task(NAITOHumanoidAgent owner, StandardWorldModel world){
 		this.owner = owner;
 		this.world = world;
 		jobs = new ArrayList<Job>();
 		processIdx = 0;
+		rank = 1000;
 	}
 
 	// 各タスクで実装
 	//   |_ currentJob()で呼び出し
 	public abstract ArrayList<Job> createJobList();
-
+	
 	public boolean isFinished(){
 		if(jobs.size() > 0  && processIdx+1 > jobs.size()){
 			return true;
@@ -46,5 +48,12 @@ public abstract class Task
 			processIdx++;
 		}
 		return null;
+	}
+
+	public void setRank(int rank){
+		this.rank = rank;
+	}
+	public int getRank(){
+		return this.rank;
 	}
 }

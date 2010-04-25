@@ -105,4 +105,5 @@ public class NAITOCivilian extends NAITOHumanoidAgent<Civilian> {
             throw new RuntimeException("This should not have happened!", e);
         }
     }
+	public void taskRankUpdate(){}
 }
