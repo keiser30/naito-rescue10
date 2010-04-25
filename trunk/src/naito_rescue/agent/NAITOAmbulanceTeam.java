@@ -35,6 +35,10 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
     @Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time,changed,heard);
+		//TEST
+		//ずっとsayし続ける
+		speak(0, ("TEST_SPEAK: Location="+location().getID()).getBytes());
+		logger.println("TEST_SPEAK");
 	}
 
 

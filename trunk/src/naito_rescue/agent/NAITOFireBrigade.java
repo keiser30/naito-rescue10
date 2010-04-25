@@ -6,6 +6,7 @@ import rescuecore2.worldmodel.*;
 import rescuecore2.messages.Command;
 import rescuecore2.log.Logger;
 import rescuecore2.standard.entities.*;
+import rescuecore2.standard.messages.*;
 
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
@@ -26,14 +27,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	private Collection<StandardEntity> allArea;
 	private HashSet<Building> visited;
 
-/*
-	private File fblog;
-	private FileOutputStream fbstream;
-	//private String LOGFILENAME = LOGFILE_BASE+"FB"+me().getID().getValue()+".log";
-	private String LOGFILENAME = LOGFILE_BASE+"FB"+(++fblog_num)+".log";
-	private PrintWriter writer;
-*/
-
 	@Override
     protected void postConnect() {
         super.postConnect();
@@ -50,14 +43,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			visited.add((Building)location());
 		}
 		
-		try{
-			fblog = new File(LOGFILENAME);
-			fbstream = new FileOutputStream(fblog);
-			writer = new PrintWriter(fbstream, true);
-		}catch(IOException ioe){
-			System.err.println("IOException: NAITOFireBrigade");
-			System.exit(-1);
-		}
 */
 	} 
 
@@ -68,62 +53,14 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
-		// writer.println("---- " + time + " ----");
 		super.think(time,changed,heard);
-/*
-		//TaskJobテストコード: MoveTask
-		//自分から遠い建物について巡っていく．
-		if(currentTask != null && !currentTask.isFinished()){
-			writer.println("NAITOFireBrigade.think(){");
-			writer.println("    currentTask != null && !currentTask.isFinished()");
-			writer.println("    act();");
-			writer.println("}");
-			act();
-		}
-		for(StandardEntity building : allArea){
-			int dist_temp = model.getDistance(location(), building);
-			if(distance < dist_temp && !visited.contains((Building)building)){
-				target = (Building)building;
-				distance = dist_temp;
-			}
-		}
-		currentTask = new MoveTask(this, model, target, writer);
-		try{
-			writer.println("NAITOFireBrigade.think(){");
-			writer.println("    currentTask = new MoveTask();");
-			writer.println("    target = " + target.toString());
-		}catch(Exception ioe){
-			System.err.println("Exception: NAITOFireBrigade, think();");
-			writer.close();
-			System.exit(-1);
-		}
-		visited.add(target);
 
-		writer.println("    act();");
-		writer.println("}");
-		act();
-*/
-	}
-
-	//yabAPIのスタイルを踏襲
-	protected void act(){
-/*
-		writer.println("NAITOFireBrigade.act(){");
-		if(!currentTask.isFinished()){
-			writer.println("    !currentTask.isFinished();");
-			Job currentJob = currentTask.currentJob();
-			writer.println("    currentJob.doJob();");
-			currentJob.doJob();
-		}else{
-			writer.println("    currentTask.isFinished()");
+		// 無線 or ボイスデータの処理
+		if(heard.size() > 0){
+			
 		}
-		writer.println("}");
-		String locationURN = getLocation().getStandardURN().toString();
-		writer.println("####################");
-		writer.println("# Location = " + locationURN);
-		writer.println("# (id = " + getLocation().getID().getValue());
-		writer.println("####################");
-*/
+
+
 	}
 
 	@Override
