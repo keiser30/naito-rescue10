@@ -30,7 +30,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	}
 	@Override
 	public String toString(){
-		return "NAITOFireBrigade: " + me().getID() + "";
+		return "NAITOAmbulanceTeam: " + me().getID() + "";
 	}
     @Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
@@ -40,7 +40,8 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 		speak(0, ("TEST_SPEAK: Location="+location().getID()).getBytes());
 		logger.println("TEST_SPEAK");
 	}
-
+	public void taskRankUpdate(){
+	}
 
     protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
 		return EnumSet.of(StandardEntityURN.AMBULANCE_TEAM);

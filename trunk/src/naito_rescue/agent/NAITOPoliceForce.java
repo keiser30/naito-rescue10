@@ -43,7 +43,8 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time,changed,heard);
 	}
-
+	public void taskRankUpdate(){
+	}
     @Override
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
 		return EnumSet.of(StandardEntityURN.POLICE_FORCE);

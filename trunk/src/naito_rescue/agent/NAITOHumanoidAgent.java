@@ -21,7 +21,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 	protected boolean useSpeak;
 	protected int     time;
-	protected List<Task> currentTaskList = new ArrayList<Task>();
+	protected ArrayList<Task> currentTaskList = new ArrayList<Task>();
 	protected Task    currentTask;
 	protected Job     currentJob;
 	protected MyLogger logger;
@@ -36,6 +36,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			search = new SampleSearch(model);
 		}
 		if(currentTask != null && !currentTask.isFinished()){
+			currentJob = currentTask.currentJob();
+			currentJob.doJob();
 		}
 	}
 	@Override
@@ -96,7 +98,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 
     protected List<EntityID> randomWalk() {
-	int RANDOM_WALK_LENGTH = 50;
+		int RANDOM_WALK_LENGTH = 50;
         List<EntityID> result = new ArrayList<EntityID>(RANDOM_WALK_LENGTH);
         Set<StandardEntity> seen = new HashSet<StandardEntity>();
         StandardEntity current = location();
@@ -120,7 +122,19 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
             }   
         }   
         return result;
-    }   
+    }
+	//currentTaskListの優先度を更新
+	public abstract void taskRankUpdate();
 
+	public Task getHighestRankTask(){
+		Comparator<Task> task_comp = new Comparator<Task>(){
+			public int compare(Task t1, Task t2){
+				return t2.getRank() - t1.getRank();
+			}
+		};
+
+		Collections.sort(currentTaskList, task_comp);
+		return currentTaskList.remove(0);
+	}
 }
 
