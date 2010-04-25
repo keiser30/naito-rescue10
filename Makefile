@@ -12,14 +12,9 @@ SOURCES := $(shell find $(SOURCEDIR) -name "*.java")
 PACKAGE_TOP := naito_rescue
 JARFILENAME := $(PACKAGE_TOP).jar
 
-# KERNEL_BASE := /home/robocup/rescue/rescue-nightly/0422
-# KERNEL_BASE := /Users/robocup/rescue/rescue-nightly/0403
 CLASSPATH := $(shell find ./jars -name "*.jar" | xargs | sed -e "s/ /:/g")
-# CLASSPATH := $(CLASSPATH):$(shell find $(KERNEL_BASE)/lib -name "*.jar" | xargs | sed -e "s/ /:/g")
 
 all:
-#	echo $(SOURCES)
-#	echo $(CLASSPATH)
 	$(JAVAC) $(JAVACOPT) -d $(DESTDIR) -classpath $(CLASSPATH) $(SOURCES)
 	$(JAR) cvf $(JARFILENAME) -C $(DESTDIR) .
 

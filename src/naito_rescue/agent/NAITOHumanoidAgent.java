@@ -10,6 +10,7 @@ import rescuecore2.Constants;
 import rescuecore2.standard.components.*;
 import rescuecore2.standard.entities.*;
 
+import naito_rescue.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
 
@@ -20,8 +21,10 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 	protected boolean useSpeak;
 	protected int     time;
+	protected List<Task> currentTaskList = new ArrayList<Task>();
 	protected Task    currentTask;
 	protected Job     currentJob;
+	protected MyLogger logger;
 
 	protected Set<StandardEntity> visited = new HashSet<StandardEntity>();
 	protected SampleSearch search;
@@ -40,6 +43,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 super.postConnect();
 		 //search = new SampleSearch(model);
 		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
+		 logger = new MyLogger(this, true);
 	}
 
 	public int getTime(){
@@ -48,6 +52,10 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 	public StandardEntity getLocation(){
 		return location();
+	}
+
+	public MyLogger getLogger(){
+		return logger;
 	}
 
 	//メソッドのラッパー群
@@ -86,5 +94,33 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	public void say(byte[] data){
 		sendSay(time, data);
 	}
+
+    protected List<EntityID> randomWalk() {
+	int RANDOM_WALK_LENGTH = 50;
+        List<EntityID> result = new ArrayList<EntityID>(RANDOM_WALK_LENGTH);
+        Set<StandardEntity> seen = new HashSet<StandardEntity>();
+        StandardEntity current = location();
+        for (int i = 0; i < RANDOM_WALK_LENGTH; ++i) {
+            result.add(current.getID());
+            seen.add(current);
+            List<StandardEntity> neighbours = new ArrayList<StandardEntity>(search.findNeighbours(current));
+            Collections.shuffle(neighbours, random);
+            boolean found = false;
+            for (StandardEntity next : neighbours) {
+                if (seen.contains(next)) {
+                    continue;
+                }   
+                current = next;
+                found = true;
+                break;
+            }   
+            if (!found) {
+                // We reached a dead-end.
+                break;
+            }   
+        }   
+        return result;
+    }   
+
 }
 
