@@ -1,21 +1,32 @@
-package naito_rescue.agent;
+package sample;
 
-import rescuecore2.worldmodel.*;
-import rescuecore2.standard.entities.*;
+import rescuecore2.worldmodel.EntityID;
+import rescuecore2.standard.entities.StandardWorldModel;
+import rescuecore2.standard.entities.StandardEntity;
+import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.Building;
+//import rescuecore2.log.Logger;
 
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collection;
 
-public final class MySearch {
+/**
+   A sample search class.
+ */
+public final class SampleSearch {
     private StandardWorldModel world;
-	private NAITOHumanoidAgent owner;
 
     /**
        Construct a new SampleSearch.
        @param world The world model to search.
      */
-    public MySearch(StandardWorldModel world, NAITOHumanoidAgent owner) {
+    public SampleSearch(StandardWorldModel world) {
         this.world = world;
-		this.owner = owner;
     }
 
     /**
@@ -28,46 +39,6 @@ public final class MySearch {
         return breadthFirstSearch(start, Arrays.asList(goals));
     }
 
-	/**
-		breadthFirstSearchの改良
-		@return The path from start to one of the goals, or null if no path can be found.
-	*/
-/*
-	public List<EntityID> getRoute(StandardEntity start, Collection<? extends StandardEntity> goals){
-
-		List<StandardEntity> open = new LinkedList<StandardEntity>();
-        Map<StandardEntity, StandardEntity> ancestors = new HashMap<StandardEntity, StandardEntity>();
-        open.add(start);
-        StandardEntity next = null;
-        boolean found = false;
-        ancestors.put(start, start);
-        do {
-            next = open.remove(0);
-            if (isGoal(next, goals)) {
-                found = true;
-                break;
-            }
-            Collection<StandardEntity> neighbours = findNeighbours(next);
-            if (neighbours.isEmpty()) {
-                continue;
-            }
-            for (StandardEntity neighbour : neighbours) {
-                if (isGoal(neighbour, goals)) {
-                    ancestors.put(neighbour, next);
-                    next = neighbour;
-                    found = true;
-                    break;
-                }
-                else {
-                    if (!ancestors.containsKey(neighbour) && !(neighbour instanceof Building)) {
-                        open.add(neighbour);
-                        ancestors.put(neighbour, next);
-                    }
-                }
-            }
-        } while (!found && !open.isEmpty());
-	}
-*/
     /**
 	   経路の幅優先探索
        Do a breadth first search from one location to the closest (in terms of number of nodes) of a set of goals.
@@ -152,7 +123,4 @@ public final class MySearch {
         }
         return false;
     }
-	public String hogeString(){
-		return owner.toString();
-	}
 }

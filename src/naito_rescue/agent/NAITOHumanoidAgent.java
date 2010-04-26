@@ -31,9 +31,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		this.time = time;
-		if(search == null){
-			search = new MySearch(model);
-		}
+		/*if(search == null){
+			search = new MySearch(model, this);
+		}*/
 		if(currentTask != null && !currentTask.isFinished()){
 			currentJob = currentTask.currentJob();
 			currentJob.doJob();
@@ -45,8 +45,12 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 //search = new SampleSearch(model);
 		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
 		 logger = new MyLogger(this, true);
+		 search = new MySearch(model, this);
 	}
-
+	@Override
+	public String toString(){
+		return "NAITOHumanoidAgent: " + me().getID();
+	}
 	public int getTime(){
 		return time;
 	}

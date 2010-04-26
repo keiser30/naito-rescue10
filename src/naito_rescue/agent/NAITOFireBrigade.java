@@ -53,7 +53,8 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time,changed,heard);
-
+		logger.println("TESTTEST::"+search.hogeString());
+/*
 		// 無線 or ボイスデータの処理
 		if(heard.size() > 0){
 			
@@ -67,6 +68,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		currentTask = getHighestRankTask();
 		currentJob = currentTask.currentJob();
 		currentJob.doJob();
+*/
 	}
 
 	public void taskRankUpdate(){
