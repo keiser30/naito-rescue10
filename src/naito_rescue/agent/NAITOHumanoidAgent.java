@@ -1,6 +1,5 @@
 package naito_rescue.agent;
 
-
 import java.util.*;
 
 import sample.*;
@@ -27,13 +26,13 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected MyLogger logger;
 
 	protected Set<StandardEntity> visited = new HashSet<StandardEntity>();
-	protected SampleSearch search;
+	protected MySearch search;
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		this.time = time;
 		if(search == null){
-			search = new SampleSearch(model);
+			search = new MySearch(model);
 		}
 		if(currentTask != null && !currentTask.isFinished()){
 			currentJob = currentTask.currentJob();

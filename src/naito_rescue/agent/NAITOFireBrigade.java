@@ -21,8 +21,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	private int maxDistance;
 	private int maxPower;
 
-	private static int fblog_num = 0;
-	private int distance = 0;
 	private Building target;
 	private Collection<StandardEntity> allArea;
 	private HashSet<Building> visited;
