@@ -1,34 +1,59 @@
 ######################################
 #    NAITO-Rescue10ベースコード
 #
-#                 2010.4.1 Shoji Kazuo
+#                 2010.4.27 Shoji Kazuo
 #
-#    「庄子」の姓は，中国では尊い名前らしい．
-#     ...が，この性は宮城，山形にいっくらでも存在する．
+#    地下鉄の中で，500mlのペットボトルで
+#    自分の頭を叩き続ける超美形の女性を見た．
+#    (しかもすごい笑顔)
+#
+#    「あぁ冷や汗ってこういうときにかくんだ」
+#    ということを理解した．
 ######################################
 
-対象: RoboCupRescueSimulation 1.0 nightly build(2010.3.18)
+対象: RoboCupRescueSimulation 1.0 nightly-build(2010.4.26日付まで)
 
 ビルドに必要なもの:
 
-    Java Compiler 1.6以上(およびそれに付属するjarコマンド)
-	Makefileを認識して動作するシステム
+      (1) サンマイクロシステムズのJava Compiler 1.6以上
+	    (およびそれに付属するjarコマンド)
+      (2) ant 1.7.0
+	    (antが使うjarファイルの揃い具合によっては，
+		より古いantでもビルドが可能かもしれません)
+	  (3) GNU Makefile
 
-ビルドおよび動作確認:
+ビルドおよび実行について:
 
-    1) makeする(コンパイルの詳細はMakefile参照)
-     ####################
-     # 各自の環境に合わせて，
-     # Makefile内のKERNEL_BASE変数を
-     # 書き換えてください．
-     # (KERNEL_BASE変数には，
-     # 使用するサーバのトップディレクトリ
-     # へのパスを記述します)
-     ####################
-	2) naito_rescue.jarというファイルができているので，
-	それを%SERVER_TOP_DIRECTORY%/jarsに放り込む．
-	3) %SERVER_TOP_DIRECTORY%/boot/configにあるkernel.cfg
-	を以下のように編集する．
+  1. ビルド
+      (1) Makefileのあるディレクトリでmakeを実行する
+	        $make
+      (2) naito_rescue.jarというファイルができている
+  	      ことを確認する
+
+  2. 実行
+   2-A. エージェントからサーバにつなげる方法
+        (通常はこちらの起動方法になると思います)
+
+      (1) "start.sh"ファイルの中にある
+	          ・KERNEL_ADDRESS
+		      ・KERNEL_PORT
+		  という2つの変数を環境に合わせて書き換える
+		  (KERNEL_ADDRESS ... 接続するサーバのIPアドレス
+		   KERNEL_PORT    ... 接続するサーバのポート番号)
+      (2) start.shを実行する
+	        $./start.sh
+  2-B. エージェントのjarファイルをサーバから
+       自動的に読み取ってもらう方法
+	   (こちらは，サーバと同じマシン内にエージェントの
+	   jarファイルを置かないと起動できません)
+    
+	   (1) naito_rescue.jarファイルを，
+           %SERVER_TOP_DIRECTORY%/jarsに放り込む．
+		   (%SERVER_TOP_DIRECTORY% ... 使用するサーバの
+		   トップディレクトリ)
+	   (2) %SERVER_TOP_DIRECTORY%/boot/configにあるkernel.cfg
+	       を以下のように編集する．
+
 	   #kernel.agents.auto +: ... の行についてコメントアウトを
 	   外し，以下のように書き換える．
 
@@ -36,12 +61,11 @@
 	   kernel.agents.auto +: naito_rescue.agent.NAITOAmbulanceTeam*n
 	   kernel.agents.auto +: naito_rescue.agent.NAITOPoliceForce*n
 
-    4) ant start-kernelでサーバを起動し，スタートの画面で
-	NAITOFireBrigade,NAITOAmbulanceTeam,NAITOPoliceForceが登録されていること
-	を確認する．
+       (3) ant start-kernelでサーバを起動し，スタートの画面で
+	       NAITOFireBrigade,NAITOAmbulanceTeam,NAITOPoliceForceが登録されていること
+	       を確認する．
 
 クラス構成:
-
 
 	NAITOAgent
         |__NAITOHumanoidAgent
@@ -49,7 +73,7 @@
         |       |__NAITOAmbulanceTeam
         |       |__NAITOPoliceForce
         |       |
-		|       |...<Civilian>
+		|       |...NAITOCivilian
 		|...<各種センターエージェント>
 
     ※<...>は未実装
@@ -73,6 +97,10 @@
 		クラス．
 		postConnect(),toString(),think(),getRequestedEntityURNsEnum()
 		を必ず実装する．
+    NAITOCivilian
+	    NAITO-Rescueの市民エージェントの実装クラス．
+		postConnect(),toString(),think(),getRequestedEntityURNsEnum()
+		を必ず実装する．
 
 コーディングの方法:
 
@@ -91,9 +119,3 @@
 	FireBrigade,AmbulanceTeam,PoliceForceでなければならない．
 	こうしないと，作ったエージェントのクラスをカーネルが自動的に認識してくれないため．
 
-今後の予定:
-
-    とりあえずTask-Job Systemは組み込みたい(エージェントの行動を組み立てやすい，
-	行動の終了判定がしやすい，行動の開始時間と終了時間などのデータを取りやすいなど
-	の理由より)．
-	戦略はどうしよう＼(^0^)/
