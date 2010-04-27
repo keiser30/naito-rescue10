@@ -3,20 +3,132 @@ package naito_rescue.agent;
 import rescuecore2.worldmodel.*;
 import rescuecore2.standard.entities.*;
 
+import naito_rescue.*;
 import java.util.*;
 
 public final class MySearch {
     private StandardWorldModel world;
 	private NAITOHumanoidAgent owner;
+	private MyLogger           logger;
+	
+	private int                        initCost[][];
+	private int                        cost[][];
+	private Collection<StandardEntity> allRoads;
+	private Collection<StandardEntity> allBuildings;
+	private int                        numRoads;
+
 
     /**
-       Construct a new SampleSearch.
+       Construct a new MySearch.
        @param world The world model to search.
      */
     public MySearch(StandardWorldModel world, NAITOHumanoidAgent owner) {
         this.world = world;
 		this.owner = owner;
-    }
+		this.logger = owner.getLogger();
+		this.allRoads = this.world.getEntitiesOfType(StandardEntityURN.ROAD);
+		this.allBuildings = this.world.getEntitiesOfType(StandardEntityURN.BUILDING);
+    	this.numRoads = allRoads.size();
+
+		this.initCost = new int[this.numRoads][this.numRoads];
+		this.cost = new int[this.numRoads][this.numRoads];
+		
+		costInit();
+	}
+
+	private void costInit(){
+		for(int i = 0;i < numRoads;i++){
+			Arrays.fill(initCost[i], 0);
+			initCost[i][i] = -1;
+		}
+
+		// 隣接する道路と道路について，
+		// それらを結ぶ長さを初期コストとする．
+		// (コスト配列の添字はID)
+		Collection<StandardEntity> neighbours;
+		Road from;
+		int fromIdx, toIdx;
+		for(Iterator<StandardEntity> it = allRoads.iterator();it.hasNext();){
+			from = (Road)it.next();
+			fromIdx = from.getID().getValue();
+			neighbours = findNeighbours(from);
+			for(StandardEntity neighbour : neighbours){
+				if(neighbour instanceof Road){
+					toIdx = ((Road)neighbour).getID().getValue();
+					initCost[fromIdx][toIdx] = world.getDistance(from.getID(), neighbour.getID());
+					initCost[toIdx][fromIdx] = world.getDistance(from.getID(), neighbour.getID());
+				}
+			}
+		}
+		
+		for(int i = 0;i < numRoads;i++){
+			for(int j = 0;j < numRoads;j++){
+				cost[i][j] = initCost[i][j];
+			}
+		}
+	}
+
+
+	public List<EntityID> getRoute(EntityID fromID, EntityID toID){
+		
+		for(int i = 0;i < numRoads;i++){
+			for(int j = 0;j < numRoads;j++){
+				cost[i][j] = initCost[i][j];
+			}
+		}
+
+		boolean     doneArea[] = new boolean[numRoads];
+		EntityID    prevArea[] = new EntityID[numRoads];
+		EntityID    areaIdx;
+
+		areaIdx = fromID;
+		doneArea[fromID.getValue()] = true;
+		prevArea[fromID.getValue()] = fromID;
+		while(areaIdx.getValue() != toID.getValue()){
+			int minCost = Integer.MAX_VALUE;
+			EntityID nextIdx;
+			EntityID prevIdx;
+
+			for(int i = 0;i < numRoads;i++){
+				if(doneArea[i]){
+					for(int j = 0;j < numRoads;j++){
+						if(doneArea[j]) continue;
+						int c = cost[i][j];
+						if(minCost > c && c > 0){
+							prevIdx = i;
+							nextIdx = j;
+							minCost  = c;
+						}
+					}
+				}
+			}//end for.
+
+			prevArea[nextIdx.getValue()] = prevIdx;
+			if(nextIdx.getValue() == toID().getValue()){
+				break;
+			}
+			myCost = cost[prevIdx.getValue()][nextIdx.getValue()];
+			for(int i = 0;i < numRoads.size();i++){
+				if(cost[nextIdx.getValue()][i] > 0){
+					cost[nextIdx.getValue()][i] += myCost;
+				}
+			}
+			doneArea[nextIdx.getValue()] = true;
+			areaIdx = nextIdx;
+		}//end while.
+		
+
+		LinkedList<EntityID> ll = new LinkedList<EntityID>();
+		ll.add(toID);
+		EntityID no = toID;
+		while(prevArea[no] != fromID){
+			ll.add(prevArea[no]);
+			no = prevArea[no];
+		}
+		ll.add(fromID);
+		return ll;
+	}
+
 
     /**
        Do a breadth first search from one location to the closest (in terms of number of nodes) of a set of goals.

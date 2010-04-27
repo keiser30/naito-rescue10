@@ -10,4 +10,9 @@ CLASSPATH=`find ./jars -name "*.jar" | xargs | sed -e "s/ /:/g"`
 CLASSPATH=$CLASSPATH:$AGENT_JAR_FILE
 
 java -Xmx800m -Xmn256m -cp $CLASSPATH naito_rescue.LaunchAgents -h $KERNEL_ADDRESS -p $KERNEL_PORT
-echo "NAITO-Rescue started."
+
+echo "     ************************     "
+echo "  *                            *  "
+echo " *   NAITO-Rescue10 started.    * "
+echo "  *                            *  "
+echo "     ************************     "
