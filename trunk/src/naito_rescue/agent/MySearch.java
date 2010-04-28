@@ -1,5 +1,6 @@
 package naito_rescue.agent;
 
+import rescuecore2.misc.*;
 import rescuecore2.worldmodel.*;
 import rescuecore2.standard.entities.*;
 
@@ -15,8 +16,11 @@ public final class MySearch {
 	private int                        cost[][];
 	private Collection<StandardEntity> allRoads;
 	private Collection<StandardEntity> allBuildings;
+	private LinkedList<Road>           allRoadsList;
+	private LinkedList<Building>       allBuildingsList;
 	private int                        numRoads;
-
+	private Hashtable<Integer, Integer>   road2idx;
+	//private HashTable<IDPair, Integer> roadIDPair2cost;
 
     /**
        Construct a new MySearch.
@@ -28,15 +32,30 @@ public final class MySearch {
 		this.logger = owner.getLogger();
 		this.allRoads = this.world.getEntitiesOfType(StandardEntityURN.ROAD);
 		this.allBuildings = this.world.getEntitiesOfType(StandardEntityURN.BUILDING);
-    	this.numRoads = allRoads.size();
+
+		allRoadsList = new LinkedList<Road>();
+		allBuildingsList = new LinkedList<Building>();
+		for(Iterator it = this.allRoads.iterator();it.hasNext();){
+			allRoadsList.add((Road)(it.next()));
+		}
+		for(Iterator it = this.allBuildings.iterator();it.hasNext();){
+			allBuildingsList.add((Building)(it.next()));
+		}
+    	this.numRoads = allRoadsList.size();
+		this.road2idx = new Hashtable<Integer, Integer>();
 
 		this.initCost = new int[this.numRoads][this.numRoads];
 		this.cost = new int[this.numRoads][this.numRoads];
-		
+
+		for(int i = 0;i < numRoads;i++){
+			road2idx.put(allRoadsList.get(i).getID().getValue(), i);
+		}
+		logger.info("MySearch is constructed.");
 		costInit();
 	}
 
 	private void costInit(){
+		logger.info("Mysearch.costInit();");
 		for(int i = 0;i < numRoads;i++){
 			Arrays.fill(initCost[i], 0);
 			initCost[i][i] = -1;
@@ -48,15 +67,19 @@ public final class MySearch {
 		Collection<StandardEntity> neighbours;
 		Road from;
 		int fromIdx, toIdx;
-		for(Iterator<StandardEntity> it = allRoads.iterator();it.hasNext();){
-			from = (Road)it.next();
+		for(int i = 0;i < numRoads;i++){
+			from = allRoadsList.get(i);
+
+			logger.debug("Now processing... "+from);
 			fromIdx = from.getID().getValue();
 			neighbours = findNeighbours(from);
 			for(StandardEntity neighbour : neighbours){
 				if(neighbour instanceof Road){
+					logger.debug("neighbour = " + neighbour);
 					toIdx = ((Road)neighbour).getID().getValue();
-					initCost[fromIdx][toIdx] = world.getDistance(from.getID(), neighbour.getID());
-					initCost[toIdx][fromIdx] = world.getDistance(from.getID(), neighbour.getID());
+					initCost[road2idx.get(fromIdx)][road2idx.get(toIdx)] = world.getDistance(from.getID(), neighbour.getID());
+					initCost[road2idx.get(toIdx)][road2idx.get(fromIdx)] = world.getDistance(from.getID(), neighbour.getID());
+					logger.trace("initCost["+fromIdx+"]["+toIdx+"] = " + initCost[road2idx.get(fromIdx)][road2idx.get(toIdx)]);
 				}
 			}
 		}
@@ -66,66 +89,86 @@ public final class MySearch {
 				cost[i][j] = initCost[i][j];
 			}
 		}
+
+		logger.info("MySearch.costInit(); DONE!");
 	}
 
 
 	public List<EntityID> getRoute(EntityID fromID, EntityID toID){
-		
+		logger.info("MySearch.getRoute();");
 		for(int i = 0;i < numRoads;i++){
 			for(int j = 0;j < numRoads;j++){
 				cost[i][j] = initCost[i][j];
 			}
 		}
-
+		logger.debug("fromID = " + fromID.getValue() + ", toID = " + toID.getValue());
 		boolean     doneArea[] = new boolean[numRoads];
 		EntityID    prevArea[] = new EntityID[numRoads];
 		EntityID    areaIdx;
 
 		areaIdx = fromID;
-		doneArea[fromID.getValue()] = true;
-		prevArea[fromID.getValue()] = fromID;
+		doneArea[road2idx.get(fromID.getValue())] = true;
+		prevArea[road2idx.get(fromID.getValue())] = fromID;
+		logger.debug("Entering while loop");
 		while(areaIdx.getValue() != toID.getValue()){
 			int minCost = Integer.MAX_VALUE;
-			EntityID nextIdx;
-			EntityID prevIdx;
+			EntityID nextIdx = null;
+			EntityID prevIdx = null;
 
+			logger.debug("areaIdx = " + areaIdx.getValue());
 			for(int i = 0;i < numRoads;i++){
 				if(doneArea[i]){
 					for(int j = 0;j < numRoads;j++){
 						if(doneArea[j]) continue;
 						int c = cost[i][j];
 						if(minCost > c && c > 0){
-							prevIdx = i;
-							nextIdx = j;
-							minCost  = c;
+							prevIdx = allRoadsList.get(i).getID();
+							nextIdx = allRoadsList.get(j).getID();
+							minCost = c;
 						}
 					}
 				}
-			}//end for.
+			}
+			logger.debug(" --> nextIdx = " + nextIdx.getValue());
 
-			prevArea[nextIdx.getValue()] = prevIdx;
-			if(nextIdx.getValue() == toID().getValue()){
+			prevArea[road2idx.get(nextIdx.getValue())] = prevIdx;
+			if(nextIdx.getValue() == toID.getValue()){
+				logger.debug("break while loop.");
+				logger.debug("nextIdx = " + nextIdx.getValue() + ", toID.getValue() = " + toID.getValue());
 				break;
 			}
-			myCost = cost[prevIdx.getValue()][nextIdx.getValue()];
-			for(int i = 0;i < numRoads.size();i++){
-				if(cost[nextIdx.getValue()][i] > 0){
-					cost[nextIdx.getValue()][i] += myCost;
+			int myCost = cost[road2idx.get(prevIdx.getValue())][road2idx.get(nextIdx.getValue())];
+			int row_idx = road2idx.get(nextIdx.getValue());
+			for(int i = 0;i < allRoadsList.size();i++){
+				if(cost[row_idx][i] > 0){
+					cost[row_idx][i] += myCost;
 				}
 			}
-			doneArea[nextIdx.getValue()] = true;
+
+			doneArea[road2idx.get(nextIdx.getValue())] = true;
 			areaIdx = nextIdx;
 		}//end while.
 		
 
 		LinkedList<EntityID> ll = new LinkedList<EntityID>();
-		ll.add(toID);
-		EntityID no = toID;
+		ll.addFirst(toID);
+		logger.debug("ll.addFirst(" + toID.getValue() + ")");
+		int no = road2idx.get(toID.getValue());
 		while(prevArea[no] != fromID){
-			ll.add(prevArea[no]);
-			no = prevArea[no];
+			ll.addFirst(prevArea[no]);
+			logger.debug("ll.addFirst(" + (prevArea[no]).getValue() + ")");
+			no = road2idx.get((prevArea[no]).getValue());
 		}
-		ll.add(fromID);
+		ll.addFirst(fromID);
+		logger.debug("ll.addFirst(" + fromID.getValue() + ")");
+
+		StringBuffer logstr = new StringBuffer();
+		for(int i = 0;i < ll.size();i++){
+			logstr.append(ll.get(i).getValue()+" -> ");
+		}
+		logger.debug(logstr.toString());
+		logger.info("MySearch.getRoute(); DONE!");
+		logger.debug("(from: "+fromID.getValue()+", to: "+toID.getValue()+")");
 		return ll;
 	}
 

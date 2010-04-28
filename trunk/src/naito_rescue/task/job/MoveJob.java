@@ -22,7 +22,7 @@ public class MoveJob extends Job
 	
 	@Override
 	public void doJob(){
-		owner.move(target);
+		owner.move(target.getID());
 	}
 
 	@Override

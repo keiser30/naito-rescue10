@@ -18,22 +18,44 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
     private static final String SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
     private static final String SPEAK_COMMUNICATION_MODEL = "kernel.standard.ChannelCommunicationModel";
 
-	protected boolean useSpeak;
-	protected int     time;
-	protected ArrayList<Task> currentTaskList = new ArrayList<Task>();
-	protected Task    currentTask;
-	protected Job     currentJob;
-	protected MyLogger logger;
+	protected boolean             useSpeak;
+	protected int                 time;
+	protected ArrayList<Task>     currentTaskList;
+	protected Task                currentTask;
+	protected Job                 currentJob;
+	protected MyLogger            logger;
 
-	protected Set<StandardEntity> visited = new HashSet<StandardEntity>();
-	protected MySearch search;
+	protected Set<StandardEntity> visited;
+	protected MySearch            search;
+	protected int                 startMoveTime = 0;
+	protected EntityID            moveTo;
+	protected boolean             isMovingNow = false;
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		this.time = time;
-		/*if(search == null){
-			search = new MySearch(model, this);
-		}*/
+		//logger.info("NAITOHumanoidAgent.think();");
+		if(this instanceof NAITOPoliceForce){
+			logger.info("NAITOHumanoidAgent.think();");
+			logger.debug("startMoveTime = " + startMoveTime);
+			logger.debug("time - startMoveTime = " + (time - startMoveTime));
+			logger.debug("moveTo = " + moveTo);
+			logger.debug("isMovingNow = " + isMovingNow);
+		}
+		if(isMovingNow && 
+		   moveTo != null && 
+		   getLocation().getID().getValue() != moveTo.getValue()){
+		   		if((time - startMoveTime > 3)){
+				   logger.debug("Re-routing to target. location = " + getLocation() + " ,target = " + moveTo);
+					move(moveTo); //経路探索を、今いるところからやり直す。
+				}else{
+					logger.debug("(time - startMoveTime) < 3 ==> now moving to target(" + moveTo + ")");
+					return;
+				}
+		}else{
+			isMovingNow = false;
+			moveTo = null;
+		}
 		if(currentTask != null && !currentTask.isFinished()){
 			currentJob = currentTask.currentJob();
 			currentJob.doJob();
@@ -44,7 +66,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 super.postConnect();
 		 //search = new SampleSearch(model);
 		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
-		 logger = new MyLogger(this, true);
+		 logger = new MyLogger(this, false);
+		 currentTaskList = new ArrayList<Task>();
+		 visited = new HashSet<StandardEntity>();
 		 search = new MySearch(model, this);
 	}
 	@Override
@@ -64,13 +88,17 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 
 	//メソッドのラッパー群
-	public void move(Area target){
-		List<EntityID> path = new LinkedList<EntityID>();
-		path.add(target.getID());
+	public void move(EntityID target){
+		//List<EntityID> path = new LinkedList<EntityID>();
+		List<EntityID> path = search.getRoute(getLocation().getID(), target);
+		//path.add(target.getID());
 		move(path);
 	}
 	public void move(List<EntityID> target){
+		this.isMovingNow = true;
+		this.moveTo = target.get(target.size()-1); //最後の要素 = 最終目的地
 		sendMove(time, target);
+		this.startMoveTime = time;
 	}
 	public void extinguish(EntityID target, int water){
 		sendExtinguish(time, target, water);

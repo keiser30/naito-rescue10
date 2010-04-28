@@ -46,15 +46,18 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 
 	@Override
 	public String toString(){
-		return "NAITOFireBrigade: " + me().getID() + "";
+		return "NAITOFireBrigade." + me().getID() + "";
 	}
 
 // 建物探訪をどうするか?
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time,changed,heard);
-		logger.println("TESTTEST::"+search.hogeString());
+		if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+			return;
+		}
 /*
+
 		// 無線 or ボイスデータの処理
 		if(heard.size() > 0){
 			
