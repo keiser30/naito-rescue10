@@ -30,15 +30,20 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	}
 	@Override
 	public String toString(){
-		return "NAITOAmbulanceTeam: " + me().getID() + "";
+		return "NAITOAmbulanceTeam." + me().getID() + "";
 	}
     @Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time,changed,heard);
+		if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+			return; //超応急処置
+		}
 		//TEST
 		//ずっとsayし続ける
+/*
 		speak(0, ("TEST_SPEAK: Location="+location().getID()).getBytes());
-		logger.println("TEST_SPEAK");
+		logger.printl("TEST_SPEAK");
+*/
 	}
 	public void taskRankUpdate(){
 	}

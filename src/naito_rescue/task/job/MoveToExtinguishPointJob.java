@@ -24,7 +24,7 @@ public class MoveToExtinguishPointJob extends Job
 	
 	@Override
 	public void doJob(){
-		owner.move(target);
+		owner.move(target.getID());
 	}
 
 	@Override
