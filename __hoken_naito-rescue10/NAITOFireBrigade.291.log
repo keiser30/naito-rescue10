@@ -1,0 +1,138 @@
+FB:MySearch is constructed.
+FB:Mysearch.costInit();
+FB:........Now processing... Road (275)
+FB:........neighbour = Road (268)
+FB:........initCost[275][268] = 18178
+FB:........neighbour = Road (258)
+FB:........initCost[275][258] = 11241
+FB:........Now processing... Road (274)
+FB:........neighbour = Refuge (255)
+FB:........neighbour = Road (267)
+FB:........initCost[274][267] = 40838
+FB:........neighbour = Road (279)
+FB:........initCost[274][279] = 10661
+FB:........Now processing... Road (273)
+FB:........neighbour = Road (281)
+FB:........initCost[273][281] = 41290
+FB:........neighbour = Road (276)
+FB:........initCost[273][276] = 55519
+FB:........Now processing... Road (272)
+FB:........neighbour = Road (277)
+FB:........initCost[272][277] = 41516
+FB:........neighbour = Road (281)
+FB:........initCost[272][281] = 10837
+FB:........Now processing... Road (279)
+FB:........neighbour = Road (274)
+FB:........initCost[279][274] = 10661
+FB:........neighbour = Road (266)
+FB:........initCost[279][266] = 20572
+FB:........neighbour = Road (276)
+FB:........initCost[279][276] = 40627
+FB:........Now processing... Road (278)
+FB:........neighbour = Road (271)
+FB:........initCost[278][271] = 17681
+FB:........neighbour = Road (268)
+FB:........initCost[278][268] = 17537
+FB:........neighbour = Road (263)
+FB:........initCost[278][263] = 9720
+FB:........Now processing... Road (277)
+FB:........neighbour = Road (272)
+FB:........initCost[277][272] = 41516
+FB:........neighbour = Road (259)
+FB:........initCost[277][259] = 44534
+FB:........Now processing... Road (276)
+FB:........neighbour = Road (279)
+FB:........initCost[276][279] = 40627
+FB:........neighbour = Road (273)
+FB:........initCost[276][273] = 55519
+FB:........Now processing... Road (283)
+FB:........Now processing... Road (282)
+FB:........Now processing... Road (281)
+FB:........neighbour = Road (256)
+FB:........initCost[281][256] = 10608
+FB:........neighbour = Road (272)
+FB:........initCost[281][272] = 10837
+FB:........neighbour = Road (273)
+FB:........initCost[281][273] = 41290
+FB:........Now processing... Road (280)
+FB:........neighbour = Road (257)
+FB:........initCost[280][257] = 16161
+FB:........neighbour = Road (262)
+FB:........initCost[280][262] = 8683
+FB:........neighbour = Road (259)
+FB:........initCost[280][259] = 7313
+FB:........Now processing... Road (285)
+FB:........Now processing... Road (284)
+FB:........Now processing... Road (258)
+FB:........neighbour = Road (275)
+FB:........initCost[258][275] = 11241
+FB:........neighbour = Road (269)
+FB:........initCost[258][269] = 7383
+FB:........Now processing... Road (259)
+FB:........neighbour = Road (280)
+FB:........initCost[259][280] = 7313
+FB:........neighbour = Road (277)
+FB:........initCost[259][277] = 44534
+FB:........Now processing... Road (256)
+FB:........neighbour = Road (281)
+FB:........initCost[256][281] = 10608
+FB:........neighbour = Road (271)
+FB:........initCost[256][271] = 23293
+FB:........Now processing... Road (257)
+FB:........neighbour = Road (270)
+FB:........initCost[257][270] = 21161
+FB:........neighbour = Road (280)
+FB:........initCost[257][280] = 16161
+FB:........Now processing... Road (262)
+FB:........neighbour = Road (267)
+FB:........initCost[262][267] = 45514
+FB:........neighbour = Road (280)
+FB:........initCost[262][280] = 8683
+FB:........Now processing... Road (263)
+FB:........neighbour = Road (278)
+FB:........initCost[263][278] = 9720
+FB:........neighbour = Road (270)
+FB:........initCost[263][270] = 9503
+FB:........Now processing... Road (260)
+FB:........neighbour = Road (264)
+FB:........initCost[260][264] = 11637
+FB:........neighbour = null
+FB:........Now processing... Road (266)
+FB:........neighbour = Road (269)
+FB:........initCost[266][269] = 19644
+FB:........neighbour = Road (279)
+FB:........initCost[266][279] = 20572
+FB:........Now processing... Road (267)
+FB:........neighbour = Building (254)
+FB:........neighbour = Building (254)
+FB:........neighbour = Building (254)
+FB:........neighbour = Road (262)
+FB:........initCost[267][262] = 45514
+FB:........neighbour = Road (274)
+FB:........initCost[267][274] = 40838
+FB:........neighbour = Refuge (255)
+FB:........Now processing... Road (264)
+FB:........neighbour = Road (260)
+FB:........initCost[264][260] = 11637
+FB:........neighbour = null
+FB:........Now processing... Road (270)
+FB:........neighbour = Road (263)
+FB:........initCost[270][263] = 9503
+FB:........neighbour = Road (257)
+FB:........initCost[270][257] = 21161
+FB:........Now processing... Road (271)
+FB:........neighbour = Road (256)
+FB:........initCost[271][256] = 23293
+FB:........neighbour = Road (278)
+FB:........initCost[271][278] = 17681
+FB:........Now processing... Road (268)
+FB:........neighbour = Road (278)
+FB:........initCost[268][278] = 17537
+FB:........neighbour = Road (275)
+FB:........initCost[268][275] = 18178
+FB:........Now processing... Road (269)
+FB:........neighbour = Road (258)
+FB:........initCost[269][258] = 7383
+FB:........neighbour = Road (266)
+FB:........initCost[269][266] = 19644
+FB:MySearch.costInit(); DONE!

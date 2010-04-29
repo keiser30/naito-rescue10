@@ -46,16 +46,16 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 
 		logger.info("********** " + time + " **********");
 		logger.info("NAITOPoliceForce.think();");
-		logger.debug("ignoring agents command time = " + config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY));
-		logger.debug("location = " + getLocation());
+		//logger.debug("ignoring agents command time = " + config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY));
+		//logger.debug("location = " + getLocation());
 		
 		if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
-			logger.info("まだコマンドを送っちゃダメです");
+		//	logger.info("まだコマンドを送っちゃダメです");
 			logger.debug("(time = " + time + ")");
 			return;
 		}
 		Road far_road = null;
-
+/*
 		if(once){
 			// MySearchのテスト
 			int distance = 0;
@@ -82,6 +82,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 			move(path);
 		}
 		//move(path);
+*/
 	}
 	public void taskRankUpdate(){
 	}
