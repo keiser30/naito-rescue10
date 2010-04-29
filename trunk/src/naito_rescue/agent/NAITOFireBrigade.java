@@ -22,8 +22,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	private int maxPower;
 
 	private Building target;
-	private Collection<StandardEntity> allArea;
-	private HashSet<Building> visited;
+	// private Collection<StandardEntity> allBuildings;
 
 	@Override
     protected void postConnect() {
@@ -34,35 +33,59 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
         maxPower = config.getIntValue(MAX_POWER_KEY);
         Logger.info("NAITOFireBrigade connected: max extinguish distance = " + maxDistance + ", max power = " + maxPower + ", max tank = " + maxWater);
 
-/*
-		visited = new HashSet<Building>();
-		allArea = model.getEntitiesOfType(StandardEntityURN.BUILDING);
+	//	allBuildings = model.getEntitiesOfType(StandardEntityURN.BUILDING);
 		if(location() instanceof Building){
 			visited.add((Building)location());
 		}
-		
-*/
-	} 
+	}
 
 	@Override
 	public String toString(){
 		return "NAITOFireBrigade." + me().getID() + "";
 	}
 
-// 建物探訪をどうするか?
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time,changed,heard);
-		if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+
+		logger.info("********** " + time + " **********");
+		logger.info("NAITOFireBrigade.think();");
+		if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+			rest();
 			return;
 		}
-/*
 
 		// 無線 or ボイスデータの処理
 		if(heard.size() > 0){
 			
 		}
+
+		FireBrigade me = me();
+		if(me.isWaterDefined() && me.getWater() == 0){
+			List<Refuge> refuges = getRefuges();
+			Refuge refuge = refuges.get(0); //最短の避難所にいくようにしたい
+			currentTask = new MoveTask(this, model, (Area)refuge);
+			currentJob = currentTask.currentJob();
+			currentJob.doJob();
+			return;
+		}
+
+		//建物探訪
+		for(StandardEntity building : allBuildings){
+			if(building == null){
+				logger.info("******************** building is null!");
+			}else if(visited == null){
+				logger.info("#################### visited is null!");
+			}
+			if(!(visited.contains(building))){
+				logger.debug("建物探訪: building = " + building);
+				currentTaskList.add(new MoveTask(this, model, (Area)building));
+			}
+		}
+
+		//燃えている建物全部に対して消火タスクを設定する
 		List<Building> burnings = getBurningBuildings();
+		logger.debug("getBurningBuildings().size = " + burnings.size());
 		for(Building next : burnings){
 			currentTaskList.add(new ExtinguishTask(this, model, next, maxPower, maxDistance));
 		}
@@ -70,11 +93,14 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		taskRankUpdate();
 		currentTask = getHighestRankTask();
 		currentJob = currentTask.currentJob();
+
+		logger.debug("currentTask = " + currentTask.toString());
+		logger.debug("currentJob = " + currentJob.toString());
 		currentJob.doJob();
-*/
 	}
 
 	public void taskRankUpdate(){
+		super.taskRankUpdate();	
 	}
 	private List<Building> getBurningBuildings(){
 		Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.BUILDING);
