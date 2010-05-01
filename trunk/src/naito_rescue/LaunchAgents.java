@@ -122,7 +122,20 @@ public final class LaunchAgents {
                 launcher.connect(new SampleCentre());
                 Logger.info("success");
             }
-        }
+        }catch(ComponentConnectionException e){
+			Logger.info("failed: " + e.getMessage());
+		}
+*/
+		try{
+			while(true){
+				Logger.info("Connecting civilian " + (i++) + "...");
+				launcher.connect(new NAITOCivilian());
+				Logger.info("success");
+			}
+		}catch(ComponentConnectionException e){
+			Logger.info("failed: " + e.getMessage());
+		}
+/*
         catch (ComponentConnectionException e) {
             Logger.info("failed: " + e.getMessage());
         }
