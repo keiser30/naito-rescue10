@@ -1,17 +1,15 @@
 ######################################
 #    NAITO-Rescue10ベースコード
 #
-#                 2010.4.27 Shoji Kazuo
+#                 2010.5.2 Shoji Kazuo
 #
-#    地下鉄の中で，500mlのペットボトルで
-#    自分の頭を叩き続ける超美形の女性を見た．
-#    (しかもすごい笑顔)
-#
-#    「あぁ冷や汗ってこういうときにかくんだ」
-#    ということを理解した．
+#   かなり長時間のプログラミングをした．
+#   この充実感があるから，プログラミングはやめられない．
+#   
+#   
 ######################################
 
-対象: RoboCupRescueSimulation 1.0 nightly-build(2010.4.26日付まで)
+対象: RoboCupRescueSimulation 1.0 nightly-build(2010.4.28日付まで)
 
 ビルドに必要なもの:
 
@@ -33,7 +31,22 @@
   2. 実行
    2-A. エージェントからサーバにつなげる方法
         (通常はこちらの起動方法になると思います)
-
+      (0) サーバを立ち上げます
+          (0-1) サーバが置かれているディレクトリの
+                    boot/config/kernel.cfg
+                を開き，
+                    kernel.agents.auto
+                で始まる行をすべてコメントアウトします．
+          (0-2) サーバを起動します
+                    $ant start-kernel
+          (0-3) "Setup kernel options"というタイトルの画面が出てきたら，
+                "Agents"と書かれた枠のなかを見て，どこにもチェックが入っ
+                ていないことを確認します．OKボタン(環境によっては「了解」
+                ボタン)を押します．
+          (0-4) "Kernel GUI"というタイトルの画面が出てきたら，
+                "Agents"と書かれた枠の中に何も表示されていないことを確認
+                します．
+                その後，下の(1)以降を実行してください．
       (1) "start.sh"ファイルの中にある
 	          ・KERNEL_ADDRESS
 		      ・KERNEL_PORT
@@ -41,7 +54,13 @@
 		  (KERNEL_ADDRESS ... 接続するサーバのIPアドレス
 		   KERNEL_PORT    ... 接続するサーバのポート番号)
       (2) start.shを実行する
-	        $./start.sh
+	           $./start.sh
+	      "Kernel GUI"の画面にある"Agents"の中に，
+	           naito_rescue.NAITOFireBrigade
+	           naito_rescue.NAITOAmbulanceTeam
+	           naito_rescue.NAITOPoliceForce
+	      と出てくれば接続は成功です．Runボタンを押してシミュレーションを
+	      開始しましょう．
   2-B. エージェントのjarファイルをサーバから
        自動的に読み取ってもらう方法
 	   (こちらは，サーバと同じマシン内にエージェントの
