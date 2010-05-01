@@ -183,24 +183,43 @@ FB:....move()
 FB:....target is Building.
 FB:....new Target = Road (267)
 FB:MySearch.getRoute();
-FB:....fromID = 276, toID = 267
+FB:....fromID = 256, toID = 267
 FB:........Entering while loop
+FB:........areaIdx = 256
+FB:........areaIdx = 281
+FB:........areaIdx = 272
+FB:........areaIdx = 271
+FB:........areaIdx = 278
+FB:........areaIdx = 263
+FB:........areaIdx = 273
+FB:........areaIdx = 268
+FB:........areaIdx = 270
+FB:........areaIdx = 277
+FB:........areaIdx = 275
+FB:........areaIdx = 257
+FB:........areaIdx = 258
+FB:........areaIdx = 269
+FB:........areaIdx = 280
+FB:........areaIdx = 259
+FB:........areaIdx = 262
 FB:........areaIdx = 276
+FB:........areaIdx = 266
 FB:........areaIdx = 279
 FB:........areaIdx = 274
-FB:........areaIdx = 273
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 258
 FB:........break while loop.
 FB:........nextIdx = 267, toID.getValue() = 267
 FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(276)
-FB:....276 -> 279 -> 274 -> 267 -> 
+FB:........ll.addFirst(262)
+FB:........ll.addFirst(280)
+FB:........ll.addFirst(257)
+FB:........ll.addFirst(270)
+FB:........ll.addFirst(263)
+FB:........ll.addFirst(278)
+FB:........ll.addFirst(271)
+FB:........ll.addFirst(256)
+FB:....256 -> 271 -> 278 -> 263 -> 270 -> 257 -> 280 -> 262 -> 267 -> 
 FB:MySearch.getRoute(); DONE!
-FB:....path = [276, 279, 274, 267, 254]
+FB:....path = [256, 271, 278, 263, 270, 257, 280, 262, 267, 254]
 FB:NAITOHumanoidAgent.think();
 FB:....startMoveTime = 4
 FB:....time - startMoveTime = 1
@@ -211,25 +230,41 @@ FB:....move()
 FB:....target is Building.
 FB:....new Target = Road (267)
 FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
+FB:....fromID = 271, toID = 267
 FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
+FB:........areaIdx = 271
+FB:........areaIdx = 278
+FB:........areaIdx = 256
+FB:........areaIdx = 263
+FB:........areaIdx = 281
 FB:........areaIdx = 268
-FB:........areaIdx = 276
+FB:........areaIdx = 270
+FB:........areaIdx = 272
+FB:........areaIdx = 275
+FB:........areaIdx = 257
+FB:........areaIdx = 258
+FB:........areaIdx = 269
+FB:........areaIdx = 280
+FB:........areaIdx = 273
+FB:........areaIdx = 259
+FB:........areaIdx = 262
+FB:........areaIdx = 277
+FB:........areaIdx = 266
+FB:........areaIdx = 279
+FB:........areaIdx = 274
 FB:........break while loop.
 FB:........nextIdx = 267, toID.getValue() = 267
 FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
+FB:........ll.addFirst(262)
+FB:........ll.addFirst(280)
+FB:........ll.addFirst(257)
+FB:........ll.addFirst(270)
+FB:........ll.addFirst(263)
+FB:........ll.addFirst(278)
+FB:........ll.addFirst(271)
+FB:....271 -> 278 -> 263 -> 270 -> 257 -> 280 -> 262 -> 267 -> 
 FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
+FB:....path = [271, 278, 263, 270, 257, 280, 262, 267, 254]
 FB:********** 5 **********
 FB:NAITOFireBrigade.think();
 FB:....建物探訪: building = Building (254)
@@ -284,57 +319,49 @@ FB:....move()
 FB:....target is Building.
 FB:....new Target = Road (267)
 FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
+FB:....fromID = 268, toID = 267
 FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
 FB:........areaIdx = 268
+FB:........areaIdx = 278
+FB:........areaIdx = 275
+FB:........areaIdx = 263
+FB:........areaIdx = 258
+FB:........areaIdx = 271
+FB:........areaIdx = 270
+FB:........areaIdx = 269
+FB:........areaIdx = 266
+FB:........areaIdx = 257
+FB:........areaIdx = 256
+FB:........areaIdx = 281
+FB:........areaIdx = 280
+FB:........areaIdx = 279
+FB:........areaIdx = 272
+FB:........areaIdx = 259
+FB:........areaIdx = 262
+FB:........areaIdx = 274
+FB:........areaIdx = 273
 FB:........areaIdx = 276
+FB:........areaIdx = 277
 FB:........break while loop.
 FB:........nextIdx = 267, toID.getValue() = 267
 FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
+FB:........ll.addFirst(262)
+FB:........ll.addFirst(280)
+FB:........ll.addFirst(257)
+FB:........ll.addFirst(270)
+FB:........ll.addFirst(263)
+FB:........ll.addFirst(278)
+FB:........ll.addFirst(268)
+FB:....268 -> 278 -> 263 -> 270 -> 257 -> 280 -> 262 -> 267 -> 
 FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
+FB:....path = [268, 278, 263, 270, 257, 280, 262, 267, 254]
 FB:NAITOHumanoidAgent.think();
 FB:....startMoveTime = 6
 FB:....time - startMoveTime = 1
 FB:....moveTo = 254
 FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
 FB:********** 7 **********
 FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
 FB:....建物探訪: building = Building (252)
 FB:....建物探訪: building = Building (253)
 FB:....建物探訪: building = Building (250)
@@ -346,1184 +373,7 @@ FB:....getBurningBuildings().size = 0
 FB:....MoveTask is not passable!! Building (251)
 FB:....MoveTask is not passable!! Building (253)
 FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 7
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 8 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
 FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 8
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 9 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
 FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
 FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
 FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 9
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 10 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 10
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 11 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 11
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 12 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 12
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 13 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 13
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 14 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 14
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 15 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 15
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 16 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 16
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 17 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 17
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 18 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 18
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 19 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 19
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 20 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 20
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 21 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 21
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 22 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:NAITOHumanoidAgent.think();
-FB:....startMoveTime = 22
-FB:....time - startMoveTime = 1
-FB:....moveTo = 254
-FB:....isMovingNow = true
-FB:....(time - startMoveTime) < 3 ==> now moving to target(254)
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]
-FB:********** 23 **********
-FB:NAITOFireBrigade.think();
-FB:....建物探訪: building = Building (254)
-FB:....建物探訪: building = Building (252)
-FB:....建物探訪: building = Building (253)
-FB:....建物探訪: building = Building (250)
-FB:....建物探訪: building = Building (251)
-FB:....建物探訪: building = Building (248)
-FB:....建物探訪: building = Building (249)
-FB:....建物探訪: building = Building (247)
-FB:....getBurningBuildings().size = 0
-FB:....MoveTask is not passable!! Building (251)
-FB:....MoveTask is not passable!! Building (253)
-FB:....MoveTask is not passable!! Building (249)
-FB:....MoveTask is not passable!! Building (252)
-FB:....MoveTask is not passable!! Building (250)
-FB:....MoveTask is not passable!! Building (248)
-FB:....MoveTask is not passable!! Building (247)
-FB:....currentTask = class naito_rescue.task.MoveTask
-FB:....currentJob = class naito_rescue.task.job.MoveJob
-FB:....move()
-FB:....target is Building.
-FB:....new Target = Road (267)
-FB:MySearch.getRoute();
-FB:....fromID = 266, toID = 267
-FB:........Entering while loop
-FB:........areaIdx = 266
-FB:........areaIdx = 269
-FB:........areaIdx = 279
-FB:........areaIdx = 258
-FB:........areaIdx = 274
-FB:........areaIdx = 275
-FB:........areaIdx = 268
-FB:........areaIdx = 276
-FB:........break while loop.
-FB:........nextIdx = 267, toID.getValue() = 267
-FB:........ll.addFirst(267)
-FB:........ll.addFirst(274)
-FB:........ll.addFirst(279)
-FB:........ll.addFirst(266)
-FB:....266 -> 279 -> 274 -> 267 -> 
-FB:MySearch.getRoute(); DONE!
-FB:....path = [266, 279, 274, 267, 254]

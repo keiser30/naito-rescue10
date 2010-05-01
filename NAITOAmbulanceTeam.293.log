@@ -251,3 +251,23 @@ AT:....startMoveTime = 0
 AT:....time - startMoveTime = 23
 AT:....moveTo = null
 AT:....isMovingNow = false
+AT:NAITOHumanoidAgent.think();
+AT:....startMoveTime = 0
+AT:....time - startMoveTime = 24
+AT:....moveTo = null
+AT:....isMovingNow = false
+AT:NAITOHumanoidAgent.think();
+AT:....startMoveTime = 0
+AT:....time - startMoveTime = 25
+AT:....moveTo = null
+AT:....isMovingNow = false
+AT:NAITOHumanoidAgent.think();
+AT:....startMoveTime = 0
+AT:....time - startMoveTime = 26
+AT:....moveTo = null
+AT:....isMovingNow = false
+AT:NAITOHumanoidAgent.think();
+AT:....startMoveTime = 0
+AT:....time - startMoveTime = 27
+AT:....moveTo = null
+AT:....isMovingNow = false
