@@ -58,6 +58,9 @@ public abstract class Task
 	public int getRank(){
 		return this.rank;
 	}
+	public void reset(){
+		this.processIdx = 0;
+	}
 
 	public String toString(){
 		return this.getClass().toString();

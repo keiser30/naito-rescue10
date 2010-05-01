@@ -67,7 +67,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
             }
         }
         //視界に市民がいるときの処理
-        List<Civilian> view_civs = getViewCivilians(changed);
+        List<Civilian> view_civs = getViewCivilians();
         if(view_civs != null && view_civs.size() != 0){
         	logger.trace("Civilians are in my view.");
         	for(Civilian next : view_civs){
@@ -187,7 +187,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
             }
         }
     }
-    public List<Civilian> getViewCivilians(ChangeSet changed){
+    public List<Civilian> getViewCivilians(){
     	List<Civilian> civilians = new ArrayList<Civilian>();
     	StandardEntity entity;
     	for(EntityID next : changed.getChangedEntities()){

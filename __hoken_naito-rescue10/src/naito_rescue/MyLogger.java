@@ -4,7 +4,7 @@ import rescuecore2.standard.entities.*;
 import naito_rescue.agent.*;
 import java.io.*;
 import java.util.*;
-
+import java.text.*;
 public class MyLogger
 {
 	File        logfile;
@@ -24,6 +24,8 @@ public class MyLogger
 	final int TOP = INFO+1;
 	final int NOTHING = INFO+1;
 
+	Date now = new Date();
+	SimpleDateFormat date = new SimpleDateFormat("yyyyMMddkkmmss");
 	String prefix;
 	static HashMap<Class, String> prefix_map = new HashMap<Class, String>();
 	static{
@@ -41,7 +43,7 @@ public class MyLogger
 			if(isStdout){
 				logger = System.out;
 			}else{
-				logfile = new File(owner.toString() + ".log");
+				logfile = new File(date.format(now) + "__" + owner.toString() + ".log");
 				logger = new PrintStream(new FileOutputStream(logfile));
 			}
 		}catch(IOException ioe){
