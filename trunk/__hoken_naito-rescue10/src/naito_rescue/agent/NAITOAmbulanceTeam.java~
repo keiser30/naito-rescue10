@@ -24,7 +24,9 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	public String toString(){
 		return "NAITOAmbulanceTeam." + me().getID() + "";
 	}
-    @Override
+    
+	volatile boolean once = true; //for DEBUG;
+	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
 		
@@ -35,6 +37,35 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 				logger.info("sendSubscribe(" + time + ", 1");
            	 	sendSubscribe(time, 1);
 			}else{
+				// DEBUG: シミュレーション初期に市民情報がとれるかどうかテストする
+				if(once){
+					logger.debug("DEBUG: シミュレーション初期における市民情報の取得");
+					Collection<StandardEntity> civilians = model.getEntitiesOfType(StandardEntityURN.CIVILIAN);
+					if(civilians != null && civilians.size() != 0){
+						logger.debug("情報を取得できました!");
+						logger.debug("情報の総数 = " + civilians.size());
+						String prefix = "";
+						int i = 0;
+						for(StandardEntity entity : civilians){
+							Civilian civilian = (Civilian)entity;
+							prefix ="(" + (i++) + ")";
+							logger.debug(prefix + "civilian: " + civilian);
+							logger.trace(prefix + "civilian's location:   " + model.getEntity(civilian.getPosition()));
+							logger.trace(prefix + "civilian's HP:         " + civilian.getHP());
+							logger.trace(prefix + "civilian's damage:     " + civilian.getDamage());
+							logger.trace(prefix + "civilian's buriedness: " + civilian.getBuriedness());
+						}
+					}else{		
+						logger.debug("情報を取得できません");
+						if(civilians == null)
+							logger.debug("Because of: List<StandardEntity> civilians is null.");
+						else if(civilians.size() == 0)
+							logger.debug("Becuase of: List<StandardEntity> civilians size() == 0");
+						else
+							logger.debug("Becuase of: UNKNOWN");
+					}
+					once = false;
+				}
 				return;
 			}
         }
@@ -67,7 +98,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
             }
         }
         //視界に市民がいるときの処理
-        List<Civilian> view_civs = getViewCivilians();
+        List<Civilian> view_civs = getViewCivilians(changed);
         if(view_civs != null && view_civs.size() != 0){
         	logger.trace("Civilians are in my view.");
         	for(Civilian next : view_civs){
@@ -187,7 +218,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
             }
         }
     }
-    public List<Civilian> getViewCivilians(){
+    public List<Civilian> getViewCivilians(ChangeSet changed){
     	List<Civilian> civilians = new ArrayList<Civilian>();
     	StandardEntity entity;
     	for(EntityID next : changed.getChangedEntities()){

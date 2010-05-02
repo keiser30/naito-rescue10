@@ -35,7 +35,7 @@ public class NAITOCivilian extends NAITOHumanoidAgent<Civilian> {
 
     @Override
     public String toString() {
-        return "Sample civilian";
+        return "NAITOCivilian." + me().getID() + "";
     }
 
     @Override
@@ -57,33 +57,33 @@ public class NAITOCivilian extends NAITOHumanoidAgent<Civilian> {
         int buriedness = me.isBuriednessDefined() ? me.getBuriedness() : 0;
         if (hp <= 0 || hp < consciousThreshold) {
             // Unconscious (or dead): do nothing
-            Logger.info("Unconcious or dead");
+            logger.info("Unconcious or dead");
             sendRest(time);
             return;
         }
         if (damage > 0 && random.nextDouble() < ouchProbability) {
-            Logger.info("Shouting in pain");
+            logger.info("Shouting in pain");
             say(OUCH, time);
         }
         if (buriedness > 0 && random.nextDouble() < helpProbability) {
-            Logger.info("Calling for help");
+            logger.info("Calling for help");
             say(HELP, time);
         }
         if (damage == 0 && buriedness == 0 && (location() instanceof Area)) {
             // Run for the refuge
             List<EntityID> path = search.breadthFirstSearch(location(), getRefuges());
             if (path != null) {
-                Logger.info("Heading for a refuge");
+                logger.info("Heading for a refuge");
                 sendMove(time, path);
                 return;
             }
             else {
-                Logger.info("Moving randomly");
+                logger.info("Moving randomly");
                 sendMove(time, randomWalk());
                 return;
             }
         }
-        Logger.info("Not moving");
+        logger.info("Not moving");
         sendRest(time);
     }
 

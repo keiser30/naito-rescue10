@@ -26,18 +26,19 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected Job                 currentJob;
 	protected MyLogger            logger;
 
-	protected Set<StandardEntity> visited;
+	protected Set<Building>       visitedBuildings;
 	protected MySearch            search;
 	protected int                 startMoveTime = 0;
 	protected EntityID            moveTo;
 	protected boolean             isMovingNow = false;
 	protected Collection<StandardEntity> allBuildings;
-
+	protected Collection<StandardEntity> allRoads;
+	protected Collection<StandardEntity> allRefuges;
 	
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		this.time = time;
 
-		logger.info("********** " + time + " **********");
+		logger.info("**********____" + time + "____**********");
 		logger.info("NAITOHumanoidAgent.think();");
 		logger.debug("isMovingNow = " + isMovingNow);
 		logger.debug("moveTo = " + moveTo);
@@ -58,11 +59,18 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		StandardEntity location = getLocation();
 		//自分の今いる場所に閉塞がある場合
 		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
-				//閉塞が定義してあるRoadのIDを送る -> 閉塞の発見と啓開は，このメッセージを受け取ったPoliceForceに任せる
-				if(useSpeak){
-					speak(1, ("CLEAR_"+location.getID().getValue()).getBytes());
+				// 自分が啓開体なら，その場で道路啓開を行う
+				if(this instanceof NAITOPoliceForce){
+					clear(location.getID());
+					return;
 				}else{
-					tell(("CLEAR_"+location.getID().getValue()).getBytes());
+					// 自分が啓開隊でなかったら，閉塞が発生しているRoadのIDを送りつける
+					//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
+					if(useSpeak){
+						speak(1, ("CLEAR_"+location.getID().getValue()).getBytes());
+					}else{
+						tell(("CLEAR_"+location.getID().getValue()).getBytes());
+					}
 				}
 				
 				logger.debug("Find Blockade. speak(or tell, say) 'Please clear " + (Road)location + "'");
@@ -137,10 +145,12 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
 		 logger = new MyLogger(this, false);
 		 currentTaskList = new ArrayList<Task>();
-		 visited = new HashSet<StandardEntity>();
+		 visitedBuildings = new HashSet<Building>();
 		 search = new MySearch(model, this);
 
 		 allBuildings = model.getEntitiesOfType(StandardEntityURN.BUILDING);
+		 allRoads = model.getEntitiesOfType(StandardEntityURN.ROAD);
+		 allRefuges = model.getEntitiesOfType(StandardEntityURN.REFUGE);
 	}
 	public void taskRankUpdate(){
 		for(int i = 0;i < currentTaskList.size();i++){

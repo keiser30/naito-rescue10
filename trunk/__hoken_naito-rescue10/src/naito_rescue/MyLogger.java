@@ -43,7 +43,7 @@ public class MyLogger
 			if(isStdout){
 				logger = System.out;
 			}else{
-				logfile = new File(date.format(now) + "__" + owner.toString() + ".log");
+				logfile = new File("logs/" + date.format(now) + "__" + owner.toString() + ".log");
 				logger = new PrintStream(new FileOutputStream(logfile));
 			}
 		}catch(IOException ioe){
