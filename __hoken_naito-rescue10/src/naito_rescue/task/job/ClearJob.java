@@ -42,7 +42,7 @@ public class ClearJob extends Job
 			// target == nullの時
 			// ownerが閉塞につかまってるとして，owner近辺を啓開する
 			// まずowner.getLocation()が閉塞だったらそこを啓開する
-			List<EntityID> ids = ((Area)owner.getLocation()).getBlockades();
+			List<EntityID> ids = ((Area)(owner.getLocation())).getBlockades();
 			if(ids != null){
 				logger.info("Owner's location is defined blockades.");
 				for (EntityID next : ids) {

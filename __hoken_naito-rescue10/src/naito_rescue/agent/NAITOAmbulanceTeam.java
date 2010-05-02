@@ -24,7 +24,9 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	public String toString(){
 		return "NAITOAmbulanceTeam." + me().getID() + "";
 	}
-    @Override
+    
+	volatile boolean once = true; //for DEBUG;
+	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
 		
@@ -38,6 +40,82 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 				return;
 			}
         }
+		// DEBUG: シミュレーション初期に市民情報がとれるかどうかテストする
+		if(once){
+			logger.debug("DEBUG: シミュレーション初期における市民情報の取得");
+			Collection<StandardEntity> civilians = model.getEntitiesOfType(StandardEntityURN.CIVILIAN);
+			if(civilians != null && civilians.size() != 0){
+				logger.debug("情報を取得できました!");
+				logger.debug("情報の総数 = " + civilians.size());
+				String prefix = "";
+				int i = 0;
+				for(StandardEntity entity : civilians){
+					Civilian civilian = (Civilian)entity;
+					prefix ="(" + (i++) + ")";
+					logger.debug(prefix + "civilian: " + civilian);
+					logger.trace(prefix + "civilian's location:   " + model.getEntity(civilian.getPosition()));
+					logger.trace(prefix + "civilian's HP:         " + civilian.getHP());
+					logger.trace(prefix + "civilian's damage:     " + civilian.getDamage());
+					logger.trace(prefix + "civilian's buriedness: " + civilian.getBuriedness());
+				}
+			}else{		
+				logger.debug("情報を取得できません");
+				if(civilians == null)
+					logger.debug("Because of: List<StandardEntity> civilians is null.");
+				else if(civilians.size() == 0)
+					logger.debug("Becuase of: List<StandardEntity> civilians size() == 0");
+				else
+					logger.debug("Becuase of: UNKNOWN");
+			}
+
+			String prefix = null;
+			int i;
+			Collection<StandardEntity> firebrigades = model.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE);
+			Collection<StandardEntity> policeforces = model.getEntitiesOfType(StandardEntityURN.POLICE_FORCE);
+			Collection<StandardEntity> ambulanceteams = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM);
+			
+			logger.debug("DEBUG: FireBrigadeの情報を収集...");
+			if(firebrigades != null && firebrigades.size() != 0){
+				i = 0;
+				for(StandardEntity entity : firebrigades){
+					FireBrigade fb = (FireBrigade)entity;
+					prefix = "("+(i++)+")";
+					logger.debug(prefix + "FB: " + fb);
+					logger.debug(prefix + "FB's location: " + model.getEntity(fb.getPosition()));
+				}
+			}else{
+				logger.debug("情報を収集できません");
+				if(firebrigades == null)
+					logger.debug("Because of: Collection(FB) == null");
+				else if(firebrigades.size() == 0)
+					logger.debug("Because of: Collection(FB).size() == 0");
+				else
+					logger.debug("Because of: UNKNOWN");
+			}
+			logger.debug("DEBUG: PoliceForceの情報を収集...");
+			if(policeforces != null && policeforces.size() != 0){
+				i = 0;
+				for(StandardEntity entity : policeforces){
+					PoliceForce pf = (PoliceForce)entity;
+					prefix = "("+(i++)+")";
+					logger.debug(prefix+"PF: " + pf);
+					logger.debug(prefix+"PF's location: " + model.getEntity(pf.getPosition()));
+				}
+			}else{
+				logger.debug("情報を収集できません");
+				if(policeforces == null)
+					logger.debug("Because of: Collection(PF) == null");
+				else if(policeforces.size() == 0)
+					logger.debug("Because of: Collection(PF).size() == 0");
+				else
+					logger.debug("Because of: UNKNOWN");
+			}
+			if(allRefuges != null && allRefuges.size() != 0){
+			}else{
+				if(allRefuges.size() == 0) logger.debug("避難所がありません");
+			}
+			once = false;
+		}
         for (Command next : heard) {
 //            Logger.debug("Heard " + next);
         }

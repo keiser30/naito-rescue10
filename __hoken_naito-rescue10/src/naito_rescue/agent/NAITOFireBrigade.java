@@ -33,10 +33,10 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
         maxPower = config.getIntValue(MAX_POWER_KEY);
         Logger.info("NAITOFireBrigade connected: max extinguish distance = " + maxDistance + ", max power = " + maxPower + ", max tank = " + maxWater);
 
-		allBuildings = model.getEntitiesOfType(StandardEntityURN.BUILDING);
-		if(location() instanceof Building){
-			visited.add((Building)location());
-		}
+		//allBuildings = model.getEntitiesOfType(StandardEntityURN.BUILDING);
+		//if(location() instanceof Building){
+		//	visited.add((Building)location());
+		//}
 	}
 
 	@Override
@@ -51,9 +51,9 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		logger.info("NAITOFireBrigade.think();");
         if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
-           		 // Subscribe to channel 1
+           		 // Subscribe to channel 2
 				logger.info("sendSubscribe(1): " + time);
-           	 	sendSubscribe(time, 1);
+           	 	sendSubscribe(time, 2);
 			}else{
 				return;
 			}
