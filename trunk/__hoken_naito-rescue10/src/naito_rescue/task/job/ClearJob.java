@@ -87,14 +87,16 @@ public class ClearJob extends Job
 				if(ids != null){
 					for (EntityID next : ids) {
 						Blockade b = (Blockade)world.getEntity(next);
-						double d = owner.findDistanceTo(b, x, y);
-						logger.debug("Distance to " + b + " = " + d);
-						if (maxDistance < 0 || d < maxDistance) {
-							logger.debug("In range");
-							//啓開
-							logger.debug("(Target) owner.clear(" + b + ")");
-							owner.clear(b.getID());
-							return;
+						if(b != null){
+							double d = owner.findDistanceTo(b, x, y);
+							logger.debug("Distance to " + b + " = " + d);
+							if (maxDistance < 0 || d < maxDistance) {
+								logger.debug("In range");
+								//啓開
+								logger.debug("(Target) owner.clear(" + b + ")");
+								owner.clear(b.getID());
+								return;
+							}
 						}
 					}
 				}

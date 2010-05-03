@@ -38,8 +38,9 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
-		
+
 		logger.info("NAITOPoliceForce.think();");
+
         if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
             // Subscribe to channel 1
             sendSubscribe(time, 1);
@@ -54,8 +55,6 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
         for (Command next : heard) {
             //logger.debug("Heard " + next);
 			byte[] rawdata = null;
-			//すげぇオブジェクト指向無視な書き方になっちゃった...
-			//TODO: ここを綺麗に書き換える
 			if(next instanceof AKSpeak || next instanceof AKTell || next instanceof AKSay){
 				logger.debug("AKSpeak(or AKTell or AKSay) data received.");
 				if(next instanceof AKSpeak){
@@ -77,7 +76,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 				}catch(Exception e){
 					logger.info("Exception in Extracting voice data.");
 					logger.trace("break for-loop.");
-					break;
+					continue;
 				}
 				if(str_data != null && str_data.startsWith("CLEAR_")){
 					logger.debug("CLEAR Message received.");
@@ -117,9 +116,12 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
             Road r = (Road)model.getEntity(path.get(path.size() - 1));
             Blockade b = getTargetBlockade(r, -1);
             //sendMove(time, path, b.getX(), b.getY());
-			move(path, b.getX(), b.getY());
-            logger.debug("Path: " + path);
-            logger.debug("Target coordinates: " + b.getX() + ", " + b.getY());
+			if(b != null){
+				//sendMove(time, path, b.getX(), b.getY());
+				move(path, b.getX(), b.getY());
+				logger.debug("Path: " + path);
+				logger.debug("Target coordinates: " + b.getX() + ", " + b.getY());
+			}
             return;
         }
         logger.debug("Couldn't plan a path to a blocked road");
@@ -144,14 +146,14 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
         return result;
     }
     private Blockade getTargetBlockade() {
-        Logger.debug("Looking for target blockade");
+        logger.debug("Looking for target blockade");
         Area location = (Area)location();
-        Logger.debug("Looking in current location");
+        logger.debug("Looking in current location");
         Blockade result = getTargetBlockade(location, distance);
         if (result != null) {
             return result;
         }
-        Logger.debug("Looking in neighbouring locations");
+        logger.debug("Looking in neighbouring locations");
         for (EntityID next : location.getNeighbours()) {
             location = (Area)model.getEntity(next);
             result = getTargetBlockade(location, distance);
@@ -163,7 +165,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
     }
 
     private Blockade getTargetBlockade(Area area, int maxDistance) {
-        Logger.debug("Looking for nearest blockade in " + area);
+        logger.debug("Looking for nearest blockade in " + area);
         if (!area.isBlockadesDefined()) {
             Logger.debug("Blockades undefined");
             return null;
@@ -175,13 +177,13 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
         for (EntityID next : ids) {
             Blockade b = (Blockade)model.getEntity(next);
             double d = findDistanceTo(b, x, y);
-            Logger.debug("Distance to " + b + " = " + d);
+            logger.debug("Distance to " + b + " = " + d);
             if (maxDistance < 0 || d < maxDistance) {
-                Logger.debug("In range");
+                logger.debug("In range");
                 return b;
             }
         }
-        Logger.debug("No blockades in range");
+        logger.debug("No blockades in range");
         return null;
     }
 
@@ -199,6 +201,10 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 				task.setRank(1000 - distance);
 			}
 		}
+	}
+	
+	public int getDistance(){
+		return distance;
 	}
 /*
     private int findDistanceTo(Blockade b, int x, int y) {
