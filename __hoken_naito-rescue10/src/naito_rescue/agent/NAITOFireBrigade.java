@@ -47,7 +47,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
-		
+
 		logger.info("NAITOFireBrigade.think();");
         if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){

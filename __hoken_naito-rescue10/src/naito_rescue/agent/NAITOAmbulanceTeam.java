@@ -2,9 +2,9 @@ package naito_rescue.agent;
 
 import java.util.*;
 
-import rescuecore2.worldmodel.EntityID;
-import rescuecore2.worldmodel.ChangeSet;
-import rescuecore2.messages.Command;
+import rescuecore2.worldmodel.*;
+import rescuecore2.standard.messages.*;
+import rescuecore2.messages.*;
 import rescuecore2.log.Logger;
 
 import rescuecore2.standard.entities.*;
@@ -12,6 +12,7 @@ import rescuecore2.standard.entities.*;
 public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 {
 	private Collection<StandardEntity> unexploredBuildings;
+	private StandardEntity target_building;
 
 	@Override
 	protected void postConnect(){
@@ -29,13 +30,13 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
-		
+
 		logger.info("NAITOAmbulanceTeam.think();");
         if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
-           		 // Subscribe to channel 1
+           		 // Subscribe to channel 3
 				logger.info("sendSubscribe(" + time + ", 1");
-           	 	sendSubscribe(time, 1);
+           	 	sendSubscribe(time, 3);
 			}else{
 				return;
 			}
@@ -111,16 +112,64 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 					logger.debug("Because of: UNKNOWN");
 			}
 			if(allRefuges != null && allRefuges.size() != 0){
+				logger.debug("避難所はあります");
 			}else{
 				if(allRefuges.size() == 0) logger.debug("避難所がありません");
 			}
+			if(firestation != null && firestation.size() != 0){
+				logger.debug("FireStationはあります");
+			}else{
+				if(firestation.size() == 0) logger.debug("FireStationがありません");
+			}
+			if(policeoffice != null && policeoffice.size() != 0){
+				logger.debug("PoliceOfficeはあります");
+			}else{
+				if(policeoffice.size() == 0) logger.debug("PoliceOfficeはありません");
+			}
+			if(ambulancecenter != null && ambulancecenter.size() != 0){
+				logger.debug("AmbulanceCenterはあります");
+			}else{
+				if(ambulancecenter.size() == 0) logger.debug("AmbulanceCenterはありません");
+			}
 			once = false;
 		}
+		if(target_building != null && getLocation().getID().getValue() == target_building.getID().getValue()){
+			visitedBuildings.add(target_building);
+		}
+		//ボイスデータの処理
         for (Command next : heard) {
-//            Logger.debug("Heard " + next);
+			byte[] rawdata = null;
+			if(next instanceof AKSpeak || next instanceof AKTell || next instanceof AKSay){
+				logger.debug("AKSpeak(or AKTell or AKSay) data received.");
+				if(next instanceof AKSpeak){
+					rawdata = ((AKSpeak)next).getContent();
+				}else if(next instanceof AKTell){
+					rawdata = ((AKTell)next).getContent();
+				}else if(next instanceof AKSay){
+					rawdata = ((AKSay)next).getContent();
+				}else{
+					break;
+				}
+				if(rawdata != null){
+					String str_data = null;
+					logger.debug("Extracting voice data...");
+					try{
+						str_data = new String(rawdata, "UTF-8");
+						logger.trace("str_data = " + str_data);
+					}catch(Exception e){
+						logger.info("Exception in Extracting voice data.");
+						logger.trace("continue for-loop.");
+						continue;
+					}
+					logger.debug("Extracting visited building id...");
+					EntityID visitedID = extractVisitedBuildingID(str_data);
+					if(visitedID == null) continue;
+					visitedBuildings.add(model.getEntity(visitedID));
+				}
+			}
         }
         
-
+		updateTargetBuildings();
         updateUnexploredBuildings(changed);
         // Am I transporting a civilian to a refuge?
         if (someoneOnBoard()) {
@@ -135,7 +184,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
                 // Move to a refuge
                 List<EntityID> path = search.breadthFirstSearch(location(), getRefuges());
                 if (path != null) {
-                    Logger.info("Moving to refuge");
+                    logger.info("Moving to refuge");
                     //sendMove(time, path);
 					move(path);
                     return;
@@ -164,18 +213,37 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 		                return;
 		            }
 		        }
+		        /*
 		        else {
 		            // Try to move to the target
 		            List<EntityID> path = search.breadthFirstSearch(location(), next.getPosition(model));
-		            if (path != null) {
+		            if (path != null && next.getPosition(model) instanceof Building) { //
 		                logger.info("Moving to target. path = " + path);
-		                //sendMove(time, path);
-						move(path);
+		                sendMove(time, path);
+						//move(path);
 		                return;
 		            }
-		        }
+		        }*/
         	}
         }
+        
+        //建物探訪
+        logger.debug("建物探訪");
+        target_building = getTargetBuilding();
+        logger.debug("target_building = " + target_building);
+        List<EntityID> target_building_path = search.breadthFirstSearch(getLocation(), target_building);
+        if(target_building_path != null){
+        	logger.debug("target_building_path = " + target_building_path);
+        	try{
+        		speak(3, ("VISITED_"+target_building.getID().getValue()).getBytes("UTF-8"));
+        	}catch(Exception e){}
+        	//sendMove(time, target_building_path);
+        	move(target_building_path);
+        	return;
+        }else{
+        	logger.debug("target_building_path is null!");
+        }
+        
         // Go through targets (sorted by distance) and check for things we can do
         for (Human next : getTargets()) { //getTargetsは大体がnull.もしくはサイズ0.
             if (next.getPosition().equals(location().getID())) {
@@ -195,21 +263,21 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
             }
             else {
                 // Try to move to the target
-                List<EntityID> path = search.breadthFirstSearch(location(), next.getPosition(model));
-                if (path != null) {
-                    logger.info("Moving to target. path = " + path);
+                List<EntityID> target_human_path = search.breadthFirstSearch(location(), next.getPosition(model));
+                if (target_human_path != null && next.getPosition(model) instanceof Building) {
+                    logger.info("Moving to target. path = " + target_human_path);
                     //sendMove(time, path);
-					move(path);
+					move(target_human_path);
                     return;
                 }
             }
         }
         // Nothing to do
-        List<EntityID> path = search.breadthFirstSearch(location(), unexploredBuildings);
-        if (path != null) {
+        List<EntityID> target__path = search.breadthFirstSearch(location(), unexploredBuildings);
+        if (target__path != null) {
             logger.info("Searching buildings");
             //sendMove(time, path);
-			move(path);
+			move(target__path);
             return;
         }else{
         	logger.info("Cannot Searching Buildings.");
@@ -220,7 +288,37 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	}
 	public void taskRankUpdate(){
 	}
-
+	protected EntityID extractVisitedBuildingID(String str){
+		EntityID result;
+		if(str.startsWith("VISITED_")){
+			int id = Integer.parseInt(str.substring(8));
+			result = new EntityID(id);
+			if(model.getEntity(result) instanceof Building){
+				logger.debug("Visited Building ID is found. id = " + id);
+				return result;
+			}else{
+				logger.debug("Visited Building ID is not found. id = " + id);
+				return null;
+			}
+		}else{
+			logger.debug("str_data is not started from 'VISITED_'");
+			return null;
+		}
+	}
+	protected StandardEntity getTargetBuilding(){
+		logger.debug("getTargetBuilding();");
+		int distance = Integer.MAX_VALUE;
+		StandardEntity result = null;
+		for(StandardEntity target : targetBuildings){
+			int dist_temp = model.getDistance(getLocation(), target);
+			if(dist_temp < distance){
+				distance = dist_temp;
+				result = target;
+			}
+		}
+		logger.debug("result = " + result);
+		return result;
+	}
     protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
 		return EnumSet.of(StandardEntityURN.AMBULANCE_TEAM);
 	}
@@ -255,7 +353,13 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
         Collections.sort(targets, new DistanceSorter(location(), model));
         return targets;
     }
-
+	private void updateTargetBuildings(){
+		logger.debug("updateTargetBuildings();");
+		logger.debug("visitedBuildings = " + visitedBuildings);
+		for(StandardEntity visited : visitedBuildings){
+			targetBuildings.remove(visited);
+		}
+	}
     private void updateUnexploredBuildings(ChangeSet changed) {
     	logger.trace("called updateUnexploredBuildings();");
         for (EntityID next : changed.getChangedEntities()) {
