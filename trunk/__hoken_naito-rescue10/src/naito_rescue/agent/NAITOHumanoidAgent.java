@@ -60,7 +60,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			logger.debug("Moving end.");
 			isMovingNow = false;
 			moveTo = null;
-			if(movePath != null) movePath.clear();
+			//if(movePath != null) movePath.clear();
 		}
 			
 		StandardEntity location = getLocation();
@@ -122,11 +122,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//移動に時間がかかっている場合
 		//if(isMovingNow && (time - startMoveTime) > 2){
 		if(isMovingNow && (getLocation().getID().getValue() != moveTo.getValue())){
-			if(movePath.size() != 0 && movePath.contains(moveTo)){ //この文脈(?)でのみreMove()を呼ぶ
+			/*if(movePath.size() != 0 && movePath.contains(moveTo)){ //この文脈(?)でのみreMove()を呼ぶ
 				logger.debug("Call reMove();");
 				reMove();
 				return;
-			}
+			}*/
 				//閉塞に詰まってないのに時間がかかっている...
 				//とりあえず再要求
 				List<EntityID> path = null;
@@ -138,6 +138,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 					path = search.getRoute(location.getID(), moveTo);
 				}else{
 				*/
+					if(time - startMoveTime > 2){
+						logger.debug("randomWalk();");
+						move(randomWalk());
+						return;
+					}
 					logger.debug("breadthFirstSearch();");
 					path = search.breadthFirstSearch(getLocation(), model.getEntity(moveTo));
 				//}
@@ -316,11 +321,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 	public void move(List<EntityID> path){
 		logger.debug("NAITOHumanoidAgent.move(path);");
-		movePath.clear();
+		/*movePath.clear();
 		for(int i = 0;i < path.size();i++){
 			logger.debug("add: " + path.get(i));
 			movePath.add(path.get(i));
-		}
+		}*/
 		logger.debug("path = " + movePath);
 		logger.trace("move(path)");
 		this.isMovingNow = true;
@@ -333,7 +338,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	*    注意!! 原因不明のバグあり．
 	*    修正されるまで呼び出してはならない
 	*/
-	private void reMove(){
+	/*private void reMove(){
 		logger.debug("NAITOHumanoidAgent.reMove();");
 		StandardEntity location = getLocation();
 		if(movePath.size() == 0){
@@ -352,7 +357,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			}
 		}
 		logger.debug("Can't reMove. movePath is not contains getLocation()");
-	}
+	}*/
 	public void move(List<EntityID> path, int x, int y){
 		logger.trace("move(path,x,y)");
 		this.isMovingNow = true;
