@@ -13,6 +13,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 {
 	private Collection<StandardEntity> unexploredBuildings;
 	private StandardEntity target_building;
+	private int            team;
 
 	@Override
 	protected void postConnect(){
@@ -131,6 +132,9 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 			}else{
 				if(ambulancecenter.size() == 0) logger.debug("AmbulanceCenterはありません");
 			}
+			
+			team = me().getID().getValue() % 2;
+			logger.debug("team="+ team);
 			once = false;
 		}
 		if(target_building != null && getLocation().getID().getValue() == target_building.getID().getValue()){
@@ -307,13 +311,26 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	}
 	protected StandardEntity getTargetBuilding(){
 		logger.debug("getTargetBuilding();");
-		int distance = Integer.MAX_VALUE;
 		StandardEntity result = null;
-		for(StandardEntity target : targetBuildings){
-			int dist_temp = model.getDistance(getLocation(), target);
-			if(dist_temp < distance){
-				distance = dist_temp;
-				result = target;
+		if(team == 0){
+			int distance = Integer.MAX_VALUE;
+			result = null;
+			for(StandardEntity target : targetBuildings){
+				int dist_temp = model.getDistance(getLocation(), target);
+				if(dist_temp < distance){
+					distance = dist_temp;
+					result = target;
+				}
+			}
+		}else{
+			int distance = 0;
+			result = null;
+			for(StandardEntity target : targetBuildings){
+				int dist_temp = model.getDistance(getLocation(), target);
+				if(dist_temp > distance){
+					distance = dist_temp;
+					result = target;
+				}
 			}
 		}
 		logger.debug("result = " + result);
