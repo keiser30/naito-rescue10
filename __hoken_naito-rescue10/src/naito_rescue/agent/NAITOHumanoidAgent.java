@@ -45,6 +45,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 		logger.info("**********____" + time + "____**********");
 		logger.info("NAITOHumanoidAgent.think();");
+		logger.info("location = " + getLocation());
 		logger.debug("isMovingNow = " + isMovingNow);
 		logger.debug("moveTo = " + model.getEntity(moveTo));
 		logger.debug("time - startMoveTime = " + (time - startMoveTime));
@@ -66,127 +67,25 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		StandardEntity location = getLocation();
 		//自分の今いる場所に閉塞がある場合
 		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
-/* //comment out 2010/5/4
-				List<EntityID> blockades = ((Area)location).getBlockades();
-				EntityID target_blockade = null;
-				int distance = Integer.MAX_VALUE;
-				// 自分が啓開体なら，その場で道路啓開を行う
-				if(this instanceof NAITOPoliceForce){
-					int clearble_distance = ((NAITOPoliceForce)this).getDistance();
-					int dist_temp;
-					for(EntityID entity : blockades){
-						if(entity != null){
-							dist_temp = model.getDistance(location.getID(), entity);
-							if(clearble_distance >= dist_temp){
-								//その場で啓開できるなら即実行
-								clear(entity);
-								return;
-							}else if(distance > dist_temp){
-								distance = dist_temp; target_blockade = entity;
-							}
-						}
-					}
-					// 距離が離れてるなら，その中でも最短距離の閉塞に向けて移動する
-					if(target_blockade != null){
-						Blockade target = (Blockade)(model.getEntity(target_blockade));
-						List<EntityID> path = search.breadthFirstSearch(location, target);
-						if(path != null){
-							logger.debug("Moving to target blockade. I am " + this + ", target = " + target);	
-							move(path, target.getX(), target.getY());
-						}else{
-							logger.debug("path is null: in NAITOHumanoidAgent.think() (location is blockade)");
-						}
-					}
-					return;
-				}else{
-*/
-					// 閉塞が発生しているRoadのIDを送りつける
-					//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
-					if(!(this instanceof NAITOPoliceForce)){
-						if(useSpeak){
-							logger.debug("speak clear road.");
-							try{
-								speak(0, ("CLEAR_"+location.getID().getValue()).getBytes("UTF-8"));
-							}catch(Exception e){}
-						}else{
-							logger.debug("say clear road.");
-							try{
-								say(("CLEAR_"+location.getID().getValue()).getBytes("UTF-8"));
-							}catch(Exception e){}
-						}
-						logger.debug("Find Blockade. speak(or tell, say) 'Please clear " + (Road)location + "'");
-					}
-				//}
-		}
 
-		//移動に時間がかかっている場合
-		//if(isMovingNow && (time - startMoveTime) > 2){
-		if(isMovingNow && (getLocation().getID().getValue() != moveTo.getValue())){
-			/*if(movePath.size() != 0 && movePath.contains(moveTo)){ //この文脈(?)でのみreMove()を呼ぶ
-				logger.debug("Call reMove();");
-				reMove();
-				return;
-			}*/
-				//閉塞に詰まってないのに時間がかかっている...
-				//とりあえず再要求
-				List<EntityID> path = null;
-				/*if(location instanceof Road && model.getEntity(moveTo) instanceof Road){
-					//ダイクストラ法のテスト
-					logger.debug("ReMove.");
-					logger.debug("Dijkstra TEST.");
-					logger.debug("location = " + location + "\n      target = " + model.getEntity(moveTo));
-					path = search.getRoute(location.getID(), moveTo);
+			// 閉塞が発生しているRoadのIDを送りつける
+			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
+			if(!(this instanceof NAITOPoliceForce)){
+				if(useSpeak){
+					logger.debug("speak clear road.");
+					try{
+						speak(0, ("CLEAR_"+location.getID().getValue()).getBytes("UTF-8"));
+					}catch(Exception e){}
 				}else{
-				*/
-					if(time - startMoveTime > 2){
-						logger.debug("randomWalk();");
-						move(randomWalk());
-						return;
-					}
-					logger.debug("breadthFirstSearch();");
-					path = search.breadthFirstSearch(getLocation(), model.getEntity(moveTo));
-				//}
-				if(path != null){
-					logger.debug("ReMove.");
-					move(path);
-				}else{
-					logger.debug("Can't re-move because path is null. location = " + location + ", target = " + moveTo);
+					logger.debug("say clear road.");
+					try{
+						say(("CLEAR_"+location.getID().getValue()).getBytes("UTF-8"));
+					}catch(Exception e){}
 				}
+				logger.debug("Find Blockade. speak(or tell, say) 'Please clear " + (Road)location + "'");
+			}
 		}
 
-/*		
-		logger.info("NAITOHumanoidAgent.think();");
-		logger.debug("startMoveTime = " + startMoveTime);
-		logger.debug("time - startMoveTime = " + (time - startMoveTime));
-		logger.debug("moveTo = " + moveTo);
-		logger.debug("isMovingNow = " + isMovingNow);
-
-		visited.add(getLocation());
-		
-		if(isMovingNow && 
-		   moveTo != null && 
-		   getLocation().getID().getValue() != moveTo.getValue()){
-		   		if((time - startMoveTime > 3)){
-				   logger.debug("Re-routing to target. location = " + getLocation() + " ,target = " + moveTo);
-				   try{
-						move(model.getEntity(moveTo)); //経路探索を、今いるところからやり直す。
-					}catch(Exception e){
-					
-						isMovingNow = false;
-						moveTo = null;
-						startMoveTime = 0;
-						return;
-					
-					}
-				}else{
-					logger.debug("(time - startMoveTime) < 3 ==> now moving to target(" + moveTo + ")");
-				}
-		}else{
-			isMovingNow = false;
-			moveTo = null;
-			startMoveTime = 0;
-		}
-*/
 		if(currentTask != null && !currentTask.isFinished()){
 			logger.info("NAITOHumanoidAgent.think() ... currentTask != null.");
 			logger.info("currentTask = " + currentTask);
@@ -208,6 +107,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 movePath_temp = new ArrayList<EntityID>();
 		 search = new MySearch(model, this);
 
+		 /**
+		  * 各種建物に関する情報を収集する
+		  */
 		 allBuildings = model.getEntitiesOfType(StandardEntityURN.BUILDING);
 		 allRoads = model.getEntitiesOfType(StandardEntityURN.ROAD);
 		 allRefuges = model.getEntitiesOfType(StandardEntityURN.REFUGE);
@@ -216,6 +118,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 ambulancecenter = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_CENTRE);
 		 targetBuildings.addAll(allBuildings);
 	}
+	
 	public void taskRankUpdate(){
 		for(int i = 0;i < currentTaskList.size();i++){
 			Task task = currentTaskList.get(i);
@@ -257,76 +160,28 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 	//メソッドのラッパー群
 	public void move(StandardEntity target) throws Exception{
-/* //ダイクストラ法の経路探索が実装できるまで，breadthFirstSearchを使う
-		logger.debug("move()");
-		EntityID fromID, toID;
-		fromID = getLocation().getID();
-		toID = target.getID();
-
-		Collection<StandardEntity> fromNeighbours = search.findNeighbours(getLocation());
-		Collection<StandardEntity> targetNeighbours = search.findNeighbours(target);
-		if(getLocation() instanceof Building){
-			logger.debug("from is Building.");
-			for(StandardEntity from_neighbour : fromNeighbours){
-				if(from_neighbour instanceof Road){
-					logger.debug("new From = " + from_neighbour);
-					fromID = from_neighbour.getID();
-					break;
-				}
-			}
-			if(target instanceof Building){
-				logger.debug("targete is Building.");
-				for(StandardEntity target_neighbour : targetNeighbours){
-					if(target_neighbour instanceof Road){
-						logger.debug("new Target = " + target_neighbour);
-						toID = target_neighbour.getID();
-						break;
-					}
-				}
-				if(toID.getValue() == target.getID().getValue()){
-					logger.debug("Target Building is not adjacent to Road.");
-
-					return;
-				}
-			}
-		}else if(target instanceof Building){
-			logger.debug("target is Building.");
-			for(StandardEntity target_neighbour : targetNeighbours){
-				if(target_neighbour instanceof Road){
-					logger.debug("new Target = " + target_neighbour);
-					toID = target_neighbour.getID();
-					break;
-				}
-			}
-			if(toID.getValue() == target.getID().getValue()){
-				logger.debug("Target Building is not adjacent to Road.");
-
-				return;
-			}
-		}
-*/
-		//List<EntityID> path = search.breadthFirstSearch(fromID, toID);
+ //ダイクストラ法の経路探索が実装できるまで，breadthFirstSearchを使う
 		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
-		
-/*
-		if(getLocation() instanceof Building){
-			path.add(0, getLocation().getID());
+		if(path != null){
+			move(path);
+		}else{
+			logger.debug("path is null.");
+			logger.debug("location = " + getLocation());
+			logger.debug("target   = " + target);
 		}
-		if(target instanceof Building){
-			path.add((path.size()), target.getID());
+	}
+	public void move(StandardEntity target, int x, int y){
+		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
+		if(path != null){
+			move(path);
+		}else{
+			logger.debug("path is null.");
+			logger.debug("location = " + getLocation());
+			logger.debug("target   = " + target);
 		}
-		logger.debug("path = " + path);
-*/
-		move(path);
 	}
 	public void move(List<EntityID> path){
 		logger.debug("NAITOHumanoidAgent.move(path);");
-		/*movePath.clear();
-		for(int i = 0;i < path.size();i++){
-			logger.debug("add: " + path.get(i));
-			movePath.add(path.get(i));
-		}*/
-		logger.debug("path = " + movePath);
 		logger.trace("move(path)");
 		this.isMovingNow = true;
 		this.moveTo = path.get(path.size()-1); //最後の要素 = 最終目的地
