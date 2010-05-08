@@ -18,8 +18,6 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 {
     private static final String DISTANCE_KEY = "clear.repair.distance";
 	private int distance; //閉塞解除が可能な距離...?
-	private Collection<StandardEntity> allRoads;
-	// private String LOGFILENAME = LOGFILENAME_BASE + (++pflog_num) + ".log";
 
 	@Override
 	public String toString(){
@@ -29,10 +27,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 	@Override
 	protected void postConnect(){
         super.postConnect();
-		model.indexClass(StandardEntityURN.ROAD);
 		distance = config.getIntValue(DISTANCE_KEY);
-		
-		allRoads = model.getEntitiesOfType(StandardEntityURN.ROAD);
 	}
 
 	@Override
