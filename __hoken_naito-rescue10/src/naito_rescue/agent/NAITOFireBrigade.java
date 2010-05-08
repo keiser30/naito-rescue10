@@ -31,12 +31,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
         maxWater = config.getIntValue(MAX_WATER_KEY);
         maxDistance = config.getIntValue(MAX_DISTANCE_KEY);
         maxPower = config.getIntValue(MAX_POWER_KEY);
-        Logger.info("NAITOFireBrigade connected: max extinguish distance = " + maxDistance + ", max power = " + maxPower + ", max tank = " + maxWater);
-
-		//allBuildings = model.getEntitiesOfType(StandardEntityURN.BUILDING);
-		//if(location() instanceof Building){
-		//	visited.add((Building)location());
-		//}
 	}
 
 	@Override
@@ -57,9 +51,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			}else{
 				return;
 			}
-        }
-        for (Command next : heard) {
-//            Logger.debug("Heard " + next);
         }
 
         FireBrigade me = me();

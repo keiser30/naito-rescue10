@@ -311,12 +311,23 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	}
 	protected StandardEntity getTargetBuilding(){
 		logger.debug("getTargetBuilding();");
+		StandardEntity result = null;
 		if(team == 0){
 			int distance = Integer.MAX_VALUE;
-			StandardEntity result = null;
+			result = null;
 			for(StandardEntity target : targetBuildings){
 				int dist_temp = model.getDistance(getLocation(), target);
 				if(dist_temp < distance){
+					distance = dist_temp;
+					result = target;
+				}
+			}
+		}else{
+			int distance = 0;
+			result = null;
+			for(StandardEntity target : targetBuildings){
+				int dist_temp = model.getDistance(getLocation(), target);
+				if(dist_temp > distance){
 					distance = dist_temp;
 					result = target;
 				}

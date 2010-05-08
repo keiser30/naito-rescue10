@@ -29,16 +29,16 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected Set<StandardEntity> visitedBuildings;
 	protected Set<StandardEntity> targetBuildings;
 	protected MySearch            search;
-	protected int                 startMoveTime = 0;
-	protected List<EntityID>      movePath, movePath_temp;
-	protected EntityID            moveTo;
-	protected boolean             isMovingNow = false;
 	protected Collection<StandardEntity> allBuildings;
 	protected Collection<StandardEntity> allRoads;
+	protected Collection<StandardEntity> firebrigades;
+	protected Collection<StandardEntity> policeforces;
+	protected Collection<StandardEntity> ambulanceteams;
 	protected Collection<StandardEntity> allRefuges;
 	protected Collection<StandardEntity> firestation;
 	protected Collection<StandardEntity> policeoffice;
 	protected Collection<StandardEntity> ambulancecenter;
+	protected Collection<StandardEntity> civilians;
 	
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		this.time = time;
@@ -46,9 +46,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("**********____" + time + "____**********");
 		logger.info("NAITOHumanoidAgent.think();");
 		logger.info("location = " + getLocation());
-		logger.debug("isMovingNow = " + isMovingNow);
-		logger.debug("moveTo = " + model.getEntity(moveTo));
-		logger.debug("time - startMoveTime = " + (time - startMoveTime));
 		
 
 		//currentTaskListに関する処理
@@ -56,12 +53,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		if(currentTask != null && currentTask.isFinished()){
 			logger.debug("currentTaskList.remove(" + currentTask + ")");
 			currentTaskList.remove(currentTask);
-		}
-		if(isMovingNow && getLocation().getID().getValue() == moveTo.getValue()){
-			logger.debug("Moving end.");
-			isMovingNow = false;
-			moveTo = null;
-			//if(movePath != null) movePath.clear();
 		}
 			
 		StandardEntity location = getLocation();
@@ -71,16 +62,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			// 閉塞が発生しているRoadのIDを送りつける
 			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
 			if(!(this instanceof NAITOPoliceForce)){
-				if(useSpeak){
-					logger.debug("speak clear road.");
-					try{
-						speak(0, ("CLEAR_"+location.getID().getValue()).getBytes("UTF-8"));
-					}catch(Exception e){}
-				}else{
-					logger.debug("say clear road.");
-					try{
-						say(("CLEAR_"+location.getID().getValue()).getBytes("UTF-8"));
-					}catch(Exception e){}
+				try{
+					say(("CLEAR_"+location.getID().getValue()).getBytes("UTF-8"));
+				}catch(Exception e){
 				}
 				logger.debug("Find Blockade. speak(or tell, say) 'Please clear " + (Road)location + "'");
 			}
@@ -97,25 +81,26 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	@Override
     protected void postConnect() {
 		 super.postConnect();
-		 //search = new SampleSearch(model);
 		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
 		 logger = new MyLogger(this, false);
 		 currentTaskList = new ArrayList<Task>();
 		 visitedBuildings = new HashSet<StandardEntity>();
 		 targetBuildings = new HashSet<StandardEntity>();
-		 movePath = new ArrayList<EntityID>();
-		 movePath_temp = new ArrayList<EntityID>();
 		 search = new MySearch(model, this);
 
 		 /**
-		  * 各種建物に関する情報を収集する
+		  * 各種建物, エージェントに関する情報を収集する
 		  */
 		 allBuildings = model.getEntitiesOfType(StandardEntityURN.BUILDING);
 		 allRoads = model.getEntitiesOfType(StandardEntityURN.ROAD);
+		 firebrigades = model.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE);
+		 policeforces = model.getEntitiesOfType(StandardEntityURN.POLICE_FORCE);
+		 ambulanceteams = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM);
 		 allRefuges = model.getEntitiesOfType(StandardEntityURN.REFUGE);
 		 firestation = model.getEntitiesOfType(StandardEntityURN.FIRE_STATION);
 		 policeoffice = model.getEntitiesOfType(StandardEntityURN.POLICE_OFFICE);
 		 ambulancecenter = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_CENTRE);
+		 civilians = model.getEntitiesOfType(StandardEntityURN.CIVILIAN);
 		 targetBuildings.addAll(allBuildings);
 	}
 	
@@ -173,7 +158,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	public void move(StandardEntity target, int x, int y){
 		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
 		if(path != null){
-			move(path);
+			move(path, x, y);
 		}else{
 			logger.debug("path is null.");
 			logger.debug("location = " + getLocation());
@@ -182,43 +167,12 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 	public void move(List<EntityID> path){
 		logger.debug("NAITOHumanoidAgent.move(path);");
-		logger.trace("move(path)");
-		this.isMovingNow = true;
-		this.moveTo = path.get(path.size()-1); //最後の要素 = 最終目的地
 		sendMove(time, path);
-		this.startMoveTime = time;
 	}
-	/** 
-	*    reMove()
-	*    注意!! 原因不明のバグあり．
-	*    修正されるまで呼び出してはならない
-	*/
-	/*private void reMove(){
-		logger.debug("NAITOHumanoidAgent.reMove();");
-		StandardEntity location = getLocation();
-		if(movePath.size() == 0){
-			logger.debug("movePath().size == 0");
-			return;
-		}
-		logger.debug("movePath = " + movePath);
-		for(int i = 0;i < movePath.size();i++){
-			if(movePath.get(i).getValue() == location.getID().getValue()){
-				logger.debug("movePath: contains getLocation(): idx = " + i);
-				logger.debug("movePath: location = " + location);
-				logger.debug("movePath().size = " + movePath.size());
-				logger.debug("sendMove(time, movePath.subList(" + (i+1) + ", " + (movePath.size()) + ")");
-				sendMove(time, movePath.subList(i+1, movePath.size()));
-				return;
-			}
-		}
-		logger.debug("Can't reMove. movePath is not contains getLocation()");
-	}*/
+
 	public void move(List<EntityID> path, int x, int y){
-		logger.trace("move(path,x,y)");
-		this.isMovingNow = true;
-		this.moveTo = path.get(path.size() - 1);
+		logger.debug("move(path,x,y)");
 		sendMove(time, path, x, y);
-		this.startMoveTime = time;
 	}
 	public void extinguish(EntityID target, int water){
 		sendExtinguish(time, target, water);
@@ -245,7 +199,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		sendSubscribe(time, channels);
 	}
 	public void say(byte[] data){
-		sendSay(time, data);
+		if(useSpeak){
+			sendSpeak(time, 0, data);
+		}else{
+			sendSay(time, data);
+		}
 	}
 	public void tell(byte[] data){
 		sendTell(time, data);
