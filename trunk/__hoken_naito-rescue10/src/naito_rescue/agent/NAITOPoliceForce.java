@@ -39,14 +39,12 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
         if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
             // Subscribe to channel 1
             sendSubscribe(time, 1);
-        }
-		/** 
-		*  ボイスデータの処理
-		*  
-		*  "CLEAR_"で始まるボイスデータを受信したら，
-		*  啓開対象となるRoadのIDを抽出して，ClearTaskを
-		*  currentTaskListに加える
-		**/
+        } 
+/*
+		// ボイスデータの処理 
+		//  "CLEAR_"で始まるボイスデータを受信したら，
+		//  啓開対象となるRoadのIDを抽出して，ClearTaskを
+		//  currentTaskListに加える
         for (Command next : heard) {
             //logger.debug("Heard " + next);
 			byte[] rawdata = null;
@@ -123,6 +121,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
         logger.info("Moving randomly");
         //sendMove(time, randomWalk());
 		move(randomWalk());
+*/
 	}
 	
     @Override

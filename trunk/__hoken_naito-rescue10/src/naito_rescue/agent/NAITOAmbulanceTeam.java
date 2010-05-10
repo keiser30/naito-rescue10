@@ -42,7 +42,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 			}
         }
 
-		
+/*
 		if(target_building != null && getLocation().getID().getValue() == target_building.getID().getValue()){
 			visitedBuildings.add(target_building);
 		}
@@ -122,18 +122,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 		                sendRescue(time, next.getID());
 		                return;
 		            }
-		        }
-		        /*
-		        else {
-		            // Try to move to the target
-		            List<EntityID> path = search.breadthFirstSearch(location(), next.getPosition(model));
-		            if (path != null && next.getPosition(model) instanceof Building) { //
-		                logger.info("Moving to target. path = " + path);
-		                sendMove(time, path);
-						//move(path);
-		                return;
-		            }
-		        }*/
+		        } 
         	}
         }
         
@@ -195,6 +184,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
         logger.info("Moving randomly");
         //sendMove(time, randomWalk());
 		move(randomWalk());
+*/
 	}
 	public void taskRankUpdate(){
 	}

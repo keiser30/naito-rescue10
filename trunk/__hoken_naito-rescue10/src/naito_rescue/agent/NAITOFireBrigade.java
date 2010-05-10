@@ -52,7 +52,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 				return;
 			}
         }
-
+/*
         FireBrigade me = me();
         // Are we currently filling with water?
         if (me.isWaterDefined() && me.getWater() < maxWater && location() instanceof Refuge) {
@@ -130,6 +130,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
         Logger.info("Moving randomly");
         //sendMove(time, path);
 		move(path);
+*/
 	}
 
 	public void taskRankUpdate(){

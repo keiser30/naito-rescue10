@@ -47,7 +47,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("NAITOHumanoidAgent.think();");
 		logger.info("location = " + getLocation());
 		
-
+/*
 		//currentTaskListに関する処理
 		//currentTaskが終了していたら，そいつをリストから削除する
 		if(currentTask != null && currentTask.isFinished()){
@@ -77,7 +77,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			currentJob = currentTask.currentJob();
 			currentJob.doJob();
 		}
+*/
 	}
+
 	@Override
     protected void postConnect() {
 		 super.postConnect();
