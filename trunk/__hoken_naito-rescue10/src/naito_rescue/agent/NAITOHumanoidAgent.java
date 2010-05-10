@@ -8,13 +8,17 @@ import rescuecore2.worldmodel.*;
 import rescuecore2.Constants;
 import rescuecore2.standard.components.*;
 import rescuecore2.standard.entities.*;
+import rescuecore2.standard.messages.*;
 import rescuecore2.misc.geometry.*;
 
 import naito_rescue.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
+import naito_rescue.message.*;
+import naito_rescue.message.manager.*;
 
-public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITOAgent<E>
+
+public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITOAgent<E> implements MessageConstants
 {
     private static final String SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
     private static final String SPEAK_COMMUNICATION_MODEL = "kernel.standard.ChannelCommunicationModel";
@@ -24,6 +28,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected ArrayList<Task>     currentTaskList;
 	protected Task                currentTask;
 	protected Job                 currentJob;
+	protected AgentMessageManager msgManager;
 	protected MyLogger            logger;
 
 	protected Set<StandardEntity> visitedBuildings;
@@ -39,7 +44,10 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected Collection<StandardEntity> policeoffice;
 	protected Collection<StandardEntity> ambulancecenter;
 	protected Collection<StandardEntity> civilians;
-	
+
+
+	protected int debug_send_cycle = 4;
+
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		this.time = time;
 
@@ -47,6 +55,37 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("NAITOHumanoidAgent.think();");
 		logger.info("location = " + getLocation());
 		
+
+		logger.info("===== Message DEBUG =====");
+		// メッセージ通信のテスト
+		for(Command next : heard){
+			if(next instanceof AKSpeak){
+				logger.info("AKSpeak is received.");
+				naito_rescue.message.Message msg = msgManager.receiveMessage((AKSpeak)next);
+				if(msg == null){
+					logger.info("receiveMessage() is failed!!!!!!!!!!!");
+				}else{
+					logger.info("Receive message: " + msg);
+				}
+			}else{
+				logger.info("Other type: " + next);
+			}
+		}
+		if(time % debug_send_cycle == 0 && this instanceof NAITOAmbulanceTeam){
+			logger.info("===== Message DEBUG =====");
+
+			ExtinguishMessage exMsg = msgManager.createExtinguishMessage(-1, ADDR_FB, true, getLocation().getID(), 100);
+			logger.info("ExtinguishMessage created.");
+			logger.debug("addrAgent   = " + exMsg.getAddrAgent());
+			logger.debug("addrType    = " + exMsg.getAddrType());
+			logger.debug("isBroadcast = " + exMsg.isBroadcast());
+			logger.debug("EntityID    = " + exMsg.getTarget());
+			logger.debug("Target size = " + exMsg.getTargetSize());
+
+			msgManager.sendMessage(exMsg);
+			logger.info("ExtinguishMessage has sent.");
+			logger.info("send time = " + time);
+		}
 /*
 		//currentTaskListに関する処理
 		//currentTaskが終了していたら，そいつをリストから削除する
@@ -86,6 +125,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
 		 logger = new MyLogger(this, false);
 		 currentTaskList = new ArrayList<Task>();
+		 msgManager = new AgentMessageManager(this);
 		 visitedBuildings = new HashSet<StandardEntity>();
 		 targetBuildings = new HashSet<StandardEntity>();
 		 search = new MySearch(model, this);

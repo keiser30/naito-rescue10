@@ -28,6 +28,8 @@ public class AgentMessageManager implements MessageConstants
 	}
 	
 	public naito_rescue.message.Message receiveMessage(AKSpeak speak){
+		
+		logger.info("AgentMessageManager.receiveMessage();");
 		byte[] rawdata = speak.getContent();
 		naito_rescue.message.Message result = null;
 		
@@ -61,23 +63,23 @@ public class AgentMessageManager implements MessageConstants
 		}else{
 			return null;
 		}
+		//return result;
+		//logger.println("receiveMessage();");
+		logger.debug("type      = " + type);
+		logger.debug("msgId     = " + msgId);
+		logger.debug("addrAgent = " + addrAgent);
+		logger.debug("addrType  = " + addrType);
+		logger.debug("broadcast = " + broadcast);
+		logger.debug("ttl       = " + ttl);
+		logger.debug("datasize  = " + datasize);
 		return result;
-	/*	
-		logger.println("receiveMessage();");
-		logger.println("type = " + type);
-		logger.println("msgId = " + msgId);
-		logger.println("addrAgent = " + addrAgent);
-		logger.println("addrType = " + addrType);
-		logger.println("broadcast = " + broadcast);
-		logger.println("ttl = " + ttl);
-		logger.println("datasize = " + datasize);
-	*/
 	}
 	
 	public void sendMessage(naito_rescue.message.Message mes){
 		byte[] rawdata = new byte[HEADER_SIZE + mes.getSize()];
-		
 		int idx = 0;
+
+		logger.info("AgentMessageManager.sendMessage();");
 		//ヘッダの書き込み
 		utils.writeInt32(mes.getType(), rawdata,      idx); idx += 4;
 		utils.writeInt32(mes.getID(), rawdata,        idx); idx += 4;
@@ -92,19 +94,29 @@ public class AgentMessageManager implements MessageConstants
 		}
 		utils.writeInt32(0xDEAD, rawdata,             idx); idx += 4;//ttlにはダミーの値を書き込んでおく
 		utils.writeInt32(mes.getSize(), rawdata,      idx); idx += 4;
+		logger.info("Header is written.");
+		logger.debug("type = " + utils.readInt32(rawdata, 0));
+		logger.debug("id   = " + utils.readInt32(rawdata, 4));
 
 		//本体の書き込み
 		switch(mes.getType()){
 			case TYPE_FIRE:
+				logger.info("TYPE_FIRE message will be created.");
 				ExtinguishMessage ems = (ExtinguishMessage)mes;
 				utils.writeInt32(ems.getTarget().getValue(), rawdata, idx); idx += 4;
 				utils.writeInt32(ems.getTargetSize(), rawdata, idx);
+				logger.debug("(Mes)target ID   = " + ems.getTarget().getValue());
+				logger.debug("(Mes)target size = " + ems.getTargetSize());
+				logger.debug("target ID   = " + utils.readInt32(rawdata, 28));
+				logger.debug("target size = " + utils.readInt32(rawdata, 32));
 				break;
 			case TYPE_RESCUE:
+				logger.info("TYPE_RESCUE message will be created.");
 				RescueMessage rm = (RescueMessage)mes;
 				utils.writeInt32(rm.getTarget().getValue(), rawdata, idx);
 				break;
 			case TYPE_CLEAR:
+				logger.info("TYPE_CLEAR message will be created.");
 				ClearMessage cm = (ClearMessage)mes;
 				utils.writeInt32(cm.getTarget().getValue(), rawdata, idx);
 				break;
