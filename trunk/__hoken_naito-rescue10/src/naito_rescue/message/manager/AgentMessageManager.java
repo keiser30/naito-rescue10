@@ -24,7 +24,7 @@ public class AgentMessageManager implements MessageConstants
 		if(owner == null) return;
 		this.owner = owner;
 		this.logger = owner.getLogger();
-		this.mes_count = 0;
+		this.create_mes_count = 0;
 	}
 	
 	public naito_rescue.message.Message receiveMessage(AKSpeak speak){
@@ -75,7 +75,7 @@ public class AgentMessageManager implements MessageConstants
 	}
 	
 	public void sendMessage(naito_rescue.message.Message mes){
-		byte[] rawdata new byte[HEADER_SIZE + mes.getSize()];
+		byte[] rawdata = new byte[HEADER_SIZE + mes.getSize()];
 		
 		int idx = 0;
 		//ヘッダの書き込み
@@ -83,8 +83,13 @@ public class AgentMessageManager implements MessageConstants
 		utils.writeInt32(mes.getID(), rawdata,        idx); idx += 4;
 		utils.writeInt32(mes.getAddrAgent(), rawdata, idx); idx += 4;
 		utils.writeInt32(mes.getAddrType(), rawdata,  idx); idx += 4;
-		if(mes.isBroadcast()) utils.writeInt32( 1, rawdata, idx); idx += 4;
-		else                  utisl.writeInt32(-1, rawdata, idx); idx += 4;
+		if(mes.isBroadcast()){
+			utils.writeInt32( 1, rawdata, idx); 
+			idx += 4;
+		}else{
+			utils.writeInt32(-1, rawdata, idx); 
+			idx += 4;
+		}
 		utils.writeInt32(0xDEAD, rawdata,             idx); idx += 4;//ttlにはダミーの値を書き込んでおく
 		utils.writeInt32(mes.getSize(), rawdata,      idx); idx += 4;
 
@@ -120,7 +125,7 @@ public class AgentMessageManager implements MessageConstants
 		return digit;
 	}
 	private int createMsgID(){
-		return owner.getID().getValue() * (int)(Math.pow(10, getDigit(send_mes_count))) + create_mes_count;
+		return owner.getID().getValue() * (int)(Math.pow(10, getDigit(create_mes_count))) + create_mes_count;
 	}
 	public RescueMessage createRescueMessage(int addrAgent, int addrType, boolean broadcast, EntityID target){
 		RescueMessage result = new RescueMessage(createMsgID(), addrAgent, addrType, broadcast, target);
@@ -133,7 +138,7 @@ public class AgentMessageManager implements MessageConstants
 		return result;
 	}
 	public ClearMessage createClearMessage(int addrAgent, int addrType, boolean broadcast, EntityID target){
-		ClearMessgae result = new ClearMessage(createMsgID(), addrAgent, addrType, broadcast, target);
+		ClearMessage result = new ClearMessage(createMsgID(), addrAgent, addrType, broadcast, target);
 		create_mes_count++;
 		return result;
 	}
