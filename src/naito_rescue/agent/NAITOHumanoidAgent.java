@@ -55,7 +55,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("NAITOHumanoidAgent.think();");
 		logger.info("location = " + getLocation());
 		
-
+		move(randomWalk());
 		logger.info("===== Message DEBUG =====");
 		// メッセージ通信のテスト
 		for(Command next : heard){
