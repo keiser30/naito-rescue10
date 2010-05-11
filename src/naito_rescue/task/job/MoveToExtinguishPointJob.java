@@ -45,14 +45,17 @@ public class MoveToExtinguishPointJob extends Job
 	
 	@Override
 	public void doJob(){
+	/*
 		tryCount++;
 		tryCount = tryCount % extinguishPointsList.size();
 		moveTarget = extinguishPointsList.get(tryCount);
+	*/
 		try{
+			List<EntityID> path = owner.getSearch().breadthFirstSearch(owner.getLocation(), extinguishPoints);
 			owner.move(moveTarget);
 		}catch(Exception e){
 			owner.getLogger().info("MoveToExtinguishPointJob: " + e);
-			doJob(); //再試行
+	//		doJob(); //再試行
 		}
 	}
 

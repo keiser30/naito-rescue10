@@ -31,12 +31,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
         maxWater = config.getIntValue(MAX_WATER_KEY);
         maxDistance = config.getIntValue(MAX_DISTANCE_KEY);
         maxPower = config.getIntValue(MAX_POWER_KEY);
-        Logger.info("NAITOFireBrigade connected: max extinguish distance = " + maxDistance + ", max power = " + maxPower + ", max tank = " + maxWater);
-
-	//	allBuildings = model.getEntitiesOfType(StandardEntityURN.BUILDING);
-		if(location() instanceof Building){
-			visited.add((Building)location());
-		}
 	}
 
 	@Override
@@ -46,57 +40,97 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
-		super.think(time,changed,heard);
+		super.think(time, changed, heard);
 
-		logger.info("********** " + time + " **********");
 		logger.info("NAITOFireBrigade.think();");
-		if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
-			rest();
-			return;
-		}
-
-		// 無線 or ボイスデータの処理
-		if(heard.size() > 0){
-			
-		}
-
-		FireBrigade me = me();
-		if(me.isWaterDefined() && me.getWater() == 0){
-			List<Refuge> refuges = getRefuges();
-			Refuge refuge = refuges.get(0); //最短の避難所にいくようにしたい
-			currentTask = new MoveTask(this, model, (Area)refuge);
-			currentJob = currentTask.currentJob();
-			currentJob.doJob();
-			return;
-		}
-
-		//建物探訪
-		for(StandardEntity building : allBuildings){
-			if(building == null){
-				logger.info("******************** building is null!");
-			}else if(visited == null){
-				logger.info("#################### visited is null!");
+        if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
+			if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+           		 // Subscribe to channel 2
+				logger.info("sendSubscribe(1): " + time);
+           	 	sendSubscribe(time, 2);
+			}else{
+				return;
 			}
-			if(!(visited.contains(building))){
-				logger.debug("建物探訪: building = " + building);
-				currentTaskList.add(new MoveTask(this, model, (Area)building));
+        }
+/*
+        FireBrigade me = me();
+        // Are we currently filling with water?
+        if (me.isWaterDefined() && me.getWater() < maxWater && location() instanceof Refuge) {
+            logger.info("Filling with water at " + location());
+            sendRest(time);
+            return;
+        }
+        // Are we out of water?
+        if (me.isWaterDefined() && me.getWater() == 0) {
+            // Head for a refuge
+            List<EntityID> path = search.breadthFirstSearch(location(), getRefuges());
+            if (path != null) {
+                logger.info("Moving to refuge");
+                //sendMove(time, path);
+				move(path);
+                return;
+            }
+            else {
+                logger.debug("Couldn't plan a path to a refuge.");
+                path = randomWalk();
+                logger.info("Moving randomly");
+                //sendMove(time, path);
+				move(path);
+                return;
+            }
+        }
+		//とにかく近いところから，初期出火から消していく.
+		Building target = null;
+		Collection<Building> burningBuildings = getBurningBuildings();
+		int distance = Integer.MAX_VALUE;
+		if(!(burningBuildings == null)){
+			logger.debug("Search target building...");
+			for(Building b : burningBuildings){
+				logger.debug("ターゲット候補:" + b);
+				int dist_temp = model.getDistance(getLocation(), b);
+				if(distance > dist_temp){
+					target = b;
+					distance = dist_temp;
+				}
 			}
+			if(target != null){
+				logger.debug("ターゲット決定: " + target);
+				currentTask = new ExtinguishTask(this, model, target, maxPower, maxDistance);
+				currentJob = currentTask.currentJob();
+				currentJob.doJob();
+				logger.debug("ExtinguishTask.currentJob.doJob();");
+			}
+		}else{
 		}
-
-		//燃えている建物全部に対して消火タスクを設定する
-		List<Building> burnings = getBurningBuildings();
-		logger.debug("getBurningBuildings().size = " + burnings.size());
-		for(Building next : burnings){
-			currentTaskList.add(new ExtinguishTask(this, model, next, maxPower, maxDistance));
-		}
-		
-		taskRankUpdate();
-		currentTask = getHighestRankTask();
-		currentJob = currentTask.currentJob();
-
-		logger.debug("currentTask = " + currentTask.toString());
-		logger.debug("currentJob = " + currentJob.toString());
-		currentJob.doJob();
+        // Find all buildings that are on fire
+        Collection<Building> all = getBurningBuildings();
+        // Can we extinguish any right now?
+        for (Building next : all) {
+            if (model.getDistance(me, next) <= maxDistance) {
+                Logger.info("Extinguishing " + next);
+                sendExtinguish(time, next.getID(), maxPower);
+                sendSpeak(time, 1, ("Extinguishing " + next.getID()).getBytes());
+                return;
+            }
+        }
+        // Plan a path to a fire
+        for (Building next : all) {
+            List<EntityID> path = planPathToFire(next);
+            if (path != null) {
+                logger.info("Moving to target. path = " + path);
+                //sendMove(time, path);
+				move(path);
+                return;
+            }
+        }
+        List<EntityID> path = null;
+        logger.debug("Couldn't plan a path to a fire.");
+        path = randomWalk();
+		logger.info("Moving randomly");
+        Logger.info("Moving randomly");
+        //sendMove(time, path);
+		move(path);
+*/
 	}
 
 	public void taskRankUpdate(){
@@ -121,5 +155,14 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum(){
 		return EnumSet.of(StandardEntityURN.FIRE_BRIGADE);
 	}
+
+    private List<EntityID> planPathToFire(Building target) {
+        // Try to get to anything within maxDistance of the target
+        Collection<StandardEntity> targets = model.getObjectsInRange(target, maxDistance);
+        if (targets.isEmpty()) {
+            return null;
+        }
+        return search.breadthFirstSearch(location(), targets);
+    }
 
 }

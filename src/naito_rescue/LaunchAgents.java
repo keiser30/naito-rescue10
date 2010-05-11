@@ -115,17 +115,6 @@ public final class LaunchAgents {
         catch (ComponentConnectionException e) {
             Logger.info("failed: " + e.getMessage());
         }
-/*
-        try {
-            while (true) {
-                Logger.info("Connecting centre " + (i++) + "...");
-                launcher.connect(new SampleCentre());
-                Logger.info("success");
-            }
-        }catch(ComponentConnectionException e){
-			Logger.info("failed: " + e.getMessage());
-		}
-*/
 		try{
 			while(true){
 				Logger.info("Connecting civilian " + (i++) + "...");
@@ -135,10 +124,17 @@ public final class LaunchAgents {
 		}catch(ComponentConnectionException e){
 			Logger.info("failed: " + e.getMessage());
 		}
-/*
+        try {
+            while (true) {
+                Logger.info("Connecting centre " + (i++) + "...");
+                launcher.connect(new NAITOCenter());
+                Logger.info("success");
+            }
+        }
         catch (ComponentConnectionException e) {
             Logger.info("failed: " + e.getMessage());
         }
+/*
         try {
             while (true) {
                 Logger.info("Connecting dummy agent " + (i++) + "...");
