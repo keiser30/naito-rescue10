@@ -8,12 +8,17 @@ import rescuecore2.worldmodel.*;
 import rescuecore2.Constants;
 import rescuecore2.standard.components.*;
 import rescuecore2.standard.entities.*;
+import rescuecore2.standard.messages.*;
+import rescuecore2.misc.geometry.*;
 
 import naito_rescue.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
+import naito_rescue.message.*;
+import naito_rescue.message.manager.*;
 
-public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITOAgent<E>
+
+public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITOAgent<E> implements MessageConstants
 {
     private static final String SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
     private static final String SPEAK_COMMUNICATION_MODEL = "kernel.standard.ChannelCommunicationModel";
@@ -23,68 +28,124 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected ArrayList<Task>     currentTaskList;
 	protected Task                currentTask;
 	protected Job                 currentJob;
+	protected AgentMessageManager msgManager;
 	protected MyLogger            logger;
 
-	protected Set<StandardEntity> visited;
+	protected Set<StandardEntity> visitedBuildings;
+	protected Set<StandardEntity> targetBuildings;
 	protected MySearch            search;
-	protected int                 startMoveTime = 0;
-	protected EntityID            moveTo;
-	protected boolean             isMovingNow = false;
 	protected Collection<StandardEntity> allBuildings;
+	protected Collection<StandardEntity> allRoads;
+	protected Collection<StandardEntity> firebrigades;
+	protected Collection<StandardEntity> policeforces;
+	protected Collection<StandardEntity> ambulanceteams;
+	protected Collection<StandardEntity> allRefuges;
+	protected Collection<StandardEntity> firestation;
+	protected Collection<StandardEntity> policeoffice;
+	protected Collection<StandardEntity> ambulancecenter;
+	protected Collection<StandardEntity> civilians;
 
-	@Override
+
+	protected int debug_send_cycle = 4;
+
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		this.time = time;
-		
-		logger.info("NAITOHumanoidAgent.think();");
-		logger.debug("startMoveTime = " + startMoveTime);
-		logger.debug("time - startMoveTime = " + (time - startMoveTime));
-		logger.debug("moveTo = " + moveTo);
-		logger.debug("isMovingNow = " + isMovingNow);
 
-		visited.add(getLocation());
+		logger.info("**********____" + time + "____**********");
+		logger.info("NAITOHumanoidAgent.think();");
+		logger.info("location = " + getLocation());
 		
-		if(isMovingNow && 
-		   moveTo != null && 
-		   getLocation().getID().getValue() != moveTo.getValue()){
-		   		if((time - startMoveTime > 3)){
-				   logger.debug("Re-routing to target. location = " + getLocation() + " ,target = " + moveTo);
-				   try{
-						move(model.getEntity(moveTo)); //経路探索を、今いるところからやり直す。
-					}catch(Exception e){
-					
-						isMovingNow = false;
-						moveTo = null;
-						startMoveTime = 0;
-						return;
-					
-					}
+
+		logger.info("===== Message DEBUG =====");
+		// メッセージ通信のテスト
+		for(Command next : heard){
+			if(next instanceof AKSpeak){
+				logger.info("AKSpeak is received.");
+				naito_rescue.message.Message msg = msgManager.receiveMessage((AKSpeak)next);
+				if(msg == null){
+					logger.info("receiveMessage() is failed!!!!!!!!!!!");
 				}else{
-					logger.debug("(time - startMoveTime) < 3 ==> now moving to target(" + moveTo + ")");
+					logger.info("Receive message: " + msg);
 				}
-		}else{
-			isMovingNow = false;
-			moveTo = null;
-			startMoveTime = 0;
+			}else{
+				logger.info("Other type: " + next);
+			}
+		}
+		if(time % debug_send_cycle == 0 && this instanceof NAITOAmbulanceTeam){
+//			logger.info("===== Message DEBUG =====");
+
+			ExtinguishMessage exMsg = msgManager.createExtinguishMessage(-1, ADDR_FB, true, getLocation().getID(), 100);
+			logger.info("ExtinguishMessage created.");
+			logger.debug("addrAgent   = " + exMsg.getAddrAgent());
+			logger.debug("addrType    = " + exMsg.getAddrType());
+			logger.debug("isBroadcast = " + exMsg.isBroadcast());
+			logger.debug("EntityID    = " + exMsg.getTarget());
+			logger.debug("Target size = " + exMsg.getTargetSize());
+
+			msgManager.sendMessage(exMsg);
+			logger.info("ExtinguishMessage has sent.");
+			logger.info("send time = " + time);
+		}
+/*
+		//currentTaskListに関する処理
+		//currentTaskが終了していたら，そいつをリストから削除する
+		if(currentTask != null && currentTask.isFinished()){
+			logger.debug("currentTaskList.remove(" + currentTask + ")");
+			currentTaskList.remove(currentTask);
+		}
+			
+		StandardEntity location = getLocation();
+		//自分の今いる場所に閉塞がある場合
+		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
+
+			// 閉塞が発生しているRoadのIDを送りつける
+			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
+			if(!(this instanceof NAITOPoliceForce)){
+				try{
+					say(("CLEAR_"+location.getID().getValue()).getBytes("UTF-8"));
+				}catch(Exception e){
+				}
+				logger.debug("Find Blockade. speak(or tell, say) 'Please clear " + (Road)location + "'");
+			}
 		}
 
 		if(currentTask != null && !currentTask.isFinished()){
+			logger.info("NAITOHumanoidAgent.think() ... currentTask != null.");
+			logger.info("currentTask = " + currentTask);
+			logger.info("currentJob = " + currentJob);
 			currentJob = currentTask.currentJob();
 			currentJob.doJob();
 		}
+*/
 	}
+
 	@Override
     protected void postConnect() {
 		 super.postConnect();
-		 //search = new SampleSearch(model);
 		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
 		 logger = new MyLogger(this, false);
 		 currentTaskList = new ArrayList<Task>();
-		 visited = new HashSet<StandardEntity>();
+		 msgManager = new AgentMessageManager(this);
+		 visitedBuildings = new HashSet<StandardEntity>();
+		 targetBuildings = new HashSet<StandardEntity>();
 		 search = new MySearch(model, this);
 
+		 /**
+		  * 各種建物, エージェントに関する情報を収集する
+		  */
 		 allBuildings = model.getEntitiesOfType(StandardEntityURN.BUILDING);
+		 allRoads = model.getEntitiesOfType(StandardEntityURN.ROAD);
+		 firebrigades = model.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE);
+		 policeforces = model.getEntitiesOfType(StandardEntityURN.POLICE_FORCE);
+		 ambulanceteams = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM);
+		 allRefuges = model.getEntitiesOfType(StandardEntityURN.REFUGE);
+		 firestation = model.getEntitiesOfType(StandardEntityURN.FIRE_STATION);
+		 policeoffice = model.getEntitiesOfType(StandardEntityURN.POLICE_OFFICE);
+		 ambulancecenter = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_CENTRE);
+		 civilians = model.getEntitiesOfType(StandardEntityURN.CIVILIAN);
+		 targetBuildings.addAll(allBuildings);
 	}
+	
 	public void taskRankUpdate(){
 		for(int i = 0;i < currentTaskList.size();i++){
 			Task task = currentTaskList.get(i);
@@ -117,78 +178,43 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	public StandardWorldModel getWorldModel(){
 		return model;
 	}
+	public MySearch getSearch(){
+		return search;
+	}
+	public E getMe(){
+		return me();
+	}
 
 	//メソッドのラッパー群
 	public void move(StandardEntity target) throws Exception{
-		logger.debug("move()");
-		EntityID fromID, toID;
-		fromID = getLocation().getID();
-		toID = target.getID();
-
-		Collection<StandardEntity> fromNeighbours = search.findNeighbours(getLocation());
-		Collection<StandardEntity> targetNeighbours = search.findNeighbours(target);
-		if(getLocation() instanceof Building){
-			logger.debug("from is Building.");
-			for(StandardEntity from_neighbour : fromNeighbours){
-				if(from_neighbour instanceof Road){
-					logger.debug("new From = " + from_neighbour);
-					fromID = from_neighbour.getID();
-					break;
-				}
-			}
-			if(target instanceof Building){
-				logger.debug("targete is Building.");
-				for(StandardEntity target_neighbour : targetNeighbours){
-					if(target_neighbour instanceof Road){
-						logger.debug("new Target = " + target_neighbour);
-						toID = target_neighbour.getID();
-						break;
-					}
-				}
-				if(toID.getValue() == target.getID().getValue()){
-					logger.debug("Target Building is not adjacent to Road.");
-					/*isMovingNow = false;
-					moveTo = null;
-					throw new Exception("Target Building is not adjacent to Road.");
-					*/
-					return;
-				}
-			}
-		}else if(target instanceof Building){
-			logger.debug("target is Building.");
-			for(StandardEntity target_neighbour : targetNeighbours){
-				if(target_neighbour instanceof Road){
-					logger.debug("new Target = " + target_neighbour);
-					toID = target_neighbour.getID();
-					break;
-				}
-			}
-			if(toID.getValue() == target.getID().getValue()){
-				logger.debug("Target Building is not adjacent to Road.");
-				/*
-				isMovingNow = false;
-				moveTo = null;
-				throw new Exception("Target Building is not adjacent to Road.");
-				*/
-				return;
-			}
+ //ダイクストラ法の経路探索が実装できるまで，breadthFirstSearchを使う
+		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
+		if(path != null){
+			move(path);
+		}else{
+			logger.debug("path is null.");
+			logger.debug("location = " + getLocation());
+			logger.debug("target   = " + target);
 		}
-
-		List<EntityID> path = search.getRoute(fromID, toID);
-		if(getLocation() instanceof Building){
-			path.add(0, getLocation().getID());
+	}
+	public void move(StandardEntity target, int x, int y){
+		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
+		if(path != null){
+			move(path, x, y);
+		}else{
+			logger.debug("path is null.");
+			logger.debug("location = " + getLocation());
+			logger.debug("target   = " + target);
 		}
-		if(target instanceof Building){
-			path.add((path.size()), target.getID());
-		}
-		logger.debug("path = " + path);
-		move(path);
 	}
 	public void move(List<EntityID> path){
-		this.isMovingNow = true;
-		this.moveTo = path.get(path.size()-1); //最後の要素 = 最終目的地
+		logger.debug("NAITOHumanoidAgent.move(path);");
 		sendMove(time, path);
-		this.startMoveTime = time;
+	}
+
+	public void move(List<EntityID> path, int x, int y){
+		logger.debug("move(path,x,y)");
+		sendMove(time, path, x, y);
 	}
 	public void extinguish(EntityID target, int water){
 		sendExtinguish(time, target, water);
@@ -215,7 +241,17 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		sendSubscribe(time, channels);
 	}
 	public void say(byte[] data){
-		sendSay(time, data);
+		logger.debug("say();");
+		if(useSpeak){
+			logger.debug("say -> sendSpeak();");
+			sendSpeak(time, 0, data);
+		}else{
+			logger.debug("say -> sendSay();");
+			sendSay(time, data);
+		}
+	}
+	public void tell(byte[] data){
+		sendTell(time, data);
 	}
 
     protected List<EntityID> randomWalk() {
@@ -244,7 +280,27 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
         }   
         return result;
     }
+    public int findDistanceTo(Blockade b, int x, int y) {
+        //logger.debug("Finding distance to " + b + " from " + x + ", " + y);
+        List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(b.getApexes()), true);
+        double best = Double.MAX_VALUE;
+        Point2D origin = new Point2D(x, y); 
+        for (Line2D next : lines) {
+            Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
+            double d = GeometryTools2D.getDistance(origin, closest);
+            //logger.debug("Next line: " + next + ", closest point: " + closest + ", distance: " + d); 
+            if (d < best) {
+                best = d;
+                //logger.debug("New best distance");
+            }   
 
+        }
+        return (int)best;
+	}
+	/**
+	*  currentTaskListを降順ソートして1番目の要素を返す
+	*  (Taskのランク値の大きい方が優先される)
+	*/
 	public Task getHighestRankTask(){
 		Comparator<Task> task_comp = new Comparator<Task>(){
 			public int compare(Task t1, Task t2){
