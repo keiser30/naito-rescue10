@@ -36,11 +36,23 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 			if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
            		 // Subscribe to channel 3
 				logger.info("sendSubscribe(" + time + ", 1");
-           	 	sendSubscribe(time, 3);
+           	 	sendSubscribe(time, 1);
 			}else{
 				return;
 			}
         }
+
+		logger.info("NAITOAmbulanceTeam.hearing...");
+		for(Command next : heard){
+			logger.debug("heard->next = " + next);
+			if(next instanceof AKSpeak){
+				/**
+				*  無線or声データの処理
+				*/
+				AKSpeak speak = (AKSpeak)next;
+				
+			}
+		}
 
 /*
 		if(target_building != null && getLocation().getID().getValue() == target_building.getID().getValue()){

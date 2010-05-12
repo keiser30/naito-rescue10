@@ -45,7 +45,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected Collection<StandardEntity> ambulancecenter;
 	protected Collection<StandardEntity> civilians;
 
-
+	protected boolean centerLess;
+	protected boolean fireStationLess;
+	protected boolean ambulanceCenterLess;
+	protected boolean policeOfficeLess;
+	protected boolean ignoreBroadcast;
 	protected int debug_send_cycle = 4;
 
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
@@ -55,7 +59,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("NAITOHumanoidAgent.think();");
 		logger.info("location = " + getLocation());
 		
-		move(randomWalk());
+//		move(randomWalk());
 		logger.info("===== Message DEBUG =====");
 		// メッセージ通信のテスト
 		for(Command next : heard){
@@ -65,7 +69,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				if(msg == null){
 					logger.info("receiveMessage() is failed!!!!!!!!!!!");
 				}else{
-					logger.info("Receive message: " + msg);
+						logger.info("Received Message = " + msg);
+						logger.info("=> send time = " + msg.getSendTime());
+						if(msg instanceof ExtinguishMessage){
+							logger.info("==> target size = " + ((ExtinguishMessage)msg).getTargetSize());
+						}
 				}
 			}else{
 				logger.info("Other type: " + next);
@@ -74,7 +82,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		if(time % debug_send_cycle == 0 && this instanceof NAITOAmbulanceTeam){
 //			logger.info("===== Message DEBUG =====");
 
-			ExtinguishMessage exMsg = msgManager.createExtinguishMessage(-1, ADDR_FB, true, getLocation().getID(), 100);
+			ExtinguishMessage exMsg = msgManager.createExtinguishMessage(-1, ADDR_FB, true, getLocation().getID(), 100+time);
 			logger.info("ExtinguishMessage created.");
 			logger.debug("addrAgent   = " + exMsg.getAddrAgent());
 			logger.debug("addrType    = " + exMsg.getAddrType());
@@ -138,12 +146,28 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 firebrigades = model.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE);
 		 policeforces = model.getEntitiesOfType(StandardEntityURN.POLICE_FORCE);
 		 ambulanceteams = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM);
+		 civilians = model.getEntitiesOfType(StandardEntityURN.CIVILIAN);
+		 
+		 //センターの情報を収集
 		 allRefuges = model.getEntitiesOfType(StandardEntityURN.REFUGE);
 		 firestation = model.getEntitiesOfType(StandardEntityURN.FIRE_STATION);
 		 policeoffice = model.getEntitiesOfType(StandardEntityURN.POLICE_OFFICE);
 		 ambulancecenter = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_CENTRE);
-		 civilians = model.getEntitiesOfType(StandardEntityURN.CIVILIAN);
+		 
+		 //センターレスに関する設定
+		 fireStationLess = firestation.isEmpty();
+		 policeOfficeLess = policeoffice.isEmpty();
+		 ambulanceCenterLess = ambulancecenter.isEmpty();
+		 centerLess = fireStationLess && policeOfficeLess && ambulanceCenterLess;
+		 
 		 targetBuildings.addAll(allBuildings);
+		 
+		 logger.info("NAITORescue-10 Start!");
+		 logger.info("useSpeak            = " + useSpeak);
+		 logger.info("fireStationLess     = " + fireStationLess);
+		 logger.info("policeOfficeLess    = " + policeOfficeLess);
+		 logger.info("ambulanceCenterLess = " + ambulanceCenterLess);
+		 logger.info("    => centerLess   = " + centerLess);
 	}
 	
 	public void taskRankUpdate(){
@@ -242,6 +266,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 	public void say(byte[] data){
 		logger.debug("say();");
+		/*
 		if(useSpeak){
 			logger.debug("say -> sendSpeak();");
 			sendSpeak(time, 0, data);
@@ -249,6 +274,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			logger.debug("say -> sendSay();");
 			sendSay(time, data);
 		}
+		*/
+		sendSpeak(time, 0, data);
 	}
 	public void tell(byte[] data){
 		sendTell(time, data);

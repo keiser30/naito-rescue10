@@ -38,8 +38,21 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 
         if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
             // Subscribe to channel 1
+			logger.debug("Subscribe(1);");
             sendSubscribe(time, 1);
         } 
+		
+		logger.info("NAITOPoliceForce.hearring...");
+		for(Command next : heard){
+			logger.debug("heard->next = " + next);
+			if(next instanceof AKSpeak){
+				/**
+				*  無線or声データの処理
+				*/
+				AKSpeak speak = (AKSpeak)next;
+				
+			}
+		}
 /*
 		// ボイスデータの処理 
 		//  "CLEAR_"で始まるボイスデータを受信したら，
