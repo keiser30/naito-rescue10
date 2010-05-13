@@ -59,28 +59,38 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("NAITOHumanoidAgent.think();");
 		logger.info("location = " + getLocation());
 		
-//		move(randomWalk());
 		logger.info("===== Message DEBUG =====");
 		// メッセージ通信のテスト
+
 		for(Command next : heard){
 			if(next instanceof AKSpeak){
 				logger.info("AKSpeak is received.");
-				naito_rescue.message.Message msg = msgManager.receiveMessage((AKSpeak)next);
-				if(msg == null){
+				List<naito_rescue.message.Message> msgList = msgManager.receiveMessage((AKSpeak)next);
+				if(msgList == null){
 					logger.info("receiveMessage() is failed!!!!!!!!!!!");
 				}else{
+					int fuga = 0;
+					logger.info("Received Message List.");
+					logger.debug("Message Size = " + msgList.size());
+					for(naito_rescue.message.Message msg : msgList){
+						logger.info((fuga++) + "個目: ");
 						logger.info("Received Message = " + msg);
 						logger.info("=> send time = " + msg.getSendTime());
 						if(msg instanceof ExtinguishMessage){
+							EntityID target = ((ExtinguishMessage)msg).getTarget();
+							logger.info("==> target      = " + model.getEntity(target));
 							logger.info("==> target size = " + ((ExtinguishMessage)msg).getTargetSize());
+							logger.info("Move to target specified in received message...");
+							move(model.getEntity(target));
 						}
+					}
 				}
 			}else{
 				logger.info("Other type: " + next);
 			}
 		}
+
 		if(time % debug_send_cycle == 0 && this instanceof NAITOAmbulanceTeam){
-//			logger.info("===== Message DEBUG =====");
 
 			ExtinguishMessage exMsg = msgManager.createExtinguishMessage(-1, ADDR_FB, true, getLocation().getID(), 100+time);
 			logger.info("ExtinguishMessage created.");
@@ -210,7 +220,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 
 	//メソッドのラッパー群
-	public void move(StandardEntity target) throws Exception{
+	public void move(StandardEntity target){
  //ダイクストラ法の経路探索が実装できるまで，breadthFirstSearchを使う
 		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
 		if(path != null){

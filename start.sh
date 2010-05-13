@@ -13,6 +13,6 @@ java -Xmx800m -Xmn256m -cp $CLASSPATH naito_rescue.LaunchAgents -h $KERNEL_ADDRE
 
 echo "     ************************     "
 echo "  *                            *  "
-echo " *   NAITO-Rescue10 started.    * "
+echo " *    NAITO-Rescue10 started.    * "
 echo "  *                            *  "
 echo "     ************************     "
