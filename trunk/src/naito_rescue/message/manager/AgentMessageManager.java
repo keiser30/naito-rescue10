@@ -57,9 +57,9 @@ public class AgentMessageManager implements MessageConstants
 				//であることを保証してから読み込んだ方が良い by Ogawa
 				int type           = utils.readInt32(rawdata, idx);        idx += 4;
 				int msgId          = utils.readInt32(rawdata, idx);        idx += 4;
-				int addrAgent      = utils.readInt32(rawdata, idx)	;        idx += 4;
+				int addrAgent      = utils.readInt32(rawdata, idx);        idx += 4;
 				int addrType       = utils.readInt32(rawdata, idx);        idx += 4;
-				boolean broadcast  = (utils.readInt32(rawdata, idx) > 0); idx += 4;
+				boolean broadcast  = (utils.readInt32(rawdata, idx) > 0);  idx += 4;
 				int ttl            = utils.readInt32(rawdata, idx);        idx += 4;
 				int datasize       = utils.readInt32(rawdata, idx);        idx += 4;
 				
