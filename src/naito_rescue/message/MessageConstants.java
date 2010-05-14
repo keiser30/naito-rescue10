@@ -2,9 +2,10 @@ package naito_rescue.message;
 
 public interface MessageConstants
 {
+	public static final int TYPE_NULL       = 0x00000000;
 	public static final int TYPE_FIRE       = 0x00000001;
 	public static final int TYPE_RESCUE     = 0x00000002;
-	public static final int TYPE_CLEAR = 0x00000003;
+	public static final int TYPE_CLEAR      = 0x00000003;
 	
 	public static final int ADDR_FB = 0x00000101;
 	public static final int ADDR_PF = 0x00000102;
