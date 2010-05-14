@@ -90,7 +90,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			}
 		}
 
-		if(time % debug_send_cycle == 0 && this instanceof NAITOAmbulanceTeam){
+		if(/*time % debug_send_cycle == 0 && */this instanceof NAITOAmbulanceTeam){
 
 			ExtinguishMessage exMsg = msgManager.createExtinguishMessage(-1, ADDR_FB, true, getLocation().getID(), 100+time);
 			logger.info("ExtinguishMessage created.");

@@ -11,8 +11,14 @@ CLASSPATH=$CLASSPATH:$AGENT_JAR_FILE
 
 java -Xmx800m -Xmn256m -cp $CLASSPATH naito_rescue.LaunchAgents -h $KERNEL_ADDRESS -p $KERNEL_PORT &
 
-echo "     ************************     "
-echo "  *                            *  "
-echo " *    NAITO-Rescue10 started.    * "
-echo "  *                            *  "
-echo "     ************************     "
+echo "#        #         #"
+echo "##       #        # #"
+echo "# #      #       #   #"
+echo "#  #     #      #     #"
+echo "#   #    #     #       #"
+echo "#    #   #    ###########"
+echo "#     #  #   #           #"
+echo "#      # #  #             #"
+echo "#       ## #               #"
+
+echo "NAITO-Rescue10 Start!"
