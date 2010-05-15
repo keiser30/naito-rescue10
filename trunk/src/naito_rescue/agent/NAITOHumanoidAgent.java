@@ -59,50 +59,57 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("NAITOHumanoidAgent.think();");
 		logger.info("location = " + getLocation());
 		
-		logger.info("===== Message DEBUG =====");
+		logger.info("==================== Message DEBUG ====================");
 		// メッセージ通信のテスト
 
 		for(Command next : heard){
 			if(next instanceof AKSpeak){
-				logger.info("AKSpeak is received.");
+				logger.debug("AKSpeak is received.");
 				List<naito_rescue.message.Message> msgList = msgManager.receiveMessage((AKSpeak)next);
 				if(msgList == null){
-					logger.info("receiveMessage() is failed!!!!!!!!!!!");
+					logger.debug("receiveMessage() is failed!!!!!!!!!!!");
 				}else{
 					int fuga = 0;
-					logger.info("Received Message List.");
-					logger.debug("Message Size = " + msgList.size());
+					logger.debug("Received Message List.");
+					logger.trace("Message Size = " + msgList.size());
 					for(naito_rescue.message.Message msg : msgList){
-						logger.info((fuga++) + "個目: ");
-						logger.info("Received Message = " + msg);
-						logger.info("=> send time = " + msg.getSendTime());
+						logger.debug((++fuga) + "個目: ");
+						logger.debug("Received Message = " + msg);
+						logger.trace("=> send time = " + msg.getSendTime());
 						if(msg instanceof ExtinguishMessage){
 							EntityID target = ((ExtinguishMessage)msg).getTarget();
-							logger.info("==> target      = " + model.getEntity(target));
-							logger.info("==> target size = " + ((ExtinguishMessage)msg).getTargetSize());
-							logger.info("Move to target specified in received message...");
+							logger.debug("ExtinguishMessage has received.");
+							logger.debug("==> target      = " + model.getEntity(target));
+							logger.debug("==> target size = " + ((ExtinguishMessage)msg).getTargetSize());
+							logger.debug("Move to target specified in received message...");
+							move(model.getEntity(target));
+						}else if(msg instanceof ClearMessage){
+							ClearMessage clmsg = (ClearMessage)msg;
+							EntityID target = clmsg.getTarget();
+							logger.debug("ClearMessage has received.");
+							logger.debug("==> target = " + model.getEntity(target));
 							move(model.getEntity(target));
 						}
 					}
 				}
 			}else{
-				logger.info("Other type: " + next);
+				logger.debug("Other type: " + next);
 			}
 		}
 
 		if(/*time % debug_send_cycle == 0 && */this instanceof NAITOAmbulanceTeam){
 
 			ExtinguishMessage exMsg = msgManager.createExtinguishMessage(-1, ADDR_FB, true, getLocation().getID(), 100+time);
-			logger.info("ExtinguishMessage created.");
-			logger.debug("addrAgent   = " + exMsg.getAddrAgent());
-			logger.debug("addrType    = " + exMsg.getAddrType());
-			logger.debug("isBroadcast = " + exMsg.isBroadcast());
-			logger.debug("EntityID    = " + exMsg.getTarget());
-			logger.debug("Target size = " + exMsg.getTargetSize());
+			logger.debug("ExtinguishMessage created.");
+			logger.trace("addrAgent   = " + exMsg.getAddrAgent());
+			logger.trace("addrType    = " + exMsg.getAddrType());
+			logger.trace("isBroadcast = " + exMsg.isBroadcast());
+			logger.trace("EntityID    = " + exMsg.getTarget());
+			logger.trace("Target size = " + exMsg.getTargetSize());
 
 			msgManager.sendMessage(exMsg);
-			logger.info("ExtinguishMessage has sent.");
-			logger.info("send time = " + time);
+			logger.debug("ExtinguishMessage has sent.");
+			logger.trace("send time = " + time);
 		}
 /*
 		//currentTaskListに関する処理

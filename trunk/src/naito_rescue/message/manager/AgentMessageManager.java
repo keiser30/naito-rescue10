@@ -20,7 +20,8 @@ public class AgentMessageManager implements MessageConstants
 	private LinkedList<naito_rescue.message.Message> sendMessageList = new LinkedList<naito_rescue.message.Message>();
 	private MyLogger logger;
 	private int create_mes_count;
-	
+	private int channel = 1;
+
 	public AgentMessageManager(NAITOHumanoidAgent owner){
 		if(owner == null) return;
 		this.owner = owner;
@@ -42,26 +43,14 @@ public class AgentMessageManager implements MessageConstants
 		while(true){
 			try{
 				naito_rescue.message.Message mes = null;
-/*
-					if(idx >= (rawdata.length-1)){
-					//データ読み出しがAKSpeakの尻まで達したら
-					//そこまでに含まれているメッセージのリストを
-					//リターンする
-					logger.info("Returning result...");
-					logger.info("Result List         = " + result);
-					logger.debug("idx            = " + idx);
-					logger.debug("rawdata.length = " + rawdata.length);
-					return result;
-				}
-*/
-				logger.info((hoge++) + "個目: ");
+				logger.info((++hoge) + "個目: ");
 				//readInt32するときは，「4バイト以上ストリームから読み込み可能」
 				//であることを保証してから読み込んだ方が良い by Ogawa
 				
 				//ヘッダの抜き出し
-				int header         = utils.readInt32(rawdata, idx);        idx += 4;
+				int msg_type        = utils.readInt8(rawdata, idx);        idx += 1;
 
-				if(header == TYPE_NULL){
+				if(msg_type == TYPE_NULL){
 					logger.info("receiveMessage() reached TYPE_NULL");
 					logger.debug("Returning Message List = " + result);
 					return result;
@@ -69,14 +58,14 @@ public class AgentMessageManager implements MessageConstants
 
 				//ヘッダの抜き出し(続き)
 				int msgId          = utils.readInt32(rawdata, idx);        idx += 4;
-				int addrAgent      = utils.readInt32(rawdata, idx);        idx += 4;
-				int addrType       = utils.readInt32(rawdata, idx);        idx += 4;
-				boolean broadcast  = (utils.readInt32(rawdata, idx) > 0);  idx += 4;
-				int ttl            = utils.readInt32(rawdata, idx);        idx += 4;
-				int datasize       = utils.readInt32(rawdata, idx);        idx += 4;
+				int addrAgent      = utils.readInt16(rawdata, idx);        idx += 2;
+				int addrType       = utils.readInt8(rawdata, idx);         idx += 1;
+				boolean broadcast  = (utils.readInt8(rawdata, idx) > 0);   idx += 1;
+				int ttl            = utils.readInt8(rawdata, idx);         idx += 1;
+				int datasize       = utils.readInt8(rawdata, idx);         idx += 1;
 				
 				logger.info("Extracting Header...");
-				logger.debug("header      = " + header);
+				logger.debug("msg_type    = " + msg_type);
 				logger.debug("msgId       = " + msgId);
 				logger.debug("addrAgent   = " + addrAgent);
 				logger.debug("addrType    = " + addrType);
@@ -88,10 +77,11 @@ public class AgentMessageManager implements MessageConstants
 				EntityID target = new EntityID(target_id_num);
 
 				//メッセージ本体の抜き出し
-				switch(header){
+				switch(msg_type){
 					case TYPE_FIRE:
-						int size = utils.readInt32(rawdata, idx); // idx += 4;
-						logger.debug("(ExtinguishMessage)size = " + size);
+						int size = utils.readInt32(rawdata, idx);  idx += 4;
+						logger.debug("(ExtinguishMessage)target_id_num = " + target_id_num);
+						logger.debug("(ExtinguishMessage)size          = " + size);
 						mes = new ExtinguishMessage(msgId, addrAgent, addrType, broadcast, target, size);
 						break;
 					case TYPE_RESCUE:
@@ -101,7 +91,7 @@ public class AgentMessageManager implements MessageConstants
 						mes = new ClearMessage(msgId, addrAgent, addrType, broadcast, target);
 						break;
 					default:
-						logger.info("Unknown type: " + header);
+						logger.info("Unknown type: " + msg_type);
 				}
 				if(mes != null){
 					logger.info("Extract one message.");
@@ -183,7 +173,7 @@ public class AgentMessageManager implements MessageConstants
 			for(int i = 0;i < sendMessageList.size();i++){
 				//rawdata_size += HEADER_SIZE + sendMessageList.get(remove_idx).getSize();
 				int thisSize = HEADER_SIZE + sendMessageList.get(i).getSize();
-				if(rawdata_size+thisSize < 128){
+				if(rawdata_size+thisSize < 61){
 					remove_idx++;
 					rawdata_size += thisSize;
 					logger.debug("remove_idx   = " + remove_idx);
@@ -201,8 +191,7 @@ public class AgentMessageManager implements MessageConstants
 			for(int i = 0;i < remove_idx;i++){
 				logger.info((i+1) + "個目: ");
 				naito_rescue.message.Message mes = sendMessageList.removeFirst();
-				//idx += utils.writeHeader(rawdata, mes.getType(), mes.getID(), mes.getAddrAgent(), mes.getAddrType(), mes.isBroadcast(), ...);
-				//上のように書き換えられれば，ヘッダ長を意識しなくても済むようになる．
+/*
 				utils.writeInt32(mes.getType(), rawdata,      idx); idx += 4;
 				utils.writeInt32(mes.getID(), rawdata,        idx); idx += 4;
 				utils.writeInt32(mes.getAddrAgent(), rawdata, idx); idx += 4;
@@ -219,7 +208,9 @@ public class AgentMessageManager implements MessageConstants
 				logger.debug("Header is written.");
 				logger.trace("type = " + utils.readInt32(rawdata, 0));
 				logger.trace("id   = " + utils.readInt32(rawdata, 4));
-
+*/
+				//ヘッダの書き込み
+				idx = utils.writeHeader(rawdata, mes.getType(), mes.getID(), mes.getAddrAgent(), mes.getAddrType(), mes.isBroadcast(), -1, mes.getSize());
 				//本体の書き込み
 				switch(mes.getType()){
 					case TYPE_FIRE:
@@ -227,8 +218,8 @@ public class AgentMessageManager implements MessageConstants
 						ExtinguishMessage ems = (ExtinguishMessage)mes;
 						utils.writeInt32(ems.getTarget().getValue(), rawdata, idx); idx += 4;
 						utils.writeInt32(ems.getTargetSize(), rawdata, idx); idx += 4;
-						logger.trace("target ID   = " + utils.readInt32(rawdata, 28));
-						logger.trace("target size = " + utils.readInt32(rawdata, 32));
+						//logger.trace("target ID   = " + utils.readInt32(rawdata, 28));
+						//logger.trace("target size = " + utils.readInt32(rawdata, 32));
 						break;
 					case TYPE_RESCUE:
 						logger.debug("TYPE_RESCUE message will be created.");
@@ -247,7 +238,7 @@ public class AgentMessageManager implements MessageConstants
 				mes.setSendTime(owner.getTime());
 				sended.add(mes);
 			}//end for
-			utils.writeInt32(TYPE_NULL, rawdata, idx);
+			utils.writeInt8(TYPE_NULL, rawdata, idx);
 			logger.info("Now send rawdata...");
 			logger.debug("==> rawdata.length = " + rawdata.length);
 			owner.speak(1, rawdata); //useSpeakだろうが何だろうがspeakする
@@ -305,6 +296,9 @@ public class AgentMessageManager implements MessageConstants
 	//	owner.say(rawdata);
 		owner.speak(1, rawdata);
 */
+	}
+	public void setChannel(int n){
+		this.channel = n;
 	}
 	private int getDigit(int n){
 		int digit = 1;

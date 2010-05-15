@@ -53,17 +53,17 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			}
         }
 
-		logger.info("NAITOFireBrigade.hearing...");
-		for(Command next : heard){
-			logger.debug("heard->next = " + next);
-			if(next instanceof AKSpeak){
-				/**
-				*  無線or声データの処理
-				*/
-				AKSpeak speak = (AKSpeak)next;
-				
-			}
-		}
+//		logger.info("NAITOFireBrigade.hearing...");
+//		for(Command next : heard){
+//			logger.debug("heard->next = " + next);
+//			if(next instanceof AKSpeak){
+//				/**
+//				*  無線or声データの処理
+//				*/
+//				AKSpeak speak = (AKSpeak)next;
+//				
+//			}
+//		}
 /*
         FireBrigade me = me();
         // Are we currently filling with water?
