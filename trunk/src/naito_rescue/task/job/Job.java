@@ -4,7 +4,7 @@ import rescuecore2.standard.components.*;
 import rescuecore2.standard.entities.*;
 
 import naito_rescue.agent.*;
-
+import naito_rescue.*;
 import java.io.*;
 
 public abstract class Job
@@ -12,13 +12,15 @@ public abstract class Job
 	NAITOHumanoidAgent owner;
 	StandardWorldModel world;
 	int                tryCount;
+	MyLogger           logger;
 
 	public Job(NAITOHumanoidAgent owner, StandardWorldModel world){
 		this.owner = owner;
 		this.world = world;
+		this.logger = owner.getLogger();
 		tryCount = 0;
 	}
-	public StandardAgent getOwner(){
+	public NAITOHumanoidAgent getOwner(){
 		return owner;
 	}
 	public boolean isFinished(){

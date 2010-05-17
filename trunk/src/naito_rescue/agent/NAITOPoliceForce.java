@@ -14,7 +14,10 @@ import rescuecore2.misc.geometry.*;
 import naito_rescue.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
-public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
+import naito_rescue.message.*;
+import naito_rescue.message.manager.*;
+
+public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements MessageConstants
 {
     private static final String DISTANCE_KEY = "clear.repair.distance";
 	private int distance; //閉塞解除が可能な距離...?
@@ -42,18 +45,62 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
             sendSubscribe(time, 1);
         } 
 		
-		logger.info("NAITOPoliceForce.hearring...");
+		logger.info("NAITOPoliceForce.hearing...");
 
-//		for(Command next : heard){
-//			logger.debug("heard->next = " + next);
-//			if(next instanceof AKSpeak){
-//				/**
-//				*  無線or声データの処理
-//				*/
-//				AKSpeak speak = (AKSpeak)next;
-//				
-//			}
-//		}
+		for(Command next : heard){
+			logger.debug("heard->next = " + next);
+			if(next instanceof AKSpeak){
+				/**
+				*  無線or声データの処理
+				*/
+				logger.info("Receive AKSpeak.");
+				AKSpeak speak = (AKSpeak)next;
+				List<naito_rescue.message.Message> msgList = msgManager.receiveMessage(speak);
+				logger.info("Extracting messages size = " + msgList.size());
+				for(naito_rescue.message.Message message : msgList){
+					if(message.getAddrAgent() != me().getID().getValue() && message.getAddrType() != ADDR_PF){
+						logger.info("Ignore message.");
+						continue; //自分(もしくは自分と同じ種別のエージェント)宛のメッセージでなかったら無視
+					}
+
+					if(message.getType() == TYPE_CLEAR){
+						logger.info("TYPE_CLEAR messsage has received.");
+						EntityID target_id = ((ClearMessage)message).getTarget();
+						StandardEntity target = model.getEntity(target_id);
+						if(target instanceof Area && ((Area)target).isBlockadesDefined() && !((Area)target).getBlockades().isEmpty()){
+							logger.info("currentTaskList.add(ClearTask(" + target + ")");
+							currentTaskList.add(new ClearTask(this, model, (Area)target, distance));
+						}
+					}
+				}
+			}
+		}
+
+		//自分が閉塞の近くにいたら，そいつを啓開する
+        Blockade target = getTargetBlockade();
+        if (target != null) {
+            logger.info("Clearing blockade " + target);
+            //sendSpeak(time, 1, ("Clearing " + target).getBytes());
+            sendClear(time, target.getID());
+            return;
+        }
+
+		if(!currentTaskList.isEmpty()){
+			logger.info("currentTaskList is not empty.");
+			logger.debug("" + currentTaskList);
+			taskRankUpdate();
+			currentTask = getHighestRankTask();
+			logger.debug("getHighestRankTask()");
+			logger.debug("  |__ " + currentTask + ", Rank = " + currentTask.getRank());
+			currentJob  = currentTask.currentJob();
+			logger.debug("currentJob = " + currentJob);
+			if(currentJob != null){
+				currentJob.doJob();
+			}else{
+				logger.info("currentJob is null.");
+			}
+			return;
+		}
 
 /*
 		// ボイスデータの処理 
@@ -198,16 +245,16 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 
 	public void taskRankUpdate(){
 		StandardEntity location = getLocation();
-		int distance;
+		int target_distance;
 		for(Task task : currentTaskList){
 			/**
 			*  ClearTaskのupdate:
 			*  意参るところから距離の近い順にランクを高くする
 			*/
 			if(task instanceof ClearTask){
-				Road target = ((ClearTask)task).getTargetRoad();
-				distance = model.getDistance(location, target);
-				task.setRank(1000 - distance);
+				Area target = ((ClearTask)task).getTargetArea();
+				target_distance = model.getDistance(location, target);
+				task.setRank(100000 - target_distance);
 			}
 		}
 	}

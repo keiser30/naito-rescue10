@@ -54,6 +54,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 			}
 		}
 
+		move(randomWalk());
 /*
 		if(target_building != null && getLocation().getID().getValue() == target_building.getID().getValue()){
 			visitedBuildings.add(target_building);

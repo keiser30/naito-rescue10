@@ -16,101 +16,87 @@ import java.io.*;
 public class ClearJob extends Job
 {
 	Blockade target = null;
-	Road     target_road;
+	Area     target_road;
 	int      maxDistance;
 	MyLogger logger;
 
-	public ClearJob(NAITOHumanoidAgent owner, StandardWorldModel world, Blockade target, Road target_road, int maxDistance){
+	public ClearJob(NAITOHumanoidAgent owner, StandardWorldModel world, Blockade target, Area target_road, int maxDistance){
 		super(owner, world);
 		this.target = target;
 		this.target_road = target_road;
 
 		this.logger = owner.getLogger();
 	}
-	public ClearJob(NAITOHumanoidAgent owner, StandardWorldModel world, int maxDistance){
-		this(owner, world, null, null, maxDistance);
+	public ClearJob(NAITOHumanoidAgent owner, StandardWorldModel world, Area target_road, int maxDistance){
+		this(owner, world, null, target_road, maxDistance);
 	}
 	@Override
 	public void doJob(){
 		logger.info("ClearJob.doJob();");
-		int x = ((Human)(owner.getMe())).getX();
-		int y = ((Human)(owner.getMe())).getY();
-		if(target != null){
-			logger.debug("owner.clear(" + target + ")");
-			owner.clear(target.getID());
-		}else if(owner.getLocation() instanceof Area){
-			// target == nullの時
-			// ownerが閉塞につかまってるとして，owner近辺を啓開する
-			// まずowner.getLocation()が閉塞だったらそこを啓開する
-			List<EntityID> ids = ((Area)(owner.getLocation())).getBlockades();
-			if(ids != null){
-				logger.info("Owner's location is defined blockades.");
-				for (EntityID next : ids) {
-					Blockade b = (Blockade)world.getEntity(next);
-					double d = owner.findDistanceTo(b, x, y);
-					owner.getLogger().debug("Distance to " + b + " = " + d);
-					if (maxDistance < 0 || d < maxDistance) {
-						owner.getLogger().debug("In range");
-						//啓開
-						logger.debug("(Location) owner.clear(" + b + ")");
-						owner.clear(b.getID());
-						return;
-					}
-				}
+		
+		if(owner.getLocation().getID().getValue() == target_road.getID().getValue()){
+			//自分のいる場所とその近傍について，啓開範囲内にある閉塞を啓開する
+			logger.info("In target road (" + target_road + ")");
+			target = getTargetBlockade();
+			if(target != null){
+				logger.info("clear(" + target + ")");
+				owner.clear(target.getID());
 			}else{
-				// owner.getLocation()がふつーの道だったら，その近辺を探索して啓開する
-				List<EntityID> neighbours = ((Area)(owner.getLocation())).getNeighbours(); //ownerの近辺にあるオブジェクト群のIDを取得
-				for(EntityID neighbour : neighbours){
-					Area location = (Area)(owner.getWorldModel().getEntity(neighbour));
-					if(location.isBlockadesDefined()){
-						List<EntityID> b = location.getBlockades();
-						for(EntityID blockade : b){
-							double d = owner.findDistanceTo((Blockade)(world.getEntity(blockade)), x, y);
-							if(maxDistance < 0 || d < maxDistance){
-								//啓開
-								logger.debug("(Neighbour) owner.clear(" + blockade + ")");
-								owner.clear(blockade);
-								return;
-							}
-						}
-					}
-				}
-				//ここにパスが来るケース:
-				//  . 啓開はあったが，啓開可能距離範囲内に存在しなかった
-				//  . そもそも啓開がなかった
-				return;
+				//閉塞がなかったら...?
+				logger.info("There are not blockade in target_road(" + target_road + ") ");
 			}
-		}else if(target != null){
-			logger.debug("target != null");
-			if(target_road.isBlockadesDefined()){
-				List<EntityID> ids = target_road.getBlockades();
-				if(ids != null){
-					for (EntityID next : ids) {
-						Blockade b = (Blockade)world.getEntity(next);
-						if(b != null){
-							double d = owner.findDistanceTo(b, x, y);
-							logger.debug("Distance to " + b + " = " + d);
-							if (maxDistance < 0 || d < maxDistance) {
-								logger.debug("In range");
-								//啓開
-								logger.debug("(Target) owner.clear(" + b + ")");
-								owner.clear(b.getID());
-								return;
-							}
-						}
-					}
-				}
-			}
-			logger.debug("target_road is not defined blockade.");
 		}else{
-			logger.debug("ClearJob: target is null && !owner.getLocation() instanceof Area && target == null");
-			return;
+			logger.info("この文に制御が移っているのなら，");
+			logger.info("MoveToClearPointJobのisFinishedがトチ狂ってる");
 		}
 	}
+    private Blockade getTargetBlockade() {
+		logger.info("ClearJob.getTargetBlockade()");
+        logger.debug("Looking for target blockade");
+        Area location = (Area)owner.getLocation();
+        logger.debug("Looking in current location");
+        Blockade result = getTargetBlockade(location, maxDistance);
+        if (result != null) {
+			logger.debug("Location is defined blockade.");
+            return result;
+        }
+        logger.debug("Looking in neighbouring locations");
+        for (EntityID next : location.getNeighbours()) {
+            location = (Area)world.getEntity(next);
+            result = getTargetBlockade(location, maxDistance);
+            if (result != null) {
+				logger.debug("Location's neighbour is defined blockade.");
+                return result;
+            }
+        }
+		logger.debug("return null.");
+        return null;
+    }
 
+    private Blockade getTargetBlockade(Area area, int maxDistance) {
+        if (!area.isBlockadesDefined()) {
+            logger.debug("Blockades undefined");
+            return null;
+        }
+        List<EntityID> ids = area.getBlockades();
+        // Find the first blockade that is in range.
+        int x = ((Human)owner.getMe()).getX();
+        int y = ((Human)owner.getMe()).getY();
+        for (EntityID next : ids) {
+            Blockade b = (Blockade)world.getEntity(next);
+            double d = owner.findDistanceTo(b, x, y);
+            if (maxDistance < 0 || d < maxDistance) {
+                return b;
+            }
+        }
+        logger.debug("No blockades in range");
+        return null;
+    }
 	@Override 
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
+		logger.info("ClearJob.isFinished();");
 		if(target_road != null){
+			logger.debug("target_road.isBlockade = " + target_road.isBlockadeDefined());
 			return !(target_road.isBlockadesDefined());
 		}else if(owner.getLocation() instanceof Area){
 			List<EntityID> neighbours = ((Area)(owner.getLocation())).getNeighbours();
