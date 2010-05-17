@@ -9,14 +9,14 @@
 #   
 ######################################
 
-対象: RoboCupRescueSimulation 1.0 nightly-build(2010.4.26日付まで)
+対象: RoboCupRescueSimulation 1.0 nightly-build(2010.5.10日付まで)
 
 
 ビルドに必要なもの:
 
       (1) サンマイクロシステムズのJava Compiler 1.6以上
 	    (およびそれに付属するjarコマンド)
-      (2) ant 1.7.0
+      (2) ant 1.7.1以上
 	    (antが使うjarファイルの揃い具合によっては，
 		より古いantでもビルドが可能かもしれません)
 	  (3) GNU Makefile
@@ -140,3 +140,44 @@
 	こうしないと，作ったエージェントのクラスをカーネルが自動的に認識してくれないため
 	(2-Bの起動方法を用いるときに問題が発生するということ)．
 
+(追記)サンプルエージェントについて:
+  A. 動作確認
+    (1) kernel.cfgについて，「kernel.agents.auto」と書かれている行が
+	    以下のようになっていることを確認する．
+
+        kernel.agents.auto +: sample.SampleFireBrigade*n
+        kernel.agents.auto +: sample.SamplePoliceForce*n
+        kernel.agents.auto +: sample.SampleAmbulanceTeam*n
+        kernel.agents.auto +: sample.SampleCentre*n
+        kernel.agents.auto +: sample.SampleCivilian*n
+        
+    (2) サーバを起動する
+    
+        $ant start-kernel
+        
+    (3) "Setup kernel options"というタイトルの画面が出てきたら，
+        "Agents"と書かれた枠の中を見て，
+    
+        sample.SampleFireBrigade
+        sample.SamplePoliceForce
+        sample.SampleAmbulanceTeam
+        sample.SampleCentre
+        sample.SampleCivilian
+        
+        と書かれた横の「Maximum」というチェックボックスがONに
+        なっていることを確認する．
+        その後OK(環境によっては「了解」)ボタンを押す．
+    
+    (4) 次の画面でRunボタンを押す
+    
+  B.ソースを読む
+      各サンプルエージェントのソースコードは以下にあります．
+      %SERVER_TOP_DIRECTORY%modules/%SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleFireBrigade.java
+      %SERVER_TOP_DIRECTORY%modules/%SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleAmbulanceTeam.java
+      %SERVER_TOP_DIRECTORY%modules/%SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SamplePoliceForce.java
+      %SERVER_TOP_DIRECTORY%modules/%SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleCivilian.java
+      %SERVER_TOP_DIRECTORY%modules/%SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleCentre.java
+      
+      それぞれのエージェントの行動は，各ソースコードのthinkメソッドの中に書かれています．
+      
+      あとはクラスの継承関係などを掘り下げていき，ガンガン読んでいきましょう．

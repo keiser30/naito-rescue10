@@ -32,7 +32,7 @@ public abstract class Task
 	public abstract ArrayList<Job> createJobList();
 	
 	public boolean isFinished(){
-		if(jobs.size() > 0  && processIdx+1 > jobs.size()){
+		if(jobs.size() > 0  && processIdx >= jobs.size()){
 			return true;
 		}
 		else return isFinished(owner, world);
@@ -43,7 +43,7 @@ public abstract class Task
 		if(jobs.size() == 0){
 			jobs.addAll(createJobList());
 		}
-		while(processIdx+1 <= jobs.size()){
+		while(processIdx < jobs.size()){
 			if(!jobs.get(processIdx).isFinished()){
 				return jobs.get(processIdx);
 			}

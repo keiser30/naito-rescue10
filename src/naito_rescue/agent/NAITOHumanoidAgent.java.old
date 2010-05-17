@@ -55,43 +55,93 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		this.time = time;
 
-		logger.info("");
 		logger.info("**********____" + time + "____**********");
 		logger.info("NAITOHumanoidAgent.think();");
 		logger.info("location = " + getLocation());
 		
+		logger.info("==================== Message DEBUG ====================");
+		// メッセージ通信のテスト
+
+		for(Command next : heard){
+			if(next instanceof AKSpeak){
+				logger.debug("AKSpeak is received.");
+				List<naito_rescue.message.Message> msgList = msgManager.receiveMessage((AKSpeak)next);
+				if(msgList == null){
+					logger.debug("receiveMessage() is failed!!!!!!!!!!!");
+				}else{
+					int fuga = 0;
+					logger.debug("Received Message List.");
+					logger.trace("Message Size = " + msgList.size());
+					for(naito_rescue.message.Message msg : msgList){
+						logger.debug((++fuga) + "個目: ");
+						logger.debug("Received Message = " + msg);
+						logger.trace("=> send time = " + msg.getSendTime());
+						if(msg instanceof ExtinguishMessage){
+							EntityID target = ((ExtinguishMessage)msg).getTarget();
+							logger.debug("ExtinguishMessage has received.");
+							logger.debug("==> target      = " + model.getEntity(target));
+							logger.debug("==> target size = " + ((ExtinguishMessage)msg).getTargetSize());
+							logger.debug("Move to target specified in received message...");
+							move(model.getEntity(target));
+						}else if(msg instanceof ClearMessage){
+							ClearMessage clmsg = (ClearMessage)msg;
+							EntityID target = clmsg.getTarget();
+							logger.debug("ClearMessage has received.");
+							logger.debug("==> target = " + model.getEntity(target));
+							move(model.getEntity(target));
+						}
+					}
+				}
+			}else{
+				logger.debug("Other type: " + next);
+			}
+		}
+
+		if(/*time % debug_send_cycle == 0 && */this instanceof NAITOAmbulanceTeam){
+
+			ExtinguishMessage exMsg = msgManager.createExtinguishMessage(-1, ADDR_FB, true, getLocation().getID(), 100+time);
+			logger.debug("ExtinguishMessage created.");
+			logger.trace("addrAgent   = " + exMsg.getAddrAgent());
+			logger.trace("addrType    = " + exMsg.getAddrType());
+			logger.trace("isBroadcast = " + exMsg.isBroadcast());
+			logger.trace("EntityID    = " + exMsg.getTarget());
+			logger.trace("Target size = " + exMsg.getTargetSize());
+
+			msgManager.sendMessage(exMsg);
+			logger.debug("ExtinguishMessage has sent.");
+			logger.trace("send time = " + time);
+		}
+/*
 		//currentTaskListに関する処理
 		//currentTaskが終了していたら，そいつをリストから削除する
 		if(currentTask != null && currentTask.isFinished()){
 			logger.debug("currentTaskList.remove(" + currentTask + ")");
-			logger.debug("==> currentTaskList = " + currentTaskList);
 			currentTaskList.remove(currentTask);
 		}
 			
 		StandardEntity location = getLocation();
 		//自分の今いる場所に閉塞がある場合
 		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
+
 			// 閉塞が発生しているRoadのIDを送りつける
 			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
 			if(!(this instanceof NAITOPoliceForce)){
-				ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
-				msgManager.sendMessage(clear_msg);
-				logger.debug("Find blockade (" + getLocation() + ")");
-				logger.debug("Sending ClearMessage...");
+				try{
+					say(("CLEAR_"+location.getID().getValue()).getBytes("UTF-8"));
+				}catch(Exception e){
+				}
+				logger.debug("Find Blockade. speak(or tell, say) 'Please clear " + (Road)location + "'");
 			}
 		}
 
 		if(currentTask != null && !currentTask.isFinished()){
-			logger.info("currentTask != null.");
+			logger.info("NAITOHumanoidAgent.think() ... currentTask != null.");
 			logger.info("currentTask = " + currentTask);
 			logger.info("currentJob = " + currentJob);
 			currentJob = currentTask.currentJob();
-			if(currentJob != null){
-				currentJob.doJob();
-			}else{
-				logger.info("currentJob is null.");
-			}
+			currentJob.doJob();
 		}
+*/
 	}
 
 	@Override
@@ -129,7 +179,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 
 		 targetBuildings.addAll(allBuildings);
 		 
-		 logger.info(this.toString() + " start!");
+		 logger.info("NAITORescue-10 Start!");
 		 logger.info("useSpeak            = " + useSpeak);
 		 logger.info("fireStationLess     = " + fireStationLess);
 		 logger.info("policeOfficeLess    = " + policeOfficeLess);
@@ -174,12 +224,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 	public E getMe(){
 		return me();
-	}
-	public int getX(){
-		return ((Human)me()).getX();
-	}
-	public int getY(){
-		return ((Human)me()).getY();
 	}
 
 	//メソッドのラッパー群

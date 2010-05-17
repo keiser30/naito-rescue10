@@ -16,11 +16,11 @@ import java.io.*;
 public class ClearTask extends Task
 {
 	//移動先
-	Road target;
+	Area target;
 	List<EntityID> blockades;
 	int maxDistance;
 
-	public ClearTask(NAITOHumanoidAgent owner, StandardWorldModel world, Road target, int distance){
+	public ClearTask(NAITOHumanoidAgent owner, StandardWorldModel world, Area target, int distance){
 		super(owner, world);
 		this.target = target;
 		this.maxDistance = distance;
@@ -32,8 +32,8 @@ public class ClearTask extends Task
 	public ArrayList<Job> createJobList(){
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		//jobs.add(new MoveToExtinguishPointJob(owner, world, target, distance));
-		jobs.add(new MoveToClearPointJob(owner, world, blockades, maxDistance));
-		jobs.add(new ClearJob(owner, world, maxDistance));
+		jobs.add(new MoveToClearPointJob(owner, world, target, maxDistance));
+		//jobs.add(new ClearJob(owner, world, target, maxDistance));
 		return jobs;
 	}
 
@@ -43,5 +43,5 @@ public class ClearTask extends Task
 		owner.getLogger().info("=====> return " + (target.isBlockadesDefined()?"false":"true"));
 		return !(target.isBlockadesDefined());
 	}
-	public Road getTargetRoad(){ return target; }
+	public Area getTargetArea(){ return target; }
 }

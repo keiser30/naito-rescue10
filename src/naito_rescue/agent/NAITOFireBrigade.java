@@ -53,6 +53,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			}
         }
 
+		move(randomWalk());
 //		logger.info("NAITOFireBrigade.hearing...");
 //		for(Command next : heard){
 //			logger.debug("heard->next = " + next);
