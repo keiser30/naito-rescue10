@@ -16,6 +16,7 @@ import java.io.*;
 public class ClearJob extends Job
 {
 	Blockade target = null;
+	List<EntityID> blockades;
 	Area     target_road;
 	int      maxDistance;
 	MyLogger logger;
@@ -24,7 +25,7 @@ public class ClearJob extends Job
 		super(owner, world);
 		this.target = target;
 		this.target_road = target_road;
-
+		this.maxDistance = maxDistance;
 		this.logger = owner.getLogger();
 	}
 	public ClearJob(NAITOHumanoidAgent owner, StandardWorldModel world, Area target_road, int maxDistance){
@@ -44,29 +45,38 @@ public class ClearJob extends Job
 			}else{
 				//閉塞がなかったら...?
 				logger.info("There are not blockade in target_road(" + target_road + ") ");
+				if(target_road.isBlockadesDefined()){
+					List<EntityID> blockades = target_road.getBlockades();
+				}else{
+					//ここにパスが移ると言うことは，
+					//そもそもClearJob.isFinished() == trueでなければならないはず
+				}
 			}
 		}else{
 			logger.info("この文に制御が移っているのなら，");
 			logger.info("MoveToClearPointJobのisFinishedがトチ狂ってる");
 		}
 	}
+
     private Blockade getTargetBlockade() {
 		logger.info("ClearJob.getTargetBlockade()");
-        logger.debug("Looking for target blockade");
+        //logger.debug("Looking for target blockade");
         Area location = (Area)owner.getLocation();
-        logger.debug("Looking in current location");
+        //logger.debug("Looking in current location");
         Blockade result = getTargetBlockade(location, maxDistance);
         if (result != null) {
-			logger.debug("Location is defined blockade.");
-            return result;
+            logger.info("There is blockade in this.location");
+			logger.debug("" + result);
+			return result;
         }
-        logger.debug("Looking in neighbouring locations");
+        //logger.debug("Looking in neighbouring locations");
         for (EntityID next : location.getNeighbours()) {
             location = (Area)world.getEntity(next);
             result = getTargetBlockade(location, maxDistance);
             if (result != null) {
-				logger.debug("Location's neighbour is defined blockade.");
-                return result;
+                logger.info("There is blockade in this.location.getNeighbours();");
+				logger.debug("" + result);
+				return result;
             }
         }
 		logger.debug("return null.");
@@ -74,8 +84,9 @@ public class ClearJob extends Job
     }
 
     private Blockade getTargetBlockade(Area area, int maxDistance) {
+		logger.info("ClearJob.getTargetBlockade(" + area + ", " + maxDistance + ")");
         if (!area.isBlockadesDefined()) {
-            logger.debug("Blockades undefined");
+            logger.info("!area.isBlockadesDefined(); ==> return null.");
             return null;
         }
         List<EntityID> ids = area.getBlockades();
@@ -86,6 +97,8 @@ public class ClearJob extends Job
             Blockade b = (Blockade)world.getEntity(next);
             double d = owner.findDistanceTo(b, x, y);
             if (maxDistance < 0 || d < maxDistance) {
+				logger.info("There is blockade.");
+				logger.debug("" + b);
                 return b;
             }
         }
@@ -96,13 +109,20 @@ public class ClearJob extends Job
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
 		logger.info("ClearJob.isFinished();");
 		if(target_road != null){
-			logger.debug("target_road.isBlockade = " + target_road.isBlockadeDefined());
+			logger.debug("target_road.isBlockadesDefined() = " + target_road.isBlockadesDefined());
 			return !(target_road.isBlockadesDefined());
 		}else if(owner.getLocation() instanceof Area){
 			List<EntityID> neighbours = ((Area)(owner.getLocation())).getNeighbours();
 			for(EntityID neighbour : neighbours){
 				Area location = (Area)(world.getEntity(neighbour));
-				if(location.isBlockadesDefined()) return false;
+				if(location.isBlockadesDefined()){
+					logger.debug("" + location + " isBlockadeDefined()!");
+					return false;
+				}	
+			}
+			if(((Area)(owner.getLocation())).isBlockadesDefined()){
+				logger.debug("(owner.getLocation()) " + owner.getLocation() + " isBlockadeDefined()!");
+				return false;
 			}
 			return true;
 		}

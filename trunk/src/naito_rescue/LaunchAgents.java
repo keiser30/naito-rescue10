@@ -3,10 +3,9 @@ package naito_rescue;
 import java.io.IOException;
 
 import rescuecore2.components.ComponentLauncher;
+import rescuecore2.components.TCPComponentLauncher;
 import rescuecore2.components.ComponentConnectionException;
-import rescuecore2.connection.Connection;
 import rescuecore2.connection.ConnectionException;
-import rescuecore2.connection.TCPConnection;
 import rescuecore2.registry.Registry;
 import rescuecore2.misc.CommandLineOptions;
 import rescuecore2.config.Config;
@@ -64,9 +63,8 @@ public final class LaunchAgents {
                 }
             }
             // CHECKSTYLE:ON:ModifiedControlVariable
-            Connection c = new TCPConnection(host, port);
-            c.startup();
-            connect(c, fb, pf, at, config);
+            ComponentLauncher launcher = new TCPComponentLauncher(host, port, config);
+            connect(launcher, fb, pf, at, config);
         }
         catch (IOException e) {
             Logger.error("Error connecting agents", e);
@@ -82,8 +80,7 @@ public final class LaunchAgents {
         }
     }
 
-    private static void connect(Connection c, int fb, int pf, int at, Config config) throws InterruptedException, ConnectionException {
-        ComponentLauncher launcher = new ComponentLauncher(c, config);
+    private static void connect(ComponentLauncher launcher, int fb, int pf, int at, Config config) throws InterruptedException, ConnectionException {
         int i = 0;
         try {
             while (fb-- != 0) {
@@ -115,18 +112,19 @@ public final class LaunchAgents {
         catch (ComponentConnectionException e) {
             Logger.info("failed: " + e.getMessage());
         }
-		try{
-			while(true){
-				Logger.info("Connecting civilian " + (i++) + "...");
-				launcher.connect(new NAITOCivilian());
-				Logger.info("success");
-			}
-		}catch(ComponentConnectionException e){
-			Logger.info("failed: " + e.getMessage());
-		}
         try {
             while (true) {
-                Logger.info("Connecting centre " + (i++) + "...");
+                Logger.info("Connecting civilian " + (i++) + "...");
+                launcher.connect(new NAITOCivilian());
+                Logger.info("success");
+            }
+        }
+        catch (ComponentConnectionException e) {
+            Logger.info("failed: " + e.getMessage());
+        }
+        try {
+            while (true) {
+                Logger.info("Connecting center " + (i++) + "...");
                 launcher.connect(new NAITOCenter());
                 Logger.info("success");
             }
@@ -134,17 +132,5 @@ public final class LaunchAgents {
         catch (ComponentConnectionException e) {
             Logger.info("failed: " + e.getMessage());
         }
-/*
-        try {
-            while (true) {
-                Logger.info("Connecting dummy agent " + (i++) + "...");
-                launcher.connect(new DummyAgent());
-                Logger.info("success");
-            }
-        }
-        catch (ComponentConnectionException e) {
-            Logger.info("failed: " + e.getMessage());
-        }
-*/
     }
 }
