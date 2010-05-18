@@ -75,7 +75,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 				}
 			}
 		}
-
+/*
 		//自分が閉塞の近くにいたら，そいつを啓開する
         Blockade target = getTargetBlockade();
         if (target != null) {
@@ -84,7 +84,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
             sendClear(time, target.getID());
             return;
         }
-
+*/
 		if(!currentTaskList.isEmpty()){
 			logger.info("currentTaskList is not empty.");
 			logger.debug("" + currentTaskList);
@@ -202,28 +202,36 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
         return result;
     }
     private Blockade getTargetBlockade() {
-        logger.debug("Looking for target blockade");
+       // logger.debug("Looking for target blockade");
+	   	logger.info("NAITOPoliceForce.getTargetBlockade();");
         Area location = (Area)location();
-        logger.debug("Looking in current location");
+        //logger.debug("Looking in current location");
         Blockade result = getTargetBlockade(location, distance);
         if (result != null) {
+			logger.info("There is blockade in this.location;");
+			logger.debug("" + result);
             return result;
         }
-        logger.debug("Looking in neighbouring locations");
+        //logger.debug("Looking in neighbouring locations");
         for (EntityID next : location.getNeighbours()) {
             location = (Area)model.getEntity(next);
             result = getTargetBlockade(location, distance);
             if (result != null) {
+				logger.info("There is blockade in this.location.getNeighbours();");
+				logger.debug("" + result);
                 return result;
             }
         }
+		logger.info("There is not blockade. return null;");
         return null;
     }
 
     private Blockade getTargetBlockade(Area area, int maxDistance) {
-        logger.debug("Looking for nearest blockade in " + area);
-        if (!area.isBlockadesDefined()) {
-            Logger.debug("Blockades undefined");
+        //logger.debug("Looking for nearest blockade in " + area);
+        logger.info("NAITOPoliceForce.getTargetBlockade(" + area + ", " + maxDistance + ")");
+		if (!area.isBlockadesDefined()) {
+            //Logger.debug("Blockades undefined");
+			logger.info("!area.isBlockadesDefined(); ==> return null;");
             return null;
         }
         List<EntityID> ids = area.getBlockades();
@@ -233,13 +241,15 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
         for (EntityID next : ids) {
             Blockade b = (Blockade)model.getEntity(next);
             double d = findDistanceTo(b, x, y);
-            logger.debug("Distance to " + b + " = " + d);
+            //logger.debug("Distance to " + b + " = " + d);
             if (maxDistance < 0 || d < maxDistance) {
-                logger.debug("In range");
+                //logger.debug("In range");
+				logger.info("There is blockade.");
+				logger.debug("" + b);
                 return b;
             }
         }
-        logger.debug("No blockades in range");
+        logger.info("No blockades in range");
         return null;
     }
 
