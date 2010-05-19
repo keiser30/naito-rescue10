@@ -31,7 +31,6 @@ public class ClearTask extends Task
 	@Override
 	public ArrayList<Job> createJobList(){
 		ArrayList<Job> jobs = new ArrayList<Job>();
-		//jobs.add(new MoveToExtinguishPointJob(owner, world, target, distance));
 		jobs.add(new MoveToClearPointJob(owner, world, target, maxDistance));
 		jobs.add(new ClearJob(owner, world, target, maxDistance));
 		return jobs;

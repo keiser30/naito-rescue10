@@ -75,7 +75,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 				}
 			}
 		}
-/*
+
 		//自分が閉塞の近くにいたら，そいつを啓開する
         Blockade target = getTargetBlockade();
         if (target != null) {
@@ -84,7 +84,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
             sendClear(time, target.getID());
             return;
         }
-*/
+
 		if(!currentTaskList.isEmpty()){
 			logger.info("currentTaskList is not empty.");
 			logger.debug("" + currentTaskList);
@@ -201,7 +201,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
         }
         return result;
     }
-    private Blockade getTargetBlockade() {
+    public Blockade getTargetBlockade() {
        // logger.debug("Looking for target blockade");
 	   	logger.info("NAITOPoliceForce.getTargetBlockade();");
         Area location = (Area)location();
@@ -226,7 +226,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
         return null;
     }
 
-    private Blockade getTargetBlockade(Area area, int maxDistance) {
+    public Blockade getTargetBlockade(Area area, int maxDistance) {
         //logger.debug("Looking for nearest blockade in " + area);
         logger.info("NAITOPoliceForce.getTargetBlockade(" + area + ", " + maxDistance + ")");
 		if (!area.isBlockadesDefined()) {

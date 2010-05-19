@@ -66,9 +66,25 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			logger.debug("currentTaskList.remove(" + currentTask + ")");
 			logger.debug("==> currentTaskList = " + currentTaskList);
 			currentTaskList.remove(currentTask);
+			currentTask = null;
 		}
 			
 		StandardEntity location = getLocation();
+		//啓開の発見検証用コード
+		if(location instanceof Area){
+			if(((Area)location).isBlockadesDefined()){
+				logger.info("There is blockade...?");
+				if(!((Area)location).getBlockades().isEmpty()){
+					logger.info("There is blockade!");
+					logger.debug("blockades = " + ((Area)location).getBlockades());
+				}else{
+					logger.info("location.isBlockadesDefined()...but, getBlockades() is empty.");
+					logger.debug("blockades = " + ((Area)location).getBlockades());
+				}
+			}else{
+				logger.info("There is no blockade.");
+			}
+		}
 		//自分の今いる場所に閉塞がある場合
 		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
 			// 閉塞が発生しているRoadのIDを送りつける
@@ -78,6 +94,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				msgManager.sendMessage(clear_msg);
 				logger.debug("Find blockade (" + getLocation() + ")");
 				logger.debug("Sending ClearMessage...");
+			}else{
+				NAITOPoliceForce pf = (NAITOPoliceForce)this;
+				int dist = pf.getDistance();
+				logger.debug("currentTask = new ClearTask();");
+				currentTask = new ClearTask(this, model, (Area)location, dist);
 			}
 		}
 
@@ -184,7 +205,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 	//メソッドのラッパー群
 	public void move(StandardEntity target){
- //ダイクストラ法の経路探索が実装できるまで，breadthFirstSearchを使う
+		//ダイクストラ法の経路探索が実装できるまで，breadthFirstSearchを使う
 		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
 		if(path != null){
 			move(path);
