@@ -28,7 +28,7 @@ public class MoveToClearPointJob extends Job
 	}
 
 	public void doJob(){
-		logger.info("MoveToClearPointJob.doJob();");
+		logger.info("////////// MoveToClearPointJob.doJob(); //////////");
 		//logger.info("blockades = " + blockades);
 
 		//閉塞への経路の中で，最短のものを選択肢手移動する
@@ -96,7 +96,7 @@ public class MoveToClearPointJob extends Job
 	}
 	public boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
 		//if(blockades == null || blockades.isEmpty()) return true;
-		logger.info("MoveToClearPointJob.isFinished();");
+		logger.info("////////// MoveToClearPointJob.isFinished(); ///////////");
 		/*
 		for(EntityID blockade : blockades){
 			logger.debug("blockade: " + blockade);
@@ -107,8 +107,8 @@ public class MoveToClearPointJob extends Job
 		}
 		*/
 		StandardEntity location = owner.getLocation();
-		logger.debug("" + location);
-		logger.debug("" + target);
+		logger.debug("location = " + location);
+		logger.debug("target   = " + target);
 		if(location.getID().getValue() == target.getID().getValue()){
 			logger.debug("return true;");
 			return true;
