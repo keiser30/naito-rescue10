@@ -16,7 +16,7 @@ import rescuecore2.standard.view.*;
 /**
    A view layer that animates human movements.
  */
-public class DebugAnimatedHumanLayer extends HumanLayer {
+public class DebugAnimatedHumanLayer extends DebugHumanLayer {
     private Set<EntityID> humanIDs;
 
     private Map<EntityID, Queue<Pair<Integer, Integer>>> frames;

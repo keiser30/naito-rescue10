@@ -50,10 +50,12 @@ public class DebugAnimatedWorldModelViewer extends StandardWorldModelViewer {
 
     @Override
     public void addDefaultLayers() {
-        addLayer(new DebugBuildingLayer());
-        addLayer(new DebugRoadLayer());
-        addLayer(new AreaNeighboursLayer());
+        //addLayer(new DebugBuildingLayer());
+        //addLayer(new DebugRoadLayer());
+        addLayer(new DebugAreaNeighboursLayer());
         addLayer(new RoadBlockageLayer());
+		addLayer(new DebugRoadLayer());
+		addLayer(new DebugBuildingLayer());
         addLayer(new BuildingIconLayer());
         humans = new DebugAnimatedHumanLayer();
         addLayer(humans);

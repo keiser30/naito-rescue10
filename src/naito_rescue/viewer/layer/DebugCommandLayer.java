@@ -33,6 +33,7 @@ import javax.swing.Action;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 
+import java.awt.*;
 /**
    A layer for viewing commands.
  */
@@ -49,7 +50,7 @@ public class DebugCommandLayer extends StandardViewLayer {
     private Graphics2D g;
     private ScreenTransform t;
     private Collection<Command> commands;
-
+	
     private boolean renderMove;
     private boolean renderExtinguish;
     private boolean renderClear;
@@ -64,6 +65,7 @@ public class DebugCommandLayer extends StandardViewLayer {
     private RenderLoadAction renderLoadAction;
     private RenderUnloadAction renderUnloadAction;
 
+	private BasicStroke extinguishStroke = new BasicStroke(4.0f);
     /**
        Construct a new CommandLayer.
     */
@@ -234,15 +236,16 @@ public class DebugCommandLayer extends StandardViewLayer {
         int bX = t.xToScreen(targetLocation.first());
         int bY = t.yToScreen(targetLocation.second());
         g.setColor(Color.BLUE);
+		g.setStroke(extinguishStroke);
         g.drawLine(fbX, fbY, bX, bY);
     }
 
     private void renderClear(AKClear clear) {
-        renderHumanAction(world.getEntity(clear.getAgentID()), CLEAR_COLOUR, null);
+        renderHumanAction(world.getEntity(clear.getAgentID()), CLEAR_COLOUR, "C");
     }
 
     private void renderRescue(AKRescue rescue) {
-        renderHumanAction(world.getEntity(rescue.getAgentID()), RESCUE_COLOUR, null);
+        renderHumanAction(world.getEntity(rescue.getAgentID()), RESCUE_COLOUR, "R");
     }
 
     private void renderLoad(AKLoad load) {
@@ -262,6 +265,7 @@ public class DebugCommandLayer extends StandardViewLayer {
         g.fill(shape);
         if (s != null) {
             g.setColor(Color.BLACK);
+			g.setFont(g.getFont().deriveFont(Font.BOLD));
             FontMetrics metrics = g.getFontMetrics();
             int width = metrics.stringWidth(s);
             int height = metrics.getHeight();
