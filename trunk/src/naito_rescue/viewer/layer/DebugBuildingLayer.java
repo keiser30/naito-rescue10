@@ -7,7 +7,9 @@ import java.awt.Shape;
 import java.awt.Polygon;
 import java.awt.Stroke;
 import java.awt.BasicStroke;
-
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.geom.*;
 import rescuecore2.standard.view.*;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;
@@ -58,8 +60,22 @@ public class DebugBuildingLayer extends AreaLayer<Building> {
     protected void paintShape(Building b, Polygon shape, Graphics2D g) {
         drawBrokenness(b, shape, g);
         drawFieryness(b, shape, g);
+		drawBuildingID(b, shape, g);
     }
-
+	private void drawBuildingID(Building b, Polygon shape, Graphics2D g){
+		String str = b.getID().getValue() + "";
+		
+		Rectangle2D rect = shape.getBounds2D();
+		float x = (float)(rect.getX() + (rect.getWidth() / 2));
+		float y = (float)(rect.getY() + (rect.getHeight() / 2));
+		g.setFont(g.getFont().deriveFont(Font.BOLD, 15));
+		g.setColor(Color.orange);
+		
+		FontMetrics metrics = g.getFontMetrics();
+		int width  = metrics.stringWidth(str);
+		int height = metrics.getHeight();
+		g.drawString(str, (x - (width / 2)), (y + (height / 2)));
+	}
     private void drawFieryness(Building b, Polygon shape, Graphics2D g) {
         if (!b.isFierynessDefined()) {
             return;
