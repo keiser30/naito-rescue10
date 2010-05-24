@@ -9,7 +9,7 @@ import java.util.*;
 
 public final class MySearch {
     private StandardWorldModel world;
-	private NAITOHumanoidAgent owner;
+	private NAITOAgent         owner;
 	private MyLogger           logger;
 	
 	private int                           initCost[][];
@@ -29,7 +29,7 @@ public final class MySearch {
        Construct a new MySearch.
        @param world The world model to search.
      */
-    public MySearch(StandardWorldModel world, NAITOHumanoidAgent owner) {
+    public MySearch(StandardWorldModel world, NAITOAgent owner) {
         this.world = world;
 		this.owner = owner;
 		this.logger = owner.getLogger();

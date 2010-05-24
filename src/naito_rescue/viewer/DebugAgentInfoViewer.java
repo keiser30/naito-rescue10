@@ -33,6 +33,7 @@ public class DebugAgentInfoViewer extends JPanel
 		cmd2str.put(AKRescue.class, "Rescue");
 		cmd2str.put(AKSubscribe.class, "Subscribe");
 		cmd2str.put(AKSpeak.class, "Speak");
+		cmd2str.put(AKRest.class, "Rest");
 	}
 	
 	public DebugAgentInfoViewer(){
