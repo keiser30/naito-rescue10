@@ -218,6 +218,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 			return null;
 		}
 	}
+/*
 	protected StandardEntity getTargetBuilding(){
 		logger.debug("getTargetBuilding();");
 		StandardEntity result = null;
@@ -245,6 +246,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 		logger.debug("result = " + result);
 		return result;
 	}
+*/
     protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
 		return EnumSet.of(StandardEntityURN.AMBULANCE_TEAM);
 	}
@@ -270,7 +272,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
                 && h.isDamageDefined()
                 && h.isPositionDefined()
                 && h.getHP() > 0
-//                && (h.getBuriedness() > 0 || h.getDamage() > 0)) {
+                && (h.getBuriedness() > 0 || h.getDamage() > 0)
 				&& h.getBuriedness() > 0){
                 logger.debug("targets.add(" + h + ")");
                 targets.add(h);
@@ -279,6 +281,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
         Collections.sort(targets, new DistanceSorter(location(), model));
         return targets;
     }
+/*
 	private void updateTargetBuildings(){
 		logger.debug("updateTargetBuildings();");
 		logger.debug("visitedBuildings = " + visitedBuildings);
@@ -286,6 +289,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 			targetBuildings.remove(visited);
 		}
 	}
+*/
     private void updateUnexploredBuildings(ChangeSet changed) {
     	logger.trace("called updateUnexploredBuildings();");
         for (EntityID next : changed.getChangedEntities()) {

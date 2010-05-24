@@ -92,6 +92,7 @@ public class NAITOViewer extends StandardViewer {
 							if(next.getObject() instanceof Human){
 								agentViewer.setTargetAgent((Human)next.getObject());
 								agentViewerTarget = (Human)next.getObject();
+								viewer.setTargetHuman(agentViewerTarget);
 							}
 						}
 					}

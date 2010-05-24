@@ -1,6 +1,7 @@
 package naito_rescue.viewer;
 
 import rescuecore2.standard.view.*;
+import rescuecore2.standard.entities.*;
 import javax.swing.Timer;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -42,7 +43,9 @@ public class DebugAnimatedWorldModelViewer extends StandardWorldModelViewer {
         timer.setRepeats(true);
         timer.start();
     }
-
+	public void setTargetHuman(Human h){
+		humans.setTargetHuman(h);
+	}
     @Override
     public String getViewerName() {
         return "Animated world model viewer";

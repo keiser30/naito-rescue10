@@ -36,7 +36,7 @@ public class MyLogger
 
 	int         loglevel = TRACE; //NOTHINGなら何もしない
 
-	public MyLogger(NAITOHumanoidAgent owner, boolean isStdout){
+	public MyLogger(NAITOAgent owner, boolean isStdout){
 		if(loglevel >= NOTHING) return;
 
 		try{

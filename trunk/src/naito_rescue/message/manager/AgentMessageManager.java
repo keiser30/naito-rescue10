@@ -13,7 +13,7 @@ import java.util.*;
 
 public class AgentMessageManager implements MessageConstants
 {
-	private NAITOHumanoidAgent owner;
+	private NAITOAgent owner;
 	private MessageUtils       utils = new MessageUtils();
 	private ArrayList<naito_rescue.message.Message> received = new ArrayList<naito_rescue.message.Message>();
 	private ArrayList<naito_rescue.message.Message> sended = new ArrayList<naito_rescue.message.Message>();
@@ -22,7 +22,7 @@ public class AgentMessageManager implements MessageConstants
 	private int create_mes_count;
 	private int channel = 1;
 
-	public AgentMessageManager(NAITOHumanoidAgent owner){
+	public AgentMessageManager(NAITOAgent owner){
 		if(owner == null) return;
 		this.owner = owner;
 		this.logger = owner.getLogger();

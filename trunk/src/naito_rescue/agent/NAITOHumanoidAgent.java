@@ -22,38 +22,25 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 {
     private static final String SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
     private static final String SPEAK_COMMUNICATION_MODEL = "kernel.standard.ChannelCommunicationModel";
-
-	protected boolean             useSpeak;
-	protected int                 time;
-	protected ArrayList<Task>     currentTaskList;
-	protected Task                currentTask;
-	protected Job                 currentJob;
-	protected AgentMessageManager msgManager;
-	protected MyLogger            logger;
-
-	protected Set<StandardEntity> visitedBuildings;
-	protected Set<StandardEntity> targetBuildings;
-	protected MySearch            search;
-	protected Collection<StandardEntity> allBuildings;
-	protected Collection<StandardEntity> allRoads;
-	protected Collection<StandardEntity> firebrigades;
-	protected Collection<StandardEntity> policeforces;
-	protected Collection<StandardEntity> ambulanceteams;
-	protected Collection<StandardEntity> allRefuges;
-	protected Collection<StandardEntity> firestation;
-	protected Collection<StandardEntity> policeoffice;
-	protected Collection<StandardEntity> ambulancecenter;
-	protected Collection<StandardEntity> civilians;
-
-	protected boolean centerLess;
-	protected boolean fireStationLess;
-	protected boolean ambulanceCenterLess;
-	protected boolean policeOfficeLess;
-	protected boolean ignoreBroadcast;
-	protected int debug_send_cycle = 4;
+	private static final int            CROWLABLE_NUM = 5;
+	protected boolean                   useSpeak;
+	protected ArrayList<Task>           currentTaskList;
+	protected ArrayList<Building>       crowlingBuildings;
+	protected ArrayList<Human>          teamMembers;
+	protected Task                      currentTask;
+	protected Job                       currentJob;
+	protected boolean                   centerLess;
+	protected boolean                   fireStationLess;
+	protected boolean                   ambulanceCenterLess;
+	protected boolean                   policeOfficeLess;
+	protected boolean                   ignoreBroadcast;
+	
+	protected boolean                   isLeader;
+	protected boolean                   isMember;
+	protected boolean                   isOnTeam;
 
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
-		this.time = time;
+		super.think(time, changed, heard);
 
 		logger.info("");
 		logger.info("**********____" + time + "____**********");
@@ -118,46 +105,180 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	@Override
     protected void postConnect() {
 		 super.postConnect();
+		 
 		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
-		 logger = new MyLogger(this, false);
 		 currentTaskList = new ArrayList<Task>();
-		 msgManager = new AgentMessageManager(this);
-		 visitedBuildings = new HashSet<StandardEntity>();
-		 targetBuildings = new HashSet<StandardEntity>();
-		 search = new MySearch(model, this);
+		 crowlingBuildings = new ArrayList<Building>();
+		 teamMembers = new ArrayList<Human>();
 
-		 /**
-		  * 各種建物, エージェントに関する情報を収集する
-		  */
-		 allBuildings = model.getEntitiesOfType(StandardEntityURN.BUILDING);
-		 allRoads = model.getEntitiesOfType(StandardEntityURN.ROAD);
-		 firebrigades = model.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE);
-		 policeforces = model.getEntitiesOfType(StandardEntityURN.POLICE_FORCE);
-		 ambulanceteams = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM);
-		 civilians = model.getEntitiesOfType(StandardEntityURN.CIVILIAN);
-		 
-		 //センターの情報を収集
-		 allRefuges = model.getEntitiesOfType(StandardEntityURN.REFUGE);
-		 firestation = model.getEntitiesOfType(StandardEntityURN.FIRE_STATION);
-		 policeoffice = model.getEntitiesOfType(StandardEntityURN.POLICE_OFFICE);
-		 ambulancecenter = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_CENTRE);
-		 
 		 //センターレスに関する設定
 		 fireStationLess = firestation.isEmpty();
 		 policeOfficeLess = policeoffice.isEmpty();
 		 ambulanceCenterLess = ambulancecenter.isEmpty();
 		 centerLess = fireStationLess && policeOfficeLess && ambulanceCenterLess;
 		 
-		 targetBuildings.addAll(allBuildings);
 		 
 		 logger.info(this.toString() + " start!");
-		 logger.info("useSpeak            = " + useSpeak);
-		 logger.info("fireStationLess     = " + fireStationLess);
-		 logger.info("policeOfficeLess    = " + policeOfficeLess);
-		 logger.info("ambulanceCenterLess = " + ambulanceCenterLess);
-		 logger.info("    => centerLess   = " + centerLess);
+		 logger.debug("useSpeak            = " + useSpeak);
+		 logger.debug("fireStationLess     = " + fireStationLess);
+		 logger.debug("policeOfficeLess    = " + policeOfficeLess);
+		 logger.debug("ambulanceCenterLess = " + ambulanceCenterLess);
+		 logger.debug("    => centerLess   = " + centerLess);
+		 
+		 //チーム分け
+		 isLeader = isMember = isOnTeam = false;
+		 createCrowlingTeam();
+		 isOnTeam = isLeader || isMember;
+		 
+		 logger.debug("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+		 logger.debug("createCrowlingTeam() is end.");
+		 logger.debug("isLeader = " + isLeader);
+		 logger.debug("isMember = " + isMember);
+		 logger.debug("   |___ isOnTeam = " + isOnTeam);
+		 logger.debug("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
 	}
 	
+	private int maxInt(Integer... nums){
+		int max = 0;
+		for(int i = 0;i < nums.length;i++){
+			if(nums[i] > max){
+				max = nums[i];
+			}
+		}
+		return max;
+	}
+	//建物探訪をするチームを作成する
+	public void createCrowlingTeam(){
+		logger.info("=======================================");
+		logger.info("createCrowlingTeam();");
+		logger.info("CLOWLABLE_NUM = " + CROWLABLE_NUM);
+		logger.info("atSize        = " + atSize);
+		logger.info("pfSize        = " + pfSize);
+		logger.info("fbSize        = " + fbSize);
+		//どの種類のエージェントが探訪を担当するか決定する
+		int max = maxInt(atSize, pfSize, fbSize);
+		logger.info("max           = " + max);
+		if(atSize == max && atSize > CROWLABLE_NUM){
+			//AmbulanceTeamが探訪する
+			logger.info("担当はAmbulanceTeam (atSize = " + atSize + ")");
+			if(this instanceof NAITOAmbulanceTeam){
+				logger.info(this + " in crowling Team.");
+				if(atList.get(0).getID().getValue() == me().getID().getValue()){
+					logger.info("------> " + this + " is Leader!");
+					isLeader = true;
+				}else{
+					logger.info("------> " + this + " is Member.");
+					isMember = true;
+				}
+				teamMembers.addAll(atList);
+				decideCrowlingBuildings();
+			}
+		}else if(pfSize == max && pfSize > CROWLABLE_NUM){
+			//PoliceForceが探訪する
+			logger.info("担当はPoliceForce (pfSize = " + pfSize + ")");
+			if(this instanceof NAITOPoliceForce){
+				logger.info(this + " in crowling Team.");
+				if(pfList.get(0).getID().getValue() == me().getID().getValue()){
+					logger.info("------> " + this + " is Leader!");
+					isLeader = true;
+				}else{
+					logger.info("------> " + this + " is Member.");
+					isMember = true;
+				}
+				teamMembers.addAll(pfList);
+				decideCrowlingBuildings();
+			}
+		}else if(fbSize == max && fbSize > CROWLABLE_NUM){
+			//FireBrigadeが探訪する
+			logger.info("担当はFireBrigade (fbSize = " + fbSize + ")");
+			if(this instanceof NAITOFireBrigade){
+				logger.info(this + " in crowling Team.");
+				if(fbList.get(0).getID().getValue() == me().getID().getValue()){
+					logger.info("------> " + this + " is Leader!");
+					isLeader = true;
+				}else{
+					logger.info("------> " + this + " is Member.");
+					isMember = true;
+				}
+				teamMembers.addAll(fbList);
+				decideCrowlingBuildings();
+			}
+		}else{
+			//全員で探訪する
+			logger.info("担当は…ッ，全員……ッッ! 決する…！ここで……ッッ！！ (allAgentsList.size() = " + allAgentsList.size() + ")");
+			logger.info(this + " in crowling Team.");
+			if(allAgentsList.get(0).getID().getValue() == me().getID().getValue()){
+				logger.info("------> " + this + " is Leader!");
+				isLeader = true;
+			}else{
+				logger.info("------> " + this + " is Member.");
+				isMember = true;
+			}
+			teamMembers.addAll(allAgentsList);
+			decideCrowlingBuildings();
+		}
+		logger.info("=======================================");
+	}
+	//探訪する建物を決定する
+	//(多分ここの計算はものすごい時間を食う)
+	private void decideCrowlingBuildings(){
+		logger.info("|```````````````````````````````````|");
+		logger.info(this + ".decideCrowlingBuildings();");
+		logger.info("allBuildings.size() = " + allBuildings.size());
+		java.awt.geom.Rectangle2D world_rect = model.getBounds();
+		double minX = world_rect.getX();
+		double minY = world_rect.getY();
+		double maxX = minX + world_rect.getWidth();
+		double maxY = minY + world_rect.getHeight();
+		double w_width = world_rect.getWidth();
+		double w_height = world_rect.getHeight();
+		
+		int roleID = teamMembers.indexOf(me());
+		int separateBlock = 1;
+		
+		logger.debug("minX     = " + minX);
+		logger.debug("minY     = " + minY);
+		logger.debug("maxX     = " + maxX);
+		logger.debug("maxY     = " + maxY);
+		logger.debug("w_width  = " + w_width);
+		logger.debug("w_height = " + w_height);
+		logger.debug("roleID   = " + roleID);
+		//DisasterSpaceをいくつのブロックに分割するかを決める
+		for(; (separateBlock * separateBlock) < teamMembers.size();separateBlock++);
+		
+		separateBlock--;
+		if(separateBlock < 1) separateBlock = 1;
+		
+		logger.debug("separateBlock = " + separateBlock);
+		
+		//どっからどこまでのBuildingを探訪するか決定する
+		double width  = (maxX - minX) / separateBlock;
+		double height = (maxY - minY) / separateBlock;
+		double x      = minX + width * (roleID % separateBlock);
+		double y      = minY + height * (roleID % separateBlock);
+		
+		logger.debug("//---------- 範囲 ----------//");
+		logger.debug("x      = " + x);
+		logger.debug("y      = " + y);
+		logger.debug("width  = " + width);
+		logger.debug("height = " + height);
+		logger.debug("//--------------------------//");
+		Building b = null;
+		for(StandardEntity building : allBuildings){
+			b = (Building)building;
+			if(b.getX() > x && b.getX() <= (x + width) &&
+			   b.getY() > y && b.getY() <= (x + height)){
+			   	logger.debug("In range:");
+			   	logger.debug("minX = " + x + ", minY = " + y);
+			   	logger.trace("b.x = " + b.getX());
+			   	logger.trace("b.y = " + b.getY());
+			   	logger.debug("maxX = " + (x + width) + ", maxY = " + (y + height));
+				crowlingBuildings.add(b);
+			}
+		}
+		logger.info("crowlingBuildings = " + crowlingBuildings);
+		logger.info("|___________________________________|");
+	}
 	public void taskRankUpdate(){
 		for(int i = 0;i < currentTaskList.size();i++){
 			Task task = currentTaskList.get(i);
@@ -172,107 +293,17 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			}
 		}
 	}
+	
 	@Override
 	public String toString(){
 		return "NAITOHumanoidAgent: " + me().getID();
 	}
-	public int getTime(){
-		return time;
-	}
 
-	public StandardEntity getLocation(){
-		return location();
-	}
-
-	public MyLogger getLogger(){
-		return logger;
-	}
-	public StandardWorldModel getWorldModel(){
-		return model;
-	}
-	public MySearch getSearch(){
-		return search;
-	}
-	public E getMe(){
-		return me();
-	}
 	public int getX(){
 		return ((Human)me()).getX();
 	}
 	public int getY(){
 		return ((Human)me()).getY();
-	}
-
-	//メソッドのラッパー群
-	public void move(StandardEntity target){
-		//ダイクストラ法の経路探索が実装できるまで，breadthFirstSearchを使う
-		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
-		if(path != null){
-			move(path);
-		}else{
-			logger.debug("path is null.");
-			logger.debug("location = " + getLocation());
-			logger.debug("target   = " + target);
-		}
-	}
-	public void move(StandardEntity target, int x, int y){
-		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
-		if(path != null){
-			move(path, x, y);
-		}else{
-			logger.debug("path is null.");
-			logger.debug("location = " + getLocation());
-			logger.debug("target   = " + target);
-		}
-	}
-	public void move(List<EntityID> path){
-		logger.debug("NAITOHumanoidAgent.move(path);");
-		sendMove(time, path);
-	}
-
-	public void move(List<EntityID> path, int x, int y){
-		logger.debug("move(path,x,y)");
-		sendMove(time, path, x, y);
-	}
-	public void extinguish(EntityID target, int water){
-		sendExtinguish(time, target, water);
-	}
-	public void clear(EntityID target){
-		sendClear(time, target);
-	}
-	public void load(EntityID target){
-		sendLoad(time, target);
-	}
-	public void unload(){
-		sendUnload(time);
-	}
-	public void rescue(EntityID target){
-		sendRescue(time, target);
-	}
-	public void rest(){
-		sendRest(time);
-	}
-	public void speak(int channel, byte[] data){
-		sendSpeak(time, channel, data);
-	}
-	public void subscribe(int... channels){
-		sendSubscribe(time, channels);
-	}
-	public void say(byte[] data){
-		logger.debug("say();");
-		/*
-		if(useSpeak){
-			logger.debug("say -> sendSpeak();");
-			sendSpeak(time, 0, data);
-		}else{
-			logger.debug("say -> sendSay();");
-			sendSay(time, data);
-		}
-		*/
-		sendSpeak(time, 0, data);
-	}
-	public void tell(byte[] data){
-		sendTell(time, data);
 	}
 
     protected List<EntityID> randomWalk() {
@@ -302,17 +333,14 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
         return result;
     }
     public int findDistanceTo(Blockade b, int x, int y) {
-        //logger.debug("Finding distance to " + b + " from " + x + ", " + y);
         List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(b.getApexes()), true);
         double best = Double.MAX_VALUE;
         Point2D origin = new Point2D(x, y); 
         for (Line2D next : lines) {
             Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
             double d = GeometryTools2D.getDistance(origin, closest);
-            //logger.debug("Next line: " + next + ", closest point: " + closest + ", distance: " + d); 
             if (d < best) {
                 best = d;
-                //logger.debug("New best distance");
             }   
 
         }
