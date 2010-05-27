@@ -36,9 +36,10 @@ public class NAITOViewer extends StandardViewer {
 	private DebugAnimatedWorldModelViewer viewer;
 	private JFrame      frame, oframe;
     private JLabel      timeLabel;
-	private JPanel      eastPanel, eastTopPanel, eastBottomPanel;
-	private JScrollPane eastBottomScrollPane;
-	private DebugObjectViewer inspector;
+	private JPanel      eastPanel, eastTopPanel;
+	//private JScrollPane eastBottomPanel;
+	private JPanel  eastBottomPanel;
+	private DebugObjectViewer    inspector;
 	private DebugAgentInfoViewer agentViewer;
 	private Human                agentViewerTarget;
 
@@ -58,24 +59,30 @@ public class NAITOViewer extends StandardViewer {
         timeLabel.setFont(timeLabel.getFont().deriveFont(Font.PLAIN, FONT_SIZE));
 
 		//右側ペインの作成
-		eastPanel = new JPanel();
 		eastTopPanel = new JPanel();
-		eastBottomPanel = new JPanel();
-		eastPanel.setLayout(new GridLayout(2,1));
-		eastPanel.setPreferredSize(new Dimension(500,500));
 		eastTopPanel.setBorder(BorderFactory.createTitledBorder("Agent Information"));
-		eastBottomPanel.setBorder(BorderFactory.createTitledBorder("Object Viewer"));
-		//eastTopPanelの設定
 		agentViewer = new DebugAgentInfoViewer();
 		eastTopPanel.add(agentViewer);
-		//eastBottomPanelの設定
+
+		eastBottomPanel = new JPanel();
+		eastBottomPanel.setBorder(BorderFactory.createTitledBorder("Object Viewer"));
 		inspector = new DebugObjectViewer();
-		eastBottomPanel.setLayout(new GridLayout(1,1));
-		eastBottomPanel.add(inspector);
-		eastBottomScrollPane = new JScrollPane(eastBottomPanel);
-		//右側ペインの設定
+		eastBottomPanel.add(new JScrollPane(inspector));
+		//eastBottomPanel.add(new JLabel("tteess"));
+
+		eastPanel = new JPanel();
+		eastPanel.setLayout(new GridLayout(2,1));
+		eastPanel.setPreferredSize(new Dimension(500,500));
 		eastPanel.add(eastTopPanel);
-		eastPanel.add(eastBottomScrollPane);
+		eastPanel.add(eastBottomPanel);
+		//eastBottomPanel = new JPanel();
+		//eastBottomPanel.setBorder(BorderFactory.createTitledBorder("Object Viewer"));
+		//eastTopPanelの設定
+		//eastBottomPanelの設定
+		//eastBottomPanel.setLayout(new GridLayout(1,1));
+		//eastBottomScrollPane = new JScrollPane(eastBottomPanel);
+		//eastBottomScrollPane.setBorder(BorderFactory.createTitledBorder("Object Viewer"));
+		//右側ペインの設定
 
 		//フレームにペインを貼り付け
         frame.add(viewer, BorderLayout.CENTER);
