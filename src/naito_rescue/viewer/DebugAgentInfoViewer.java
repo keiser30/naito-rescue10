@@ -17,8 +17,9 @@ import java.awt.event.*;
 public class DebugAgentInfoViewer extends JPanel
 {
 	Human                agent = null;
-	JPanel               leftPanel, rightPanel;
+//	JPanel               leftPanel, rightPanel;
 	JTable               leftTable, rightTable;
+	JScrollPane          leftScrollPane, rightScrollPane;
 	AgentTableModel      agent_model;
 	CommandTableModel    command_model;
 	java.util.List<Command>        commands = null;
@@ -40,8 +41,8 @@ public class DebugAgentInfoViewer extends JPanel
 		super();
 		this.setLayout(new GridLayout(1,2));
 		
-		leftPanel = new JPanel();
-		rightPanel = new JPanel();
+//		leftPanel = new JPanel();
+//		rightPanel = new JPanel();
 		
 		leftTable = new JTable();
 		rightTable = new JTable();
@@ -50,15 +51,21 @@ public class DebugAgentInfoViewer extends JPanel
 		leftTable.setModel(agent_model);
 		command_model = new CommandTableModel();
 		rightTable.setModel(command_model);
-		leftPanel.setPreferredSize(new Dimension(250,250));
-		rightPanel.setPreferredSize(new Dimension(250,250));
-		leftPanel.setBorder(BorderFactory.createTitledBorder("基本的な情報"));
-		leftPanel.add(leftTable);
-		rightPanel.add(rightTable);
-		rightPanel.setBorder(BorderFactory.createTitledBorder("今何してる?"));
-		
-		this.add(leftPanel);
-		this.add(rightPanel);
+		//leftPanel.setPreferredSize(new Dimension(250,250));
+		//rightPanel.setPreferredSize(new Dimension(250,250));
+		//leftPanel.setBorder(BorderFactory.createTitledBorder("基本的な情報"));
+		//leftPanel.add(leftTable);
+		//rightPanel.add(rightTable);
+		//rightPanel.setBorder(BorderFactory.createTitledBorder("今何してる?"));
+		leftScrollPane = new JScrollPane(leftTable);
+		rightScrollPane = new JScrollPane(rightTable);
+		leftScrollPane.setPreferredSize(new Dimension(250,250));
+		leftScrollPane.setBorder(BorderFactory.createTitledBorder("基本的な情報"));
+		rightScrollPane.setPreferredSize(new Dimension(250,250));
+		rightScrollPane.setBorder(BorderFactory.createTitledBorder("今何してる?"));
+
+		this.add(leftScrollPane);
+		this.add(rightScrollPane);
 	}
 	
 	public void setTargetAgent(Human agent){
