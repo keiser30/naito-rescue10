@@ -42,5 +42,5 @@ public class ClearTask extends Task
 		owner.getLogger().info("=====> return " + (target.isBlockadesDefined()?"false":"true"));
 		return !(target.isBlockadesDefined());
 	}
-	public Area getTargetArea(){ return target; }
+	public Area getTarget(){ return target; }
 }

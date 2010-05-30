@@ -197,4 +197,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		sendTell(time, data);
 	}
 	
+	public Collection<StandardEntity> getRefuges(){
+		return allRefuges;
+	}
 }

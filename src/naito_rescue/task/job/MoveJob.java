@@ -33,7 +33,7 @@ public class MoveJob extends Job
 		try{
 			List<EntityID> path = owner.getSearch().breadthFirstSearch(owner.getLocation(), Collections.singleton(target));
 			if(path != null){
-				if(x == -1 && y == -1){
+				if(x == -1 || y == -1){
 					owner.move(path);
 				}else{
 					owner.move(path, x, y);
@@ -43,7 +43,6 @@ public class MoveJob extends Job
 			}
 		}catch(Exception e){
 			owner.getLogger().info("MoveJob: " + e);
-			this.Illegal = true;
 		}
 	}
 
@@ -52,7 +51,7 @@ public class MoveJob extends Job
 		int location_id = owner.getLocation().getID().getValue();
 		int target_id = target.getID().getValue();
 
-		if(Illegal == true) return true;
+		if(illegal == true) return true;
 		if(location_id == target_id){
 			return true;
 		}else{

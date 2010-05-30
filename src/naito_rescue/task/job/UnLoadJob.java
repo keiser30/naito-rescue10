@@ -18,7 +18,8 @@ public class UnLoadJob extends Job
 	
 	@Override
 	public void doJob(){
-		owner.unload();
+		//避難所までいくとか何とか追加しないとダメな姫ガス
+		//owner.unload();
 	}
 
 	@Override

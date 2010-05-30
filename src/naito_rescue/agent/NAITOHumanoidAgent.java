@@ -39,6 +39,43 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected boolean                   isMember;
 	protected boolean                   isOnTeam;
 
+	@Override
+    protected void postConnect() {
+		 super.postConnect();
+		 
+		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
+		 currentTaskList = new ArrayList<Task>();
+		 crowlingBuildings = new ArrayList<Building>();
+		 teamMembers = new ArrayList<Human>();
+
+		 //センターレスに関する設定
+		 fireStationLess = firestation.isEmpty();
+		 policeOfficeLess = policeoffice.isEmpty();
+		 ambulanceCenterLess = ambulancecenter.isEmpty();
+		 centerLess = fireStationLess && policeOfficeLess && ambulanceCenterLess;
+		 
+		 
+		 logger.info(this.toString() + " start!");
+		 logger.debug("useSpeak            = " + useSpeak);
+		 logger.debug("fireStationLess     = " + fireStationLess);
+		 logger.debug("policeOfficeLess    = " + policeOfficeLess);
+		 logger.debug("ambulanceCenterLess = " + ambulanceCenterLess);
+		 logger.debug("    => centerLess   = " + centerLess);
+		 
+		 //チーム分け
+		 isLeader = isMember = isOnTeam = false;
+		 createCrowlingTeam();
+		 isOnTeam = isLeader || isMember;
+		 
+		 logger.debug("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+		 logger.debug("createCrowlingTeam() is end.");
+		 logger.debug("isLeader = " + isLeader);
+		 logger.debug("isMember = " + isMember);
+		 logger.debug("   |___ isOnTeam = " + isOnTeam);
+		 logger.debug("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+	}
+	
+	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
 
@@ -81,11 +118,41 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				msgManager.sendMessage(clear_msg);
 				logger.debug("Find blockade (" + getLocation() + ")");
 				logger.debug("Sending ClearMessage...");
-			}else{
+			}
+			//NAITOPoliceForce.java側で対処
+			/*else{
 				NAITOPoliceForce pf = (NAITOPoliceForce)this;
 				int dist = pf.getDistance();
 				logger.debug("currentTask = new ClearTask();");
 				currentTask = new ClearTask(this, model, (Area)location, dist);
+			}*/
+		}
+		//自分の視界に燃えている建物がある場合
+		//とりあえずその情報をFBに送りつける
+		if(!(this instanceof NAITOFireBrigade) && !(location instanceof Building)){
+			List<Building> view_buildings = getViewBuildings(changed);
+			for(Building b : view_buildings){
+				if(b.isFierynessDefined()){
+					StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
+					if(fieryness != null && fieryness != StandardEntityConstants.Fieryness.BURNT_OUT){
+						ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea:1000));
+						msgManager.sendMessage(ex_msg);
+					}
+				}
+			}
+		}
+		//自分の視界にある建物の中に市民がいる場合
+		//とりあえずその情報をATに送りつける
+		if(!(this instanceof NAITOAmbulanceTeam)){
+			List<Civilian> civilians = getViewCivilians(changed);
+			for(Civilian c : civilians){
+				EntityID civ_location_id = c.getPosition(model);
+				StandardEntity civilian_location = model.getEntity(civ_location_id);
+				//道路を突っ走ってる市民に対してLoadを実行しようとするとコケる気がする...
+				if(civilian_location instanceof Building){
+					RescueMessage rescue_msg = msgManager.createRescueMessage(-1, ADDR_AT, false, civ_location_id);
+					msgManager.sendMessage(rescue_msg);
+				}
 			}
 		}
 
@@ -102,42 +169,52 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 	}
 
-	@Override
-    protected void postConnect() {
-		 super.postConnect();
-		 
-		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
-		 currentTaskList = new ArrayList<Task>();
-		 crowlingBuildings = new ArrayList<Building>();
-		 teamMembers = new ArrayList<Human>();
 
-		 //センターレスに関する設定
-		 fireStationLess = firestation.isEmpty();
-		 policeOfficeLess = policeoffice.isEmpty();
-		 ambulanceCenterLess = ambulancecenter.isEmpty();
-		 centerLess = fireStationLess && policeOfficeLess && ambulanceCenterLess;
-		 
-		 
-		 logger.info(this.toString() + " start!");
-		 logger.debug("useSpeak            = " + useSpeak);
-		 logger.debug("fireStationLess     = " + fireStationLess);
-		 logger.debug("policeOfficeLess    = " + policeOfficeLess);
-		 logger.debug("ambulanceCenterLess = " + ambulanceCenterLess);
-		 logger.debug("    => centerLess   = " + centerLess);
-		 
-		 //チーム分け
-		 isLeader = isMember = isOnTeam = false;
-		 createCrowlingTeam();
-		 isOnTeam = isLeader || isMember;
-		 
-		 logger.debug("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-		 logger.debug("createCrowlingTeam() is end.");
-		 logger.debug("isLeader = " + isLeader);
-		 logger.debug("isMember = " + isMember);
-		 logger.debug("   |___ isOnTeam = " + isOnTeam);
-		 logger.debug("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+	public List<Building> getViewBuildings(ChangeSet changed){
+		ArrayList<Building> buildings = new ArrayList<Building>();
+		StandardEntity entity = null;
+		for(EntityID id : changed.getChangedEntities){
+			entity = model.getEntity(id);
+			if(entity instanceof Building){
+				buildings.add((Building)entity);
+			}
+		}
+		return buildings;
 	}
-	
+    public List<Civilian> getViewCivilians(ChangeSet changed){
+    	List<Civilian> civilians = new ArrayList<Civilian>();
+    	StandardEntity entity;
+    	for(EntityID next : changed.getChangedEntities()){
+    		entity = model.getEntity(next);
+    		logger.debug("getViewCivilians() next = " + entity);
+    		if(entity instanceof Civilian) civilians.add((Civilian)entity);
+    	}
+    	return civilians;
+    }
+	public void addTaskIfNew(Task t){
+		if(t instanceof ExtinguishTask){
+			ExtinguishTask et = (ExtinguishTask)t;
+			for(Task t : currentTaskList){
+				if(t instanceof ExtinguishTask){
+					Building b = ((ExtinguishTask)t).getTarget();
+					if(b.getID().getValue() == et.getTarget().getID().getValue){
+						return;
+					}
+				}
+			}
+			currentTaskList.add(t);
+		}else if(t instanceof ClearTask){
+			ClearTask ct = (ClearTask)t;
+			for(Task t : currentTaskList){
+				if(t instanceof ClearTask){
+					Area target = ((ClearTask)t).getTarget();
+					if(target.getID().getValue() == ct.getTarget().getID().getValue())
+						return;
+				}
+			}
+			currentTaskList.add(t);
+		}
+	}
 	private int maxInt(Integer... nums){
 		int max = 0;
 		for(int i = 0;i < nums.length;i++){
@@ -248,6 +325,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		
 		separateBlock--;
 		if(separateBlock < 1) separateBlock = 1;
+
+		//roleIDの正規化...roleID=[0 ... pow(separateBlock)-1]になるように
+		while(roleID >= (separateBlock * separateBlock)) roleID -= separateBlock;
 		
 		logger.debug("separateBlock = " + separateBlock);
 		
@@ -255,7 +335,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		double width  = (maxX - minX) / separateBlock;
 		double height = (maxY - minY) / separateBlock;
 		double x      = minX + width * (roleID % separateBlock);
-		double y      = minY + height * (roleID % separateBlock);
+		double y      = minY + height * (roleID / separateBlock);
 		
 		logger.debug("//---------- 範囲 ----------//");
 		logger.debug("x      = " + x);
@@ -266,8 +346,13 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		Building b = null;
 		for(StandardEntity building : allBuildings){
 			b = (Building)building;
+			logger.debug("//----------------------//");
+			logger.debug(b + ":");
+			logger.debug("b.getX() = " + b.getX());
+			logger.debug("b.getY() = " + b.getY());
+			logger.debug("//----------------------//");
 			if(b.getX() > x && b.getX() <= (x + width) &&
-			   b.getY() > y && b.getY() <= (x + height)){
+			   b.getY() > y && b.getY() <= (y + height)){
 			   	logger.debug("In range:");
 			   	logger.debug("minX = " + x + ", minY = " + y);
 			   	logger.trace("b.x = " + b.getX());
@@ -358,7 +443,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		};
 
 		Collections.sort(currentTaskList, task_comp);
-		return currentTaskList.remove(0);
+		return currentTaskList.get(0);
 	}
 }
 

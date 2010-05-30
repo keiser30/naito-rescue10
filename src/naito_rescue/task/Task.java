@@ -14,6 +14,7 @@ public abstract class Task
 	StandardWorldModel world;
 	PrintWriter        logger;
 	ArrayList<Job>     jobs;
+	boolean            illegal = false;
 	int                processIdx;
 	int                rank;
 	int                tryCount;
