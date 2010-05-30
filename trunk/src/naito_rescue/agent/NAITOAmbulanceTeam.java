@@ -299,14 +299,4 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
             }
         }
     }
-    public List<Civilian> getViewCivilians(ChangeSet changed){
-    	List<Civilian> civilians = new ArrayList<Civilian>();
-    	StandardEntity entity;
-    	for(EntityID next : changed.getChangedEntities()){
-    		entity = model.getEntity(next);
-    		logger.debug("getViewCivilians() next = " + entity);
-    		if(entity instanceof Civilian) civilians.add((Civilian)entity);
-    	}
-    	return civilians;
-    }
 }

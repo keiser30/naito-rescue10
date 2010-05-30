@@ -45,7 +45,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		logger.info("NAITOFireBrigade.think();");
         if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
-           		 // Subscribe to channel 2
 				logger.info("sendSubscribe(1): " + time);
            	 	sendSubscribe(time, 1);
 			}else{

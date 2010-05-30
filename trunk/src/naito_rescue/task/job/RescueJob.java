@@ -11,9 +11,9 @@ import java.io.*;
 
 public class RescueJob extends Job
 {
-	Civilian target;
+	Building target;
 
-	public RescueJob(NAITOHumanoidAgent owner, StandardWorldModel world, Civilian target){
+	public RescueJob(NAITOHumanoidAgent owner, StandardWorldModel world, Building target){
 		super(owner, world);
 		this.target = target;
 	}
@@ -21,7 +21,8 @@ public class RescueJob extends Job
 	@Override
 	public void doJob()
 	{
-		owner.rescue(target.getID());
+		//ここどうすっぺ
+		//owner.rescue(target.getID());
 	}
 
 	@Override

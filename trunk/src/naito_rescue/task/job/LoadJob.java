@@ -11,15 +11,15 @@ import java.io.*;
 
 public class LoadJob extends Job
 {
-	Civilian target;
+	Building target;
 
-	public LoadJob(NAITOHumanoidAgent owner, StandardWorldModel world, Civilian target){
+	public LoadJob(NAITOHumanoidAgent owner, StandardWorldModel world, Building target){
 		super(owner, world);
 		this.target = target;
 	}
 	@Override 
 	public void doJob(){
-		owner.load(target.getID());
+		//owner.load(target.getID());
 	}
 
 	@Override 

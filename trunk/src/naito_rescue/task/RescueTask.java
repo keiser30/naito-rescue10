@@ -9,25 +9,30 @@ import java.util.ArrayList;
 
 import java.io.*;
 
-public class ExtinguishTask extends Task
+public class RescueTask extends Task
 {
 	//移動先
 	Building target;
-	int power;
-	int distance;
 
-	public ExtinguishTask(NAITOHumanoidAgent owner, StandardWorldModel world, Building target, int power, int distance){
+	public RescueTask(NAITOHumanoidAgent owner, StandardWorldModel world, Building target){
 		super(owner, world);
 		this.target = target;
-		this.power = power;
-		this.distance = distance;
 	}
 
 	@Override
 	public ArrayList<Job> createJobList(){
 		ArrayList<Job> jobs = new ArrayList<Job>();
-		jobs.add(new MoveToExtinguishPointJob(owner, world, target, distance));
-		jobs.add(new ExtinguishJob(owner, world, target, power));
+		
+		//ターゲットとなる建物へ移動
+		jobs.add(new MoveJob(owner, world, target));
+		//市民をRescueする
+		jobs.add(new RescueJob(owner, world, target));
+		//市民をLoadする
+		jobs.add(new LoadJob(owner, world, target));
+		//避難所へ移動
+		jobs.add(new MoveToAnyRefugeJob(owner, world));
+		//市民をUnloadする
+		jobs.add(new UnLoadJob(owner, world));
 		return jobs;
 	}
 	public Building getTarget(){
@@ -35,6 +40,6 @@ public class ExtinguishTask extends Task
 	}
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
-		return !target.isOnFire();
+		return ;
 	}
 }

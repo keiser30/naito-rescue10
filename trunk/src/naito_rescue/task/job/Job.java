@@ -12,6 +12,7 @@ public abstract class Job
 	NAITOHumanoidAgent owner;
 	StandardWorldModel world;
 	int                tryCount;
+	boolean            illegal = false;
 	MyLogger           logger;
 
 	public Job(NAITOHumanoidAgent owner, StandardWorldModel world){
