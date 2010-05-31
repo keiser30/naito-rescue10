@@ -39,6 +39,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected boolean                   isMember;
 	protected boolean                   isOnTeam;
 
+	protected ArrayList<EntityID>       reportedBlockedRoad; //閉塞があることを送信済みの道路IDリスト
+	
 	@Override
     protected void postConnect() {
 		 super.postConnect();
@@ -54,7 +56,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 ambulanceCenterLess = ambulancecenter.isEmpty();
 		 centerLess = fireStationLess && policeOfficeLess && ambulanceCenterLess;
 		 
-		 
+		 reportedBlockedRoad = new ArrayList<EntityID>();
+
 		 logger.info(this.toString() + " start!");
 		 logger.debug("useSpeak            = " + useSpeak);
 		 logger.debug("fireStationLess     = " + fireStationLess);
@@ -79,6 +82,10 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
 
+		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+			logger.info("まだですよ: " + time);
+			return;
+		}
 		logger.info("");
 		logger.info("**********____" + time + "____**********");
 		logger.info("NAITOHumanoidAgent.think();");
@@ -113,11 +120,16 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
 			// 閉塞が発生しているRoadのIDを送りつける
 			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
-			if(!(this instanceof NAITOPoliceForce)){
+			if(!(this instanceof NAITOPoliceForce) && !(reportedBlockedRoad.contains(location.getID()))){
 				ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
 				msgManager.sendMessage(clear_msg);
 				logger.debug("Find blockade (" + getLocation() + ")");
 				logger.debug("Sending ClearMessage...");
+				reportedBlockedRoad.add(location.getID());
+			}
+
+			if(reportedBlockedRoad.contains(location.getID())){
+				logger.debug("道路(" + location.getID() + ")の閉塞は既に報告済みです");
 			}
 			//NAITOPoliceForce.java側で対処
 			/*else{
@@ -135,7 +147,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				if(b.isFierynessDefined()){
 					StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
 					if(fieryness != null && fieryness != StandardEntityConstants.Fieryness.BURNT_OUT){
-						ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea:1000));
+						ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea():1000));
 						msgManager.sendMessage(ex_msg);
 					}
 				}
@@ -146,11 +158,10 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		if(!(this instanceof NAITOAmbulanceTeam)){
 			List<Civilian> civilians = getViewCivilians(changed);
 			for(Civilian c : civilians){
-				EntityID civ_location_id = c.getPosition(model);
-				StandardEntity civilian_location = model.getEntity(civ_location_id);
+				StandardEntity civilian_location = c.getPosition(model);
 				//道路を突っ走ってる市民に対してLoadを実行しようとするとコケる気がする...
 				if(civilian_location instanceof Building){
-					RescueMessage rescue_msg = msgManager.createRescueMessage(-1, ADDR_AT, false, civ_location_id);
+					RescueMessage rescue_msg = msgManager.createRescueMessage(-1, ADDR_AT, false, civilian_location.getID());
 					msgManager.sendMessage(rescue_msg);
 				}
 			}
@@ -158,8 +169,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 		if(currentTask != null && !currentTask.isFinished()){
 			logger.info("currentTask != null.");
-			logger.info("currentTask = " + currentTask);
-			logger.info("currentJob = " + currentJob);
+			logger.info("currentTask  = " + currentTask);
+			logger.info("currentJob   = " + currentJob);
 			currentJob = currentTask.currentJob();
 			if(currentJob != null){
 				currentJob.doJob();
@@ -173,7 +184,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	public List<Building> getViewBuildings(ChangeSet changed){
 		ArrayList<Building> buildings = new ArrayList<Building>();
 		StandardEntity entity = null;
-		for(EntityID id : changed.getChangedEntities){
+		for(EntityID id : changed.getChangedEntities()){
 			entity = model.getEntity(id);
 			if(entity instanceof Building){
 				buildings.add((Building)entity);
@@ -191,20 +202,20 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
     	}
     	return civilians;
     }
-	public void addTaskIfNew(Task t){
-		if(t instanceof ExtinguishTask){
-			ExtinguishTask et = (ExtinguishTask)t;
+	public void addTaskIfNew(Task tt){
+		if(tt instanceof ExtinguishTask){
+			ExtinguishTask et = (ExtinguishTask)tt;
 			for(Task t : currentTaskList){
 				if(t instanceof ExtinguishTask){
 					Building b = ((ExtinguishTask)t).getTarget();
-					if(b.getID().getValue() == et.getTarget().getID().getValue){
+					if(b.getID().getValue() == et.getTarget().getID().getValue()){
 						return;
 					}
 				}
 			}
-			currentTaskList.add(t);
-		}else if(t instanceof ClearTask){
-			ClearTask ct = (ClearTask)t;
+			currentTaskList.add(et);
+		}else if(tt instanceof ClearTask){
+			ClearTask ct = (ClearTask)tt;
 			for(Task t : currentTaskList){
 				if(t instanceof ClearTask){
 					Area target = ((ClearTask)t).getTarget();
@@ -212,7 +223,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 						return;
 				}
 			}
-			currentTaskList.add(t);
+			currentTaskList.add(ct);
 		}
 	}
 	private int maxInt(Integer... nums){
@@ -436,6 +447,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	*  (Taskのランク値の大きい方が優先される)
 	*/
 	public Task getHighestRankTask(){
+		logger.info("getHighestRankTask();");
 		Comparator<Task> task_comp = new Comparator<Task>(){
 			public int compare(Task t1, Task t2){
 				return t2.getRank() - t1.getRank();
@@ -443,6 +455,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		};
 
 		Collections.sort(currentTaskList, task_comp);
+		logger.debug("return: " + currentTaskList.get(0));
 		return currentTaskList.get(0);
 	}
 }

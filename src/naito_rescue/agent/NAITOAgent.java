@@ -125,7 +125,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		return me();
 	}
 	
-//***** メソッドのラッパー群 *****
+//***** メソッドのラッパー群 *****//
 	public void move(StandardEntity target){
 		//ダイクストラ法の経路探索が実装できるまで，breadthFirstSearchを使う
 		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
@@ -197,7 +197,10 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		sendTell(time, data);
 	}
 	
-	public Collection<StandardEntity> getRefuges(){
+	public Collection<StandardEntity> getRefugesAsCollection(){
 		return allRefuges;
+	}
+	public List<Refuge> getRefugesAsList(){
+		return getRefuges();
 	}
 }

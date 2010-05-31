@@ -262,7 +262,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 			*  意参るところから距離の近い順にランクを高くする
 			*/
 			if(task instanceof ClearTask){
-				Area target = ((ClearTask)task).getTargetArea();
+				Area target = ((ClearTask)task).getTarget();
 				target_distance = model.getDistance(location, target);
 				task.setRank(100000 - target_distance);
 			}

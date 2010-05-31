@@ -11,11 +11,11 @@ import java.io.*;
 
 public class MoveToAnyRefugeJob extends Job
 {
-	Collection<StandardEntity> refuges;
+	List<Refuge> refuges;
 
-	public MoveToAnyRefugeJob(NAITOHumanoidAgent owner, StandardWorldModel world){
+	public MoveToAnyRefugeJob(NAITOHumanoidAgent owner, StandardWorldModel world, List<Refuge> refuges){
 		super(owner, world);
-		this.refuges = owner.getRefuges();
+		this.refuges = refuges;
 	}
 	
 	
@@ -24,12 +24,12 @@ public class MoveToAnyRefugeJob extends Job
 		try{
 			List<EntityID> path = owner.getSearch().breadthFirstSearch(owner.getLocation(), refuges);
 			if(path != null){
-				owner.move(path, x, y);
+				owner.move(path);
 			}else{
-				owner.getLogger().info("MoveToAnyRefugesJob().doJob() target (" + target + ") is not adjucent to " + owner.getLocation());
+				logger.info("MoveToAnyRefugesJob().doJob() target (" + refuges + ") is not adjucent to " + owner.getLocation());
 			}
 		}catch(Exception e){
-			owner.getLogger().info("MoveToAnyRefugeMoveJob: " + e);
+			logger.info("MoveToAnyRefugeMoveJob: " + e);
 		}
 	}
 
@@ -42,6 +42,7 @@ public class MoveToAnyRefugeJob extends Job
 			logger.debug("There are something illegal.");
 			return true;
 		}
+		logger.debug("location = " + location);
 		if(location instanceof Refuge){
 			return true;
 		}else{

@@ -10,6 +10,8 @@ import rescuecore2.standard.messages.*;
 
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
+import naito_rescue.message.*;
+
 
 public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 {
@@ -53,6 +55,35 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
         }
 
 		move(randomWalk());
+		logger.info("NAITOFireBrigade.hearing...");
+
+		for(Command next : heard){
+			logger.debug("heard->next = " + next);
+			if(next instanceof AKSpeak){
+				/**
+				*  無線or声データの処理
+				*/
+				logger.info("Receive AKSpeak.");
+				AKSpeak speak = (AKSpeak)next;
+				List<naito_rescue.message.Message> msgList = msgManager.receiveMessage(speak);
+				logger.info("Extracting messages size = " + msgList.size());
+				for(naito_rescue.message.Message message : msgList){
+					if(message.getAddrAgent() != me().getID().getValue() && message.getAddrType() != ADDR_FB){
+						logger.info("Ignore message.");
+						continue; //自分(もしくは自分と同じ種別のエージェント)宛のメッセージでなかったら無視
+					}
+
+					if(message.getType() == TYPE_FIRE){
+						logger.info("TYPE_FIRE messsage has received.");
+						EntityID target_id = ((ExtinguishMessage)message).getTarget();
+						StandardEntity target = model.getEntity(target_id);
+						
+						logger.info("currentTaskList.add(ExtinguishTask(" + target + ")");
+						currentTaskList.add(new ExtinguishTask(this, model, (Building)target, maxPower, maxDistance));
+					}
+				}//end inner-for.
+			}
+		}//end outer-for.
 //		logger.info("NAITOFireBrigade.hearing...");
 //		for(Command next : heard){
 //			logger.debug("heard->next = " + next);
