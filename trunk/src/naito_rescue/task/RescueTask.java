@@ -21,16 +21,15 @@ public class RescueTask extends Task
 
 	@Override
 	public ArrayList<Job> createJobList(){
-		ArrayList<Job> jobs = new ArrayList<Job>();
-		
+		LoadJob loadjob = new LoadJob(owner, world, target);
 		//ターゲットとなる建物へ移動
 		jobs.add(new MoveJob(owner, world, target));
 		//市民をRescueする
 		jobs.add(new RescueJob(owner, world, target));
 		//市民をLoadする
-		jobs.add(new LoadJob(owner, world, target));
+		jobs.add(loadjob);
 		//避難所へ移動
-		jobs.add(new MoveToAnyRefugeJob(owner, world));
+		jobs.add(new MoveToAnyRefugeJob(owner, world, owner.getRefugesAsList()));
 		//市民をUnloadする
 		jobs.add(new UnLoadJob(owner, world));
 		return jobs;
@@ -38,8 +37,18 @@ public class RescueTask extends Task
 	public Building getTarget(){
 		return target;
 	}
+
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
-		return ;
+		logger.info("RescueTask.isFinished();");
+		//ここ，もっとうまく書けないかなぁ…
+		for(Job job : jobs){
+			if(!job.isFinished()){
+				logger.debug(job + "is not Finished.");
+				return false;
+			}
+		}
+		logger.debug("return true;");
+		return true;
 	}
 }

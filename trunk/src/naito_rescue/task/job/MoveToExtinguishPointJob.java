@@ -61,6 +61,12 @@ public class MoveToExtinguishPointJob extends Job
 
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
+		logger.info("MoveToExtinguishPointJob.isFinished();");
+		logger.debug("distance(owner.getLocation(), target) = " + world.getDistance(owner.getLocation(), target));
+		logger.trace("owner.getLocation() = " + owner.getLocation());
+		logger.trace("target              = " + target);
+		logger.debug("maxDistance = " + maxDistance);
+		logger.debug("return " + (world.getDistance(owner.getLocation(), target) < maxDistance ? "true" : "false"));
 		return world.getDistance(owner.getLocation(), target) < maxDistance;
 	}
 }

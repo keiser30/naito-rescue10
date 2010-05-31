@@ -9,6 +9,10 @@ import rescuecore2.log.Logger;
 
 import rescuecore2.standard.entities.*;
 
+import naito_rescue.*;
+import naito_rescue.task.*;
+import naito_rescue.task.job.*;
+
 public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 {
 	private Collection<StandardEntity> unexploredBuildings;
@@ -26,7 +30,8 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	public String toString(){
 		return "NAITOAmbulanceTeam." + me().getID() + "";
 	}
-    	
+
+	boolean once = true;
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
@@ -53,8 +58,19 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 				
 			}
 		}
-
-		move(randomWalk());
+		//RescueTaskのテスト
+		if(once){
+			logger.debug("DEBUG: RescueTask is valid?");
+			currentTaskList.add(new RescueTask(this, model, (Building)model.getEntity(new EntityID(254))));
+			taskRankUpdate();
+			currentTask = getHighestRankTask();
+			logger.debug("currentTask = " + currentTask);
+			currentJob = currentTask.currentJob();
+			logger.debug("currentJob  = " + currentJob);
+			currentJob.doJob();
+			once = false;
+		}
+//		move(randomWalk());
 /*
 		if(target_building != null && getLocation().getID().getValue() == target_building.getID().getValue()){
 			visitedBuildings.add(target_building);
