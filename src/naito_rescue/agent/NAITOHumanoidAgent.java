@@ -168,6 +168,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 
 		if(currentTask != null && !currentTask.isFinished()){
+			logger.info("ジョブの実行...");
 			logger.info("currentTask != null.");
 			logger.info("currentTask  = " + currentTask);
 			logger.info("currentJob   = " + currentJob);

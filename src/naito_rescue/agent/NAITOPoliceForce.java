@@ -85,9 +85,10 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
             return;
         }
 
-		if(!currentTaskList.isEmpty()){
+		if(currentTask != null && currentTask.isFinished() && !currentTaskList.isEmpty()){
 			logger.info("currentTaskList is not empty.");
 			logger.debug("" + currentTaskList);
+			currentTaskList.remoe(currentTask);
 			taskRankUpdate();
 			currentTask = getHighestRankTask();
 			logger.debug("getHighestRankTask()");
