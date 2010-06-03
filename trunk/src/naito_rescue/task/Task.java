@@ -4,7 +4,7 @@ import rescuecore2.standard.components.*;
 import rescuecore2.standard.entities.*;
 import naito_rescue.task.job.*;
 import naito_rescue.agent.*;
-import java.util.ArrayList;
+import java.util.*;
 
 import java.io.*;
 import naito_rescue.*;
@@ -17,6 +17,7 @@ public abstract class Task
 	MyLogger           logger;
 	ArrayList<Job>     jobs;
 	boolean            illegal = false;
+	boolean            isCreateJobsNow = false;
 	int                processIdx;
 	int                rank;
 	int                tryCount;
@@ -29,43 +30,57 @@ public abstract class Task
 		rank = 1000; //ランクのデフォルト値は1000
 		tryCount = 0;
 		this.logger = owner.getLogger();
+		isCreateJobsNow = true;
 	}
 
 	// 各タスクで実装
-	//   |_ currentJob()で呼び出し
+	//   |____ currentJobで(1回だけ)呼び出し
 	public abstract ArrayList<Job> createJobList();
 	
 	public boolean isFinished(){
-		logger.debug("Task.isFinished();");
-		if(jobs.size() > 0  && processIdx >= jobs.size()){
-			logger.debug("return true;");
-			logger.trace("jobs.size() = " + jobs.size());
-			logger.trace("processIdx  = " + processIdx);
-			return true;
+		logger.info("Task.isFinished();");
+		logger.debug("jobs = " + jobs);
+		for(Iterator<Job> it = jobs.iterator(); it.hasNext();){
+			Job next = it.next();
+			logger.debug(next + ".isFinished() = " + next.isFinished());
+			if(next.isFinished()){
+				//終了しているジョブを削除する
+				logger.debug("remove(" + next + ");");
+				it.remove(); //nextが削除される
+			}else{
+				return false;
+			}
 		}
-		else return isFinished(owner, world);
+		//パスがここに到達した時点で, jobs.isEmpty()は
+		//保証されている.
+		logger.info("======> return true;");
+		return true;
 	}
 	protected abstract boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world);
 
 	public Job currentJob(){
-		logger.debug("Job.currentJob();");
-		if(jobs.size() == 0){
-			jobs.addAll(createJobList());
-		}
-		while(processIdx < jobs.size()){
-			if(!(jobs.get(processIdx).isFinished())){
-				logger.debug("return jobs.get(" + processIdx + ")");
-				logger.trace("processIdx = " + processIdx);
-				logger.trace("jobs[" + processIdx + "] = " + jobs.get(processIdx) + "");
-				logger.trace("jobs.size() = " + jobs.size());
-				return jobs.get(processIdx);
+		logger.info("Task.currentJob();");
+		if(jobs.isEmpty()){
+			logger.debug("jobs.isEmpty()...");
+			if(isCreateJobsNow){
+				logger.debug("jobs.addAll(createJobList());");
+				jobs.addAll(createJobList());
+				logger.debug("|____ jobs = " + jobs);
+				isCreateJobsNow = false;
+				return jobs.get(0);
+			}else{
+				//ここにパスが到達するということは,
+				//このタスクは終わっていなければならない.
+				// --> 異常としてnullを返す
+				logger.debug("jobs.isEmpty() && !isCreateJobsNow");
+				logger.debug("なぜここにパスが通るし");
+				return null;
 			}
-			processIdx++;
+		}else{
+			Job j = jobs.get(0);
+			logger.debug("return " + j);
+			return j;
 		}
-		logger.debug("return null;");
-		logger.trace("processIdx  = " + processIdx);
-		logger.trace("jobs.size() = " + jobs.size());
-		return null;
 	}
 
 	public void setRank(int rank){
@@ -77,7 +92,9 @@ public abstract class Task
 	public void reset(){
 		this.processIdx = 0;
 	}
-
+	public List<Job> getJobs(){
+		return jobs;
+	}
 	public String toString(){
 		return this.getClass().toString();
 	}

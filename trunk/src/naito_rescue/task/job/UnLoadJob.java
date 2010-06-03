@@ -18,9 +18,17 @@ public class UnLoadJob extends Job
 	
 	@Override
 	public void doJob(){
-		//避難所までいくとか何とか追加しないとダメな姫ガス
-		//owner.unload();
-		if(owner.getLocation() instanceof Refuge){
+		//if(owner.getLocation() instanceof Refuge){
+
+		logger.info("UnLoadJob.doJob();");
+		if(owner.someoneOnBoard()){
+			owner.unload();
+		}else{
+			logger.debug("UnLoadJob.illegal: 誰も乗せていない");
+			logger.debug("illegal = true;");
+			illegal = true;
+		}
+/*
 			Collection<StandardEntity> civilians = world.getEntitiesOfType(StandardEntityURN.CIVILIAN);
 			logger.debug("civilians = " + civilians);
 			for(StandardEntity next : civilians){
@@ -36,10 +44,17 @@ public class UnLoadJob extends Job
 			logger.debug("市民がどこかで取りこぼされている...?");
 		}
 		logger.debug("まだ避難所へ到達していない");
+*/
 	}
 
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel model){
+		logger.info("UnLoadJob.isFinished();");
+		if(illegal){
+			logger.debug("illegal");
+			logger.debug("return true;");
+			return true;
+		}
 		if(!(owner.getLocation() instanceof Refuge)){
 			logger.debug("owner.location is not Refuge.");
 			logger.debug("   |____ return false;");

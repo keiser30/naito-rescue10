@@ -58,7 +58,7 @@ public final class MySearch {
 			building2idx.put(allBuildingsList.get(i).getID().getValue(), i);
 		}
 		logger.info("MySearch is constructed.");
-		costInit();
+//		costInit();
 	}
 
 	private void costInit(){

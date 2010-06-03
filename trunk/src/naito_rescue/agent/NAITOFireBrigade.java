@@ -53,8 +53,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 				return;
 			}
         }
-
-		move(randomWalk());
 		logger.info("NAITOFireBrigade.hearing...");
 
 		for(Command next : heard){
@@ -77,13 +75,32 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 						logger.info("TYPE_FIRE messsage has received.");
 						EntityID target_id = ((ExtinguishMessage)message).getTarget();
 						StandardEntity target = model.getEntity(target_id);
-						
 						logger.info("currentTaskList.add(ExtinguishTask(" + target + ")");
 						currentTaskList.add(new ExtinguishTask(this, model, (Building)target, maxPower, maxDistance));
 					}
 				}//end inner-for.
 			}
 		}//end outer-for.
+		
+		if(currentTask != null && currentTask.isFinished() && !currentTaskList.isEmpty()){
+			//currentTaskが終了していたら... もっとも優先度の高いタスクを選んで実行
+			logger.info("currentTaskList is not empty.");
+			logger.debug("" + currentTaskList);
+			currentTaskList.remove(currentTask);
+			taskRankUpdate();
+			currentTask = getHighestRankTask();
+			logger.debug("getHighestRankTask()");
+			logger.debug("  |__ " + currentTask + ", Rank = " + currentTask.getRank());
+			currentJob  = currentTask.currentJob();
+			logger.debug("currentJob = " + currentJob);
+			if(currentJob != null){
+				currentJob.doJob();
+			}else{
+				logger.info("currentJob is null.");
+			}
+			return;
+		}
+		
 //		logger.info("NAITOFireBrigade.hearing...");
 //		for(Command next : heard){
 //			logger.debug("heard->next = " + next);
@@ -177,8 +194,13 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	}
 
 	public void taskRankUpdate(){
-		super.taskRankUpdate();	
+		for(Task t : currentTaskList){
+			if(t instanceof ExtinguishTask){
+				//とりあえず近いところから消していく
+			}
+		}
 	}
+	
 	private List<Building> getBurningBuildings(){
 		Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.BUILDING);
 		List<Building> result = new ArrayList<Building>();
