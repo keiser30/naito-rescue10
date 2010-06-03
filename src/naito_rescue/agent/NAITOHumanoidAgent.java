@@ -88,14 +88,17 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 		logger.info("");
 		logger.info("**********____" + time + "____**********");
-		logger.info("NAITOHumanoidAgent.think();");
-		logger.info("location = " + getLocation());
-		
+		logger.info("**  NAITOHumanoidAgent.think();");
+		logger.info("**  location    = " + getLocation());
+		logger.info("**  currentTask = " + currentTask);
+		if(currentTask != null)
+			logger.info("**  currentTask.jobs[] = " + currentTask.getJobs());
+
 		//currentTaskListに関する処理
 		//currentTaskが終了していたら，そいつをリストから削除する
 		if(currentTask != null && currentTask.isFinished()){
-			logger.debug("currentTaskList.remove(" + currentTask + ")");
-			logger.debug("==> currentTaskList = " + currentTaskList);
+			logger.debug("**  currentTaskList.remove(" + currentTask + ")");
+			logger.debug("**  ==> currentTaskList = " + currentTaskList);
 			currentTaskList.remove(currentTask);
 			currentTask = null;
 		}
@@ -103,50 +106,41 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		StandardEntity location = getLocation();
 		//啓開の発見検証用コード
 		if(location instanceof Area){
+			logger.info("////////// 閉塞の発見検証用コード //////////");
 			if(((Area)location).isBlockadesDefined()){
-				logger.info("There is blockade...?");
+				logger.info("//  There is blockade...?");
 				if(!((Area)location).getBlockades().isEmpty()){
-					logger.info("There is blockade!");
-					logger.debug("blockades = " + ((Area)location).getBlockades());
+					logger.info("//  There is blockade!");
+					logger.debug("//  blockades = " + ((Area)location).getBlockades());
 				}else{
-					logger.info("location.isBlockadesDefined()...but, getBlockades() is empty.");
-					logger.debug("blockades = " + ((Area)location).getBlockades());
+					logger.info("//  location.isBlockadesDefined()...but, getBlockades() is empty.");
+					logger.debug("//  blockades = " + ((Area)location).getBlockades());
 				}
 			}else{
-				logger.info("There is no blockade.");
+				logger.info("//  There is no blockade.");
 			}
+			logger.info("////////// ////////////////////// //////////");
 		}
 		//自分の今いる場所に閉塞がある場合
 		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
 			// 閉塞が発生しているRoadのIDを送りつける
 			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
-			if(!(this instanceof NAITOPoliceForce) && !(reportedBlockedRoad.contains(location.getID()))){
+			if(!(this instanceof NAITOPoliceForce)/* && !(reportedBlockedRoad.contains(location.getID())) */){
 				ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
 				msgManager.sendMessage(clear_msg);
 				logger.debug("Find blockade (" + getLocation() + ")");
 				logger.debug("Sending ClearMessage...");
 				reportedBlockedRoad.add(location.getID());
 			}
-
-			if(reportedBlockedRoad.contains(location.getID())){
-				logger.debug("道路(" + location.getID() + ")の閉塞は既に報告済みです");
-			}
-			//NAITOPoliceForce.java側で対処
-			/*else{
-				NAITOPoliceForce pf = (NAITOPoliceForce)this;
-				int dist = pf.getDistance();
-				logger.debug("currentTask = new ClearTask();");
-				currentTask = new ClearTask(this, model, (Area)location, dist);
-			}*/
 		}
 		//自分の視界に燃えている建物がある場合
 		//とりあえずその情報をFBに送りつける
 		if(!(this instanceof NAITOFireBrigade) && !(location instanceof Building)){
-			List<Building> view_buildings = getViewBuildings(changed);
+			List<Building> view_buildings = getViewBuildings();
 			for(Building b : view_buildings){
 				if(b.isFierynessDefined()){
 					StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
-					if(fieryness != null && fieryness != StandardEntityConstants.Fieryness.BURNT_OUT){
+					if(fieryness != null && fieryness != StandardEntityConstants.Fieryness.BURNT_OUT){ //ここ要再考
 						ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea():1000));
 						msgManager.sendMessage(ex_msg);
 					}
@@ -156,7 +150,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//自分の視界にある建物の中に市民がいる場合
 		//とりあえずその情報をATに送りつける
 		if(!(this instanceof NAITOAmbulanceTeam)){
-			List<Civilian> civilians = getViewCivilians(changed);
+			List<Civilian> civilians = getViewCivilians();
 			for(Civilian c : civilians){
 				StandardEntity civilian_location = c.getPosition(model);
 				//道路を突っ走ってる市民に対してLoadを実行しようとするとコケる気がする...
@@ -182,10 +176,10 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 
 
-	public List<Building> getViewBuildings(ChangeSet changed){
+	public List<Building> getViewBuildings(){
 		ArrayList<Building> buildings = new ArrayList<Building>();
 		StandardEntity entity = null;
-		for(EntityID id : changed.getChangedEntities()){
+		for(EntityID id : this.changed.getChangedEntities()){
 			entity = model.getEntity(id);
 			if(entity instanceof Building){
 				buildings.add((Building)entity);
@@ -193,10 +187,10 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 		return buildings;
 	}
-    public List<Civilian> getViewCivilians(ChangeSet changed){
+    public List<Civilian> getViewCivilians(){
     	List<Civilian> civilians = new ArrayList<Civilian>();
     	StandardEntity entity;
-    	for(EntityID next : changed.getChangedEntities()){
+    	for(EntityID next : this.changed.getChangedEntities()){
     		entity = model.getEntity(next);
     		logger.debug("getViewCivilians() next = " + entity);
     		if(entity instanceof Civilian) civilians.add((Civilian)entity);
@@ -459,5 +453,17 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.debug("return: " + currentTaskList.get(0));
 		return currentTaskList.get(0);
 	}
+	
+	//SampleAmbulanceTeamから移植
+    public boolean someoneOnBoard() {
+		logger.info("NAITOHumanoidAgent.someonwOnBoard();");
+        for (StandardEntity next : model.getEntitiesOfType(StandardEntityURN.CIVILIAN)) {
+            if (((Human)next).getPosition().equals(getID())) {
+                logger.debug(next + " is on board");
+                return true;
+            }
+        }
+        return false;
+    }
 }
 

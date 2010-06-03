@@ -22,6 +22,7 @@ import naito_rescue.message.manager.*;
 public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent<E>
 {
 	protected int                 time;
+	protected ChangeSet           changed;
 	protected MySearch            search;
 	protected Collection<StandardEntity> allBuildings;
 	protected Collection<StandardEntity> allRoads;
@@ -102,6 +103,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
     @Override
     protected void think(int time, ChangeSet changed, Collection<Command> heard){
     	this.time = time;
+		this.changed = changed;
     }
     
 //***** ゲッタとセッタ *****

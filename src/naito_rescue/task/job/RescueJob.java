@@ -26,9 +26,10 @@ public class RescueJob extends Job
 	{
 		logger.info("RescueJob.doJob();");
 		if(owner.getLocation().getID().getValue() != target.getID().getValue()){
+			//本来ここにパスが来ることはありえないが...
 			logger.debug("owner.getLocation() != target");
-			logger.debug("owner.getLocation() = " + owner.getLocation());
-			logger.debug("             target = " + target);
+			logger.debug("owner.getLocation()  = " + owner.getLocation());
+			logger.debug("             target  = " + target);
 			logger.debug("|________ move(" + target + ")");
 			owner.move(target);
 			return;
@@ -40,32 +41,44 @@ public class RescueJob extends Job
 			return;
 		}
 		//視界範囲にいる市民情報を取得
-		Collection<StandardEntity> civilians = world.getEntitiesOfType(StandardEntityURN.CIVILIAN);
+		//Collection<StandardEntity> civilians = world.getEntitiesOfType(StandardEntityURN.CIVILIAN);
+		List<Civilian> civilians = owner.getViewCivilians();
 		logger.debug("視界範囲の市民情報を取得");
 		logger.debug("civilians = " + civilians);
 		if(civilians.isEmpty()){
-			logger.debug("中に誰もいませんよ");
+			logger.debug("RescueJob.illegal: 中に誰もいませんよ");
 			logger.debug("illegal = true");
 			illegal = true;
 			return;
 		}
 		//buriedness > 0ならrescue
 		logger.trace("Entering for loop....");
-		for(StandardEntity next : civilians){
-			logger.trace(next + "");
-			if(((Civilian)next).getBuriedness() > 0){
-				civilian = (Civilian)next;
+		//for(StandardEntity next : civilians){
+		for(Civilian next : civilians){
+			logger.trace("Civilian next = " + next + "");
+			//if(((Civilian)next).getBuriedness() > 0){
+			if(next.getBuriedness() > 0){
+				//civilian = (Civilian)next;
+				civilian = next;
 				owner.rescue(civilian.getID());
-				logger.trace("target civilian = " + civilian);
-				logger.trace("buriedness      = " + civilian.getBuriedness());
+				logger.trace("........ target civilian = " + civilian);
+				logger.trace("........ buriedness      = " + civilian.getBuriedness());
 				return;
+			}else{
+				logger.trace("視界範囲にいる市民(" + next + ")は埋没していない");
 			}
 		}
+		logger.debug("RescueJob.illegal: 視界範囲にいる市民すべては埋没していない");
+		logger.debug("illegal = true;");
+		illegal = true;
 	}
 
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
 		logger.info("RescueJob.isFinished();");
+
+		//視界範囲内にいるすべての市民エージェントが埋没していない場合
+		//また，視界範囲に市民エージェントがいない場合
 		if(illegal){
 			logger.debug("illegal");
 			logger.debug("|____ return true;");

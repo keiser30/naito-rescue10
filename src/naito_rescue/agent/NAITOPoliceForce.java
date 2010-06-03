@@ -68,7 +68,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 						EntityID target_id = ((ClearMessage)message).getTarget();
 						StandardEntity target = model.getEntity(target_id);
 						if(target instanceof Area && ((Area)target).isBlockadesDefined() && !((Area)target).getBlockades().isEmpty()){
-							logger.info("currentTaskList.add(ClearTask(" + target + ")");
+							logger.info("PF.currentTaskList.add(ClearTask(" + target + ")");
 							currentTaskList.add(new ClearTask(this, model, (Area)target, distance));
 						}
 					}
@@ -86,9 +86,10 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
         }
 
 		if(currentTask != null && currentTask.isFinished() && !currentTaskList.isEmpty()){
+			//currentTaskが終了していたら... もっとも優先度の高いタスクを選んで実行
 			logger.info("currentTaskList is not empty.");
 			logger.debug("" + currentTaskList);
-			currentTaskList.remoe(currentTask);
+			currentTaskList.remove(currentTask);
 			taskRankUpdate();
 			currentTask = getHighestRankTask();
 			logger.debug("getHighestRankTask()");
