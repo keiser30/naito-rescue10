@@ -39,6 +39,13 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected boolean                   isMember;
 	protected boolean                   isOnTeam;
 
+	protected java.awt.geom.Rectangle2D world_rect;
+	protected double                    minX;
+	protected double                    minY;
+	protected double                    maxX;
+	protected double                    maxY;
+	protected double                    w_width;
+	protected double                    w_height;
 	protected ArrayList<EntityID>       reportedBlockedRoad; //閉塞があることを送信済みの道路IDリスト
 	
 	@Override
@@ -58,6 +65,14 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 
 		 reportedBlockedRoad = new ArrayList<EntityID>();
 
+		 world_rect = model.getBounds();
+		 minX = world_rect.getX();
+		 minY = world_rect.getY();
+		 maxX = minX + world_rect.getWidth();
+		 maxY = minY + world_rect.getHeight();
+		 w_width = world_rect.getWidth();
+		 w_height = world_rect.getHeight();
+		 
 		 logger.info(this.toString() + " start!");
 		 logger.debug("useSpeak            = " + useSpeak);
 		 logger.debug("fireStationLess     = " + fireStationLess);
@@ -76,6 +91,13 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 logger.debug("isMember = " + isMember);
 		 logger.debug("   |___ isOnTeam = " + isOnTeam);
 		 logger.debug("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+		 
+		 if(isMember && !crowlingBuildings.isEmpty()){
+		 	logger.info("isMember && crowlingBuildings.isNotEmpty() ==> 建物探訪タスクをaddする");
+		 	for(Building b : crowlingBuildings){
+		 		currentTaskList.add(new MoveTask(this, model, (Area)b));
+		 	}
+		 }
 	}
 	
 	@Override
@@ -86,6 +108,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			logger.info("まだですよ: " + time);
 			return;
 		}
+		logger.info("****************************************");
 		logger.info("");
 		logger.info("**********____" + time + "____**********");
 		logger.info("**  NAITOHumanoidAgent.think();");
@@ -96,17 +119,19 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 		//currentTaskListに関する処理
 		//currentTaskが終了していたら，そいつをリストから削除する
+		logger.info("1. //////// currentTaskが終了していたら，そいつをリストから削除する ////////");
 		if(currentTask != null && currentTask.isFinished()){
 			logger.debug("**  currentTaskList.remove(" + currentTask + ")");
 			logger.debug("**  ==> currentTaskList = " + currentTaskList);
 			currentTaskList.remove(currentTask);
 			currentTask = null;
 		}
+		logger.info("//////// /////////////////////////////////////////////////////// //////// 1.");
 			
 		StandardEntity location = getLocation();
 		//啓開の発見検証用コード
 		if(location instanceof Area){
-			logger.info("////////// 閉塞の発見検証用コード //////////");
+			logger.info("2. ////////// 閉塞の発見検証用コード //////////");
 			if(((Area)location).isBlockadesDefined()){
 				logger.info("//  There is blockade...?");
 				if(!((Area)location).getBlockades().isEmpty()){
@@ -119,9 +144,10 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			}else{
 				logger.info("//  There is no blockade.");
 			}
-			logger.info("////////// ////////////////////// //////////");
+			logger.info("////////// ////////////////////// ////////// 2.");
 		}
 		//自分の今いる場所に閉塞がある場合
+		logger.info("3. //////// 自分の身の回りにある閉塞の発見 ////////");
 		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
 			// 閉塞が発生しているRoadのIDを送りつける
 			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
@@ -133,22 +159,26 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				reportedBlockedRoad.add(location.getID());
 			}
 		}
+		logger.info("//////// ////////////////////////////// //////// 3.");
+
 		//自分の視界に燃えている建物がある場合
 		//とりあえずその情報をFBに送りつける
+		logger.info("4. //////// 視界にある建物の処理(1) ////////");
 		if(!(this instanceof NAITOFireBrigade) && !(location instanceof Building)){
 			List<Building> view_buildings = getViewBuildings();
 			for(Building b : view_buildings){
-				if(b.isFierynessDefined()){
+				if(b.isFierynessDefined() && b.isOnFire()){
 					StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
-					if(fieryness != null && fieryness != StandardEntityConstants.Fieryness.BURNT_OUT){ //ここ要再考
-						ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea():1000));
-						msgManager.sendMessage(ex_msg);
-					}
+					ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea():1000));
+					msgManager.sendMessage(ex_msg);
 				}
 			}
 		}
+		logger.info("//////// /////////////////////// //////// 4.");
+
 		//自分の視界にある建物の中に市民がいる場合
 		//とりあえずその情報をATに送りつける
+		logger.info("5. //////// 視界にある建物の処理(2) ////////");
 		if(!(this instanceof NAITOAmbulanceTeam)){
 			List<Civilian> civilians = getViewCivilians();
 			for(Civilian c : civilians){
@@ -160,19 +190,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				}
 			}
 		}
-
-		if(currentTask != null && !currentTask.isFinished()){
-			logger.info("ジョブの実行...");
-			logger.info("currentTask != null.");
-			logger.info("currentTask  = " + currentTask);
-			logger.info("currentJob   = " + currentJob);
-			currentJob = currentTask.currentJob();
-			if(currentJob != null){
-				currentJob.doJob();
-			}else{
-				logger.info("currentJob is null.");
-			}
-		}
+		logger.info("//////// /////////////////////// //////// 5.");
 	}
 
 
@@ -308,13 +326,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("|```````````````````````````````````|");
 		logger.info(this + ".decideCrowlingBuildings();");
 		logger.info("allBuildings.size() = " + allBuildings.size());
-		java.awt.geom.Rectangle2D world_rect = model.getBounds();
-		double minX = world_rect.getX();
-		double minY = world_rect.getY();
-		double maxX = minX + world_rect.getWidth();
-		double maxY = minY + world_rect.getHeight();
-		double w_width = world_rect.getWidth();
-		double w_height = world_rect.getHeight();
 		
 		int roleID = teamMembers.indexOf(me());
 		int separateBlock = 1;
@@ -370,19 +381,41 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("crowlingBuildings = " + crowlingBuildings);
 		logger.info("|___________________________________|");
 	}
-	public void taskRankUpdate(){
-		for(int i = 0;i < currentTaskList.size();i++){
-			Task task = currentTaskList.get(i);
-			if(task instanceof MoveTask){
-				Area target = ((MoveTask)task).getTarget();
-				boolean passable = search.isPassable(getLocation(), target);
-				if(!passable){
-					logger.debug("MoveTask is not passable!! " + target);
-					//通行不可能なら、このタスクは諦める
-					currentTaskList.remove(i); 
-				}
+	
+	public abstract void taskRankUpdate();
+	
+	public Task action(){
+		if(currentTask != null && !currentTask.isFinished()){
+			return currentTask;
+		}else{
+			taskRankUpdate();
+			return getHighestRankTask();
+		}
+	}
+	
+	/**
+	*  currentTaskListを降順ソートして1番目の要素を返す
+	*  (Taskのランク値の大きい方が優先される)
+	*/
+	protected static Comparator<Task> task_comp = new Comparator<Task>(){
+		public int compare(Task t1, Task t2){
+			return t2.getRank() - t1.getRank();
+		}
+	};
+	public Task getHighestRankTask(){
+		logger.info("getHighestRankTask();");
+
+		if(currentTaskList.isEmpty()){
+			//タスクリストが空っぽの時
+			//全建物探訪
+			logger.debug("やることないから全建物探訪");
+			for(StandardEntity building : allBuildings){
+				currentTaskList.add(new MoveTask(this, model, (Area)building));
 			}
 		}
+		Collections.sort(currentTaskList, task_comp);
+		logger.debug("return: " + currentTaskList.get(0));
+		return currentTaskList.get(0);
 	}
 	
 	@Override
@@ -437,22 +470,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
         }
         return (int)best;
 	}
-	/**
-	*  currentTaskListを降順ソートして1番目の要素を返す
-	*  (Taskのランク値の大きい方が優先される)
-	*/
-	public Task getHighestRankTask(){
-		logger.info("getHighestRankTask();");
-		Comparator<Task> task_comp = new Comparator<Task>(){
-			public int compare(Task t1, Task t2){
-				return t2.getRank() - t1.getRank();
-			}
-		};
 
-		Collections.sort(currentTaskList, task_comp);
-		logger.debug("return: " + currentTaskList.get(0));
-		return currentTaskList.get(0);
-	}
 	
 	//SampleAmbulanceTeamから移植
     public boolean someoneOnBoard() {

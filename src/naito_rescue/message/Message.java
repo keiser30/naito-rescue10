@@ -4,12 +4,12 @@ import naito_rescue.agent.*;
 
 public abstract class Message
 {
-	private int msgID;
-	private int msgType;
-	private int addressAgent;
-	private int addressType;
-	private boolean broadcast;
-	private int sendTime;
+	protected int msgID;
+	protected int msgType;
+	protected int addressAgent;
+	protected int addressType;
+	protected boolean broadcast;
+	protected int sendTime;
 	
 	public Message(int type, int id, int addrAgent, int addrType, boolean broadcast){
 		this.msgType = type;

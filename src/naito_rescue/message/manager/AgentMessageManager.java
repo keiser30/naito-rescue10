@@ -89,6 +89,7 @@ public class AgentMessageManager implements MessageConstants
 						break;
 					case TYPE_CLEAR:
 						mes = new ClearMessage(msgId, addrAgent, addrType, broadcast, target);
+						logger.debug("Now received message:\n    ====> " + mes.toString());
 						break;
 					default:
 						logger.info("Unknown type: " + msg_type);
@@ -114,7 +115,6 @@ public class AgentMessageManager implements MessageConstants
 	public void sendMessage(naito_rescue.message.Message mes_){
 		logger.info("AgentMessageManager.sendMessage();");
 		logger.info("sendMessageList.add(" + mes_ + ")");
-		logger.debug("mes_ = " + mes_);
 		sendMessageList.add(mes_);
 		
 		boolean isNowSendCycle = (owner.getTime() % 1) == 0;
@@ -167,6 +167,8 @@ public class AgentMessageManager implements MessageConstants
 					case TYPE_CLEAR:
 						logger.debug("TYPE_CLEAR message will be created.");
 						ClearMessage cm = (ClearMessage)mes;
+						logger.debug("Now written message: :");
+						logger.debug(" ===> " + cm.toString());
 						utils.writeInt32(cm.getTarget().getValue(), rawdata, idx); idx += 4;
 						break;
 					default:

@@ -67,125 +67,94 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 						logger.info("TYPE_CLEAR messsage has received.");
 						EntityID target_id = ((ClearMessage)message).getTarget();
 						StandardEntity target = model.getEntity(target_id);
-						if(target instanceof Area && ((Area)target).isBlockadesDefined() && !((Area)target).getBlockades().isEmpty()){
-							logger.info("PF.currentTaskList.add(ClearTask(" + target + ")");
-							currentTaskList.add(new ClearTask(this, model, (Area)target, distance));
-						}
+						logger.info("PF.currentTaskList.add(ClearTask(" + target + ")");
+						currentTaskList.add(new ClearTask(this, model, (Area)target, distance));
 					}
 				}
 			}
 		}
 
-		//自分が閉塞の近くにいたら，そいつを啓開する
-        Blockade target = getTargetBlockade();
-        if (target != null) {
-            logger.info("Clearing blockade " + target);
-            //sendSpeak(time, 1, ("Clearing " + target).getBytes());
-            sendClear(time, target.getID());
-            return;
-        }
-
-		if(currentTask != null && currentTask.isFinished() && !currentTaskList.isEmpty()){
-			//currentTaskが終了していたら... もっとも優先度の高いタスクを選んで実行
-			logger.info("currentTaskList is not empty.");
-			logger.debug("" + currentTaskList);
-			currentTaskList.remove(currentTask);
-			taskRankUpdate();
-			currentTask = getHighestRankTask();
-			logger.debug("getHighestRankTask()");
-			logger.debug("  |__ " + currentTask + ", Rank = " + currentTask.getRank());
-			currentJob  = currentTask.currentJob();
-			logger.debug("currentJob = " + currentJob);
-			if(currentJob != null){
-				currentJob.doJob();
-			}else{
-				logger.info("currentJob is null.");
+		//自分が閉塞の近くにいたら，そいつを啓開するタスクを追加する
+        List<Road> targets = getBlockedRoads();
+		if(targets != null && !targets.isEmpty()){
+			for(Road r : targets){
+				currentTaskList.add(new ClearTask(this, model, (Area)r, distance));
 			}
-			return;
 		}
-
-/*
-		// ボイスデータの処理 
-		//  "CLEAR_"で始まるボイスデータを受信したら，
-		//  啓開対象となるRoadのIDを抽出して，ClearTaskを
-		//  currentTaskListに加える
-        for (Command next : heard) {
-            //logger.debug("Heard " + next);
-			byte[] rawdata = null;
-			if(next instanceof AKSpeak || next instanceof AKTell || next instanceof AKSay){
-				logger.debug("AKSpeak(or AKTell or AKSay) data received.");
-				if(next instanceof AKSpeak){
-					rawdata = ((AKSpeak)next).getContent();
-				}else if(next instanceof AKTell){
-					rawdata = ((AKTell)next).getContent();
-				}else if(next instanceof AKSay){
-					rawdata = ((AKSay)next).getContent();
-				}else{
-					break;
-				}
-			}
-			if(rawdata != null){
-				String str_data = null;
-				logger.debug("Extracting voice data...");
-				try{
-					str_data = new String(rawdata, "UTF-8");
-					logger.trace("str_data = " + str_data);
-				}catch(Exception e){
-					logger.info("Exception in Extracting voice data.");
-					logger.trace("break for-loop.");
-					continue;
-				}
-				if(str_data != null && str_data.startsWith("CLEAR_")){
-					logger.debug("CLEAR Message received.");
-					int id = Integer.parseInt(str_data.substring(6));
-					logger.debug("Clear ID = " + id);
-					EntityID clearID = new EntityID(id);
-					Road clearRoad = (Road)(model.getEntity(clearID));
-					logger.debug("Clear target = " + clearRoad);
-					currentTaskList.add(new ClearTask(this, model, clearRoad, distance));
-				}
-			}
-        }
-        // Am I near a blockade?
-        Blockade target = getTargetBlockade();
-        if (target != null) {
-            logger.info("Clearing blockade " + target);
-            sendSpeak(time, 1, ("Clearing " + target).getBytes());
-            sendClear(time, target.getID());
-            return;
-        }
-
-		//ボイスデータからのClear Taskがたまっていたらそいつを処理しましょう．
-		if(currentTaskList != null && currentTaskList.size() > 0){
-			logger.info("currentTaskList is not null. extracting currentTask now...");
-			taskRankUpdate();
-			currentTask = getHighestRankTask();
-			logger.debug("currentTask = " + currentTask);
-			currentJob = currentTask.currentJob();
-			logger.debug("currentJob = " + currentJob);
-			logger.info("currentJob.doJob();");
+        
+		currentTask = action();
+		currentJob = currentTask.currentJob();
+		logger.info("currentTask = " + currentTask);
+		logger.info("currentJob  = " + currentJob);
+		if(currentJob != null)
 			currentJob.doJob();
-		}
-        // Plan a path to a blocked area
-        List<EntityID> path = search.breadthFirstSearch(location(), getBlockedRoads());
-        if (path != null) {
-            logger.info("Moving to target");
-            Road r = (Road)model.getEntity(path.get(path.size() - 1));
-            Blockade b = getTargetBlockade(r, -1);
-            //sendMove(time, path, b.getX(), b.getY());
-			if(b != null){
-				//sendMove(time, path, b.getX(), b.getY());
-				move(path, b.getX(), b.getY());
-				logger.debug("Path: " + path);
-				logger.debug("Target coordinates: " + b.getX() + ", " + b.getY());
+		else
+			logger.debug("currentJob is null.");
+	}
+	
+	@Override
+	public void taskRankUpdate(){
+		logger.info("PoliceForce.taskRankUpdate();");
+		int distance;
+		int rank;
+		double width = (w_width > w_height? w_width : w_height);
+		
+		for(Task t : currentTaskList){
+			//ClearTask: 割り当て10000...5000
+			if(t instanceof ClearTask){
+				logger.info("taskRankUpdate=>ClearTask");
+				distance = model.getDistance(getLocation(), ((ClearTask)t).getTarget());
+				rank = basicRankAssign(10000, 5000, distance, width);
+				logger.info("t.setRank(" + rank + ");");
+				t.setRank(rank);
 			}
-            return;
-        }
-        logger.debug("Couldn't plan a path to a blocked road");
-        logger.info("Moving randomly");
-        //sendMove(time, randomWalk());
-		move(randomWalk());
-*/
+			//MoveTask:
+			else if(t instanceof MoveTask){
+				logger.info("taskRankUpdate=>MoveTask");
+				distance = model.getDistance(getLocation(), ((MoveTask)t).getTarget());
+				if(isOnTeam){
+					//割り当て9000...5000
+					logger.debug("taskRankUpdate=>MoveTask=>isOnTeam");
+					rank = basicRankAssign(9000, 5000, distance, width);
+				}else{
+					//割り当て4000...1000(default)
+					logger.debug("taskRankUpdate=>MoveTask=>!isOnTeam");
+					rank = basicRankAssign(4000, 1000, distance, width);
+				}
+				logger.info("t.setRank(" + rank + ");");
+				t.setRank(rank);
+			}
+			/*
+			//RestTask:
+			else if(t instanceof RestTask){
+				logger.info("taskRankUpdate=>RestTask");
+				logger.info("t.setRank(Integer.MAX_VALUE);");
+				t.setRank(Integer.MAX_VALUE);
+			}
+			*/
+		}
+	}
+	
+	//ClearTask, MoveTaskなどにおいて，自分から対象までの距離を元にしたタスク優先度の割り当てをおこなう
+	//(距離が遠くなるほど優先度は低くなる)
+	private int basicRankAssign(int maxRank, int minRank, int distance, double world_width){
+		logger.debug("basicRankAssign();");
+		logger.debug("maxRank  = " + maxRank);
+		logger.debug("minRank  = " + minRank);
+		logger.debug("distance = " + distance);
+		
+		int rank = maxRank;
+		logger.trace("distance = " + distance);
+		if(distance > 0){
+			int increment = (int)((maxRank - minRank) * (distance / world_width));
+			if(increment > minRank){
+				increment = minRank;
+			}
+			logger.trace("increment = " + increment);
+			rank = maxRank - increment;
+		}
+		logger.debug("rank = " + rank);
+		return rank;
 	}
 	
     @Override
@@ -253,24 +222,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
         }
         logger.info("No blockades in range");
         return null;
-    }
-
-	public void taskRankUpdate(){
-		StandardEntity location = getLocation();
-		int target_distance;
-		for(Task task : currentTaskList){
-			/**
-			*  ClearTaskのupdate:
-			*  意参るところから距離の近い順にランクを高くする
-			*/
-			if(task instanceof ClearTask){
-				Area target = ((ClearTask)task).getTarget();
-				target_distance = model.getDistance(location, target);
-				task.setRank(100000 - target_distance);
-			}
-		}
-	}
-	
+    }	
 	public int getDistance(){
 		return distance;
 	}

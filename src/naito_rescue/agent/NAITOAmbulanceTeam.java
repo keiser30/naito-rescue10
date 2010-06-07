@@ -62,161 +62,85 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 		if(once){
 			logger.debug("DEBUG: RescueTask is valid?");
 			currentTaskList.add(new RescueTask(this, model, (Building)model.getEntity(new EntityID(254))));
-			taskRankUpdate();
-			currentTask = getHighestRankTask();
-			logger.debug("currentTask = " + currentTask);
-			currentJob = currentTask.currentJob();
-			logger.debug("currentJob  = " + currentJob);
-			currentJob.doJob();
 			once = false;
 		}
-//		move(randomWalk());
-/*
-		if(target_building != null && getLocation().getID().getValue() == target_building.getID().getValue()){
-			visitedBuildings.add(target_building);
-		}
-		//ボイスデータの処理
-        for (Command next : heard) {
-			byte[] rawdata = null;
-			if(next instanceof AKSpeak || next instanceof AKTell || next instanceof AKSay){
-				logger.debug("AKSpeak(or AKTell or AKSay) data received.");
-				if(next instanceof AKSpeak){
-					rawdata = ((AKSpeak)next).getContent();
-				}else if(next instanceof AKTell){
-					rawdata = ((AKTell)next).getContent();
-				}else if(next instanceof AKSay){
-					rawdata = ((AKSay)next).getContent();
-				}else{
-					break;
-				}
-				if(rawdata != null){
-					String str_data = null;
-					logger.debug("Extracting voice data...");
-					try{
-						str_data = new String(rawdata, "UTF-8");
-						logger.trace("str_data = " + str_data);
-					}catch(Exception e){
-						logger.info("Exception in Extracting voice data.");
-						logger.trace("continue for-loop.");
-						continue;
-					}
-					logger.debug("Extracting visited building id...");
-					EntityID visitedID = extractVisitedBuildingID(str_data);
-					if(visitedID == null) continue;
-					visitedBuildings.add(model.getEntity(visitedID));
-				}
-			}
-        }
-        
-		updateTargetBuildings();
-        updateUnexploredBuildings(changed);
-        // Am I transporting a civilian to a refuge?
-        if (someoneOnBoard()) {
-            // Am I at a refuge?
-            if (location() instanceof Refuge) {
-                // Unload!
-                Logger.info("Unloading");
-                sendUnload(time);
-                return;
-            }
-            else {
-                // Move to a refuge
-                List<EntityID> path = search.breadthFirstSearch(location(), getRefuges());
-                if (path != null) {
-                    logger.info("Moving to refuge");
-                    //sendMove(time, path);
-					move(path);
-                    return;
-                }
-                // What do I do now? Might as well carry on and see if we can dig someone else out.
-                logger.debug("Failed to plan path to refuge");
-            }
-        }
-        //視界に市民がいるときの処理
-        List<Civilian> view_civs = getViewCivilians(changed);
-        if(view_civs != null && view_civs.size() != 0){
-        	logger.trace("Civilians are in my view.");
-        	for(Civilian next : view_civs){
-		        if (next.getPosition().equals(location().getID())) {
-		            // Targets in the same place might need rescueing or loading
-		            if (next.getBuriedness() == 0 && !(location() instanceof Refuge)) {
-		                // Load
-		                logger.info("Loading " + next);
-		                sendLoad(time, next.getID());
-		                return;
-		            }
-		            if (next.getBuriedness() > 0) {
-		                // Rescue
-		                logger.info("Rescueing " + next);
-		                sendRescue(time, next.getID());
-		                return;
-		            }
-		        } 
-        	}
-        }
-        
-        //建物探訪
-        logger.debug("建物探訪");
-        target_building = getTargetBuilding();
-        logger.debug("target_building = " + target_building);
-        List<EntityID> target_building_path = search.breadthFirstSearch(getLocation(), target_building);
-        if(target_building_path != null){
-        	logger.debug("target_building_path = " + target_building_path);
-        	try{
-        		speak(3, ("VISITED_"+target_building.getID().getValue()).getBytes("UTF-8"));
-        	}catch(Exception e){}
-        	//sendMove(time, target_building_path);
-        	move(target_building_path);
-        	return;
-        }else{
-        	logger.debug("target_building_path is null!");
-        }
-        
-        // Go through targets (sorted by distance) and check for things we can do
-        for (Human next : getTargets()) { //getTargetsは大体がnull.もしくはサイズ0.
-            if (next.getPosition().equals(location().getID())) {
-                // Targets in the same place might need rescueing or loading
-                if ((next instanceof Civilian) && next.getBuriedness() == 0 && !(location() instanceof Refuge)) {
-                    // Load
-                    logger.info("Loading " + next);
-                    sendLoad(time, next.getID());
-                    return;
-                }
-                if (next.getBuriedness() > 0) {
-                    // Rescue
-                    logger.info("Rescueing " + next);
-                    sendRescue(time, next.getID());
-                    return;
-                }
-            }
-            else {
-                // Try to move to the target
-                List<EntityID> target_human_path = search.breadthFirstSearch(location(), next.getPosition(model));
-                if (target_human_path != null && next.getPosition(model) instanceof Building) {
-                    logger.info("Moving to target. path = " + target_human_path);
-                    //sendMove(time, path);
-					move(target_human_path);
-                    return;
-                }
-            }
-        }
-        // Nothing to do
-        List<EntityID> target__path = search.breadthFirstSearch(location(), unexploredBuildings);
-        if (target__path != null) {
-            logger.info("Searching buildings");
-            //sendMove(time, path);
-			move(target__path);
-            return;
-        }else{
-        	logger.info("Cannot Searching Buildings.");
-        }
-        logger.info("Moving randomly");
-        //sendMove(time, randomWalk());
-		move(randomWalk());
-*/
+		//TODO: 視界情報にある建物にいる市民の探訪
+		
+		currentTask = action();
+		currentJob = currentTask.currentJob();
+		logger.info("currentTask = " + currentTask);
+		logger.info("currentJob  = " + currentJob);
+		if(currentJob != null)
+			currentJob.doJob();
+		else
+			logger.debug("currentJob is null.");
 	}
+	
+	@Override
 	public void taskRankUpdate(){
+		logger.info("AmbulanceTeam.taskRankUpdate();");
+		int distance;
+		int rank;
+		double width = (w_width > w_height? w_width : w_height);
+		
+		for(Task t : currentTaskList){
+			//RescueTask: 割り当て10000...5000
+			if(t instanceof RescueTask){
+				logger.info("taskRankUpdate=>RescueTask");
+				distance = model.getDistance(getLocation(), ((RescueTask)t).getTarget());
+				rank = basicRankAssign(10000, 5000, distance, width);
+				logger.info("t.setRank(" + rank + ");");
+				t.setRank(rank);
+			}
+			//MoveTask:
+			else if(t instanceof MoveTask){
+				logger.info("taskRankUpdate=>MoveTask");
+				distance = model.getDistance(getLocation(), ((MoveTask)t).getTarget());
+				if(isOnTeam){
+					//割り当て9000...5000
+					logger.debug("taskRankUpdate=>MoveTask=>isOnTeam");
+					rank = basicRankAssign(9000, 5000, distance, width);
+				}else{
+					//割り当て4000...1000(default)
+					logger.debug("taskRankUpdate=>MoveTask=>!isOnTeam");
+					rank = basicRankAssign(4000, 1000, distance, width);
+				}
+				logger.info("t.setRank(" + rank + ");");
+				t.setRank(rank);
+			}
+			/*
+			//RestTask:
+			else if(t instanceof RestTask){
+				logger.info("taskRankUpdate=>RestTask");
+				logger.info("t.setRank(Integer.MAX_VALUE);");
+				t.setRank(Integer.MAX_VALUE);
+			}
+			*/
+		}
 	}
+	
+	//RescueTask, MoveTaskなどにおいて，自分から対象までの距離を元にしたタスク優先度の割り当てをおこなう
+	//(距離が遠くなるほど優先度は低くなる)
+	private int basicRankAssign(int maxRank, int minRank, int distance, double world_width){
+		logger.debug("basicRankAssign();");
+		logger.debug("maxRank  = " + maxRank);
+		logger.debug("minRank  = " + minRank);
+		logger.debug("distance = " + distance);
+		
+		int rank = maxRank;
+		logger.trace("distance = " + distance);
+		if(distance > 0){
+			int increment = (int)((maxRank - minRank) * (distance / world_width));
+			if(increment > minRank){
+				increment = minRank;
+			}
+			logger.trace("increment = " + increment);
+			rank = maxRank - increment;
+		}
+		logger.debug("rank = " + rank);
+		return rank;
+	}
+/*
 	protected EntityID extractVisitedBuildingID(String str){
 		EntityID result;
 		if(str.startsWith("VISITED_")){
@@ -234,6 +158,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 			return null;
 		}
 	}
+*/
 /*
 	protected StandardEntity getTargetBuilding(){
 		logger.debug("getTargetBuilding();");
