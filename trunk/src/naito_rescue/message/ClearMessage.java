@@ -6,6 +6,9 @@ import rescuecore2.worldmodel.*;
 import rescuecore2.standard.components.*;
 import rescuecore2.standard.entities.*;
 
+import java.io.*;
+import java.util.*;
+
 public class ClearMessage extends naito_rescue.message.Message
 {
 	private EntityID clearTarget;
@@ -21,5 +24,18 @@ public class ClearMessage extends naito_rescue.message.Message
 	@Override
 	public int getSize(){
 		return 4; //int1つ分
+	}
+
+	@Override
+	public String toString(){
+		StringBuffer sb = new StringBuffer();
+		sb.append("ClearMessage: \n");
+		sb.append("    |____ addrAgent = " + addressAgent + "\n");
+		sb.append("    |____ addrType  = " + addressType + "\n");
+		sb.append("    |____ broadcast = " + broadcast + "\n");
+		sb.append("    |____ target    = " + clearTarget + "\n");
+
+		return sb.toString();
+
 	}
 }

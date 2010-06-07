@@ -82,123 +82,86 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			}
 		}//end outer-for.
 		
-		if(currentTask != null && currentTask.isFinished() && !currentTaskList.isEmpty()){
-			//currentTaskが終了していたら... もっとも優先度の高いタスクを選んで実行
-			logger.info("currentTaskList is not empty.");
-			logger.debug("" + currentTaskList);
-			currentTaskList.remove(currentTask);
-			taskRankUpdate();
-			currentTask = getHighestRankTask();
-			logger.debug("getHighestRankTask()");
-			logger.debug("  |__ " + currentTask + ", Rank = " + currentTask.getRank());
-			currentJob  = currentTask.currentJob();
-			logger.debug("currentJob = " + currentJob);
-			if(currentJob != null){
-				currentJob.doJob();
-			}else{
-				logger.info("currentJob is null.");
+		// 自分の視界にある建物についてExtinguishTaskを追加する
+		List<Building> burningBuildings = getBurningBuildings();
+		if(!burningBuildings.isEmpty()){
+			for(Building b : burningBuildings){
+				currentTaskList.add(new ExtinguishTask(this, model, b, maxPower, maxDistance));
 			}
-			return;
 		}
 		
-//		logger.info("NAITOFireBrigade.hearing...");
-//		for(Command next : heard){
-//			logger.debug("heard->next = " + next);
-//			if(next instanceof AKSpeak){
-//				/**
-//				*  無線or声データの処理
-//				*/
-//				AKSpeak speak = (AKSpeak)next;
-//				
-//			}
-//		}
-/*
-        FireBrigade me = me();
-        // Are we currently filling with water?
-        if (me.isWaterDefined() && me.getWater() < maxWater && location() instanceof Refuge) {
-            logger.info("Filling with water at " + location());
-            sendRest(time);
-            return;
-        }
-        // Are we out of water?
-        if (me.isWaterDefined() && me.getWater() == 0) {
-            // Head for a refuge
-            List<EntityID> path = search.breadthFirstSearch(location(), getRefuges());
-            if (path != null) {
-                logger.info("Moving to refuge");
-                //sendMove(time, path);
-				move(path);
-                return;
-            }
-            else {
-                logger.debug("Couldn't plan a path to a refuge.");
-                path = randomWalk();
-                logger.info("Moving randomly");
-                //sendMove(time, path);
-				move(path);
-                return;
-            }
-        }
-		//とにかく近いところから，初期出火から消していく.
-		Building target = null;
-		Collection<Building> burningBuildings = getBurningBuildings();
-		int distance = Integer.MAX_VALUE;
-		if(!(burningBuildings == null)){
-			logger.debug("Search target building...");
-			for(Building b : burningBuildings){
-				logger.debug("ターゲット候補:" + b);
-				int dist_temp = model.getDistance(getLocation(), b);
-				if(distance > dist_temp){
-					target = b;
-					distance = dist_temp;
-				}
-			}
-			if(target != null){
-				logger.debug("ターゲット決定: " + target);
-				currentTask = new ExtinguishTask(this, model, target, maxPower, maxDistance);
-				currentJob = currentTask.currentJob();
-				currentJob.doJob();
-				logger.debug("ExtinguishTask.currentJob.doJob();");
-			}
-		}else{
-		}
-        // Find all buildings that are on fire
-        Collection<Building> all = getBurningBuildings();
-        // Can we extinguish any right now?
-        for (Building next : all) {
-            if (model.getDistance(me, next) <= maxDistance) {
-                Logger.info("Extinguishing " + next);
-                sendExtinguish(time, next.getID(), maxPower);
-                sendSpeak(time, 1, ("Extinguishing " + next.getID()).getBytes());
-                return;
-            }
-        }
-        // Plan a path to a fire
-        for (Building next : all) {
-            List<EntityID> path = planPathToFire(next);
-            if (path != null) {
-                logger.info("Moving to target. path = " + path);
-                //sendMove(time, path);
-				move(path);
-                return;
-            }
-        }
-        List<EntityID> path = null;
-        logger.debug("Couldn't plan a path to a fire.");
-        path = randomWalk();
-		logger.info("Moving randomly");
-        Logger.info("Moving randomly");
-        //sendMove(time, path);
-		move(path);
-*/
+		currentTask = action();
+		currentJob = currentTask.currentJob();
+		if(currentJob != null)
+			currentJob.doJob();
+		else
+			logger.debug("currentJob is null.");
 	}
 
+	// FireBrigadeのtaskRankUpdate
+	@Override
 	public void taskRankUpdate(){
+		logger.info("FireBrigade.taskRankUpdate();");
+		int distance;
+		int rank;
+		double width = (w_width > w_height? w_width : w_height);
+		
 		for(Task t : currentTaskList){
+			
 			if(t instanceof ExtinguishTask){
+				logger.info("taskRankUpdate=>ExtinguishTask");
+				// ExtinguishTask: 割り当て10000 ... 5000
 				//とりあえず近いところから消していく
+				distance = model.getDistance(getLocation(), ((ExtinguishTask)t).getTarget());
+				rank = basicRankAssign(10000, 5000, distance, width);
+				logger.info("t.setRank(" + rank + ");");
+				t.setRank(rank);
+			}else if(t instanceof MoveTask){
+				//MoveTask:
+				logger.info("taskRankUpdate=>MoveTask");
+				distance = model.getDistance(getLocation(), ((MoveTask)t).getTarget());
+				if(isOnTeam){
+					//isMemberなら，割り当て9000...5000
+					logger.debug("taskRankUpdate=>MoveTask=>isOnTeam");
+					rank = basicRankAssign(9000, 5000, distance, width);
+				}else{
+					//isMemberでなかったら，割り当て4000...1000(defualt)
+					logger.debug("taskRankUpdate=>MoveTask=>!isOnTeam");
+					rank = basicRankAssign(4000, 1000, distance, width);
+				}
+				logger.info("t.setRank(" + rank + ");");
+				t.setRank(rank);
 			}
+			/*
+			else if(t instanceof RestTask){
+				logger.info("taskRankUpdate=>RestTask");
+				logger.info("t.setRank(Integer.MAX_VALUE);");
+				t.setRank(Integer.MAX_VALUE);
+			}
+			*/
 		}
+	}
+	
+	//ExtinguishTask, MoveTaskなどにおいて，自分から対象までの距離を元にしたタスク優先度の割り当てをおこなう
+	//(距離が遠くなるほど優先度は低くなる)
+	private int basicRankAssign(int maxRank, int minRank, int distance, double world_width){
+		logger.debug("basicRankAssign();");
+		logger.debug("maxRank  = " + maxRank);
+		logger.debug("minRank  = " + minRank);
+		logger.debug("distance = " + distance);
+		
+		int rank = maxRank;
+		logger.trace("distance = " + distance);
+		if(distance > 0){
+			int increment = (int)((maxRank - minRank) * (distance / world_width));
+			if(increment > minRank){
+				increment = minRank;
+			}
+			logger.trace("increment = " + increment);
+			rank = maxRank - increment;
+		}
+		logger.debug("rank = " + rank);
+		return rank;
 	}
 	
 	private List<Building> getBurningBuildings(){

@@ -45,7 +45,7 @@ public class LoadJob extends Job
 			Civilian c = next;
 			logger.debug("c.getBuriedness() = " + c.getBuriedness());
 			if(c.getBuriedness() <= 0){
-				logger.debug("Decide target civilian = " + civilian);
+				logger.debug("Decide target civilian = " + c);
 				logger.debug("    |____ load(" + c.getID() + ")");
 				civilian = c;
 				owner.load(c.getID());
@@ -62,7 +62,7 @@ public class LoadJob extends Job
 	@Override 
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel model){
 		logger.info("LoadJob.isFinished();");
-		if(illegal){
+		if(illegal == true){
 			logger.debug("illegal");
 			return true;
 		}
