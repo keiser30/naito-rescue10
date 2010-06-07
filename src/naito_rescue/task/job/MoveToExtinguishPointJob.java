@@ -34,6 +34,7 @@ public class MoveToExtinguishPointJob extends Job
 		this.extinguishPointsList = new ArrayList<StandardEntity>();
 
 		extinguishPoints = owner.getWorldModel().getObjectsInRange(target, distance);
+		extinguishPoints.add(target);
 		for(StandardEntity extinguishPoint : extinguishPoints){
 			extinguishPointsList.add(extinguishPoint);
 		}
@@ -45,17 +46,20 @@ public class MoveToExtinguishPointJob extends Job
 	
 	@Override
 	public void doJob(){
-	/*
-		tryCount++;
-		tryCount = tryCount % extinguishPointsList.size();
-		moveTarget = extinguishPointsList.get(tryCount);
-	*/
 		try{
-			List<EntityID> path = owner.getSearch().breadthFirstSearch(owner.getLocation(), extinguishPoints);
-			owner.move(moveTarget);
+			//近いところから順番に試す
+			for(int i = 0;i < extinguishPointsList.size();i++){
+				StandardEntity moveTarget = extinguishPointsList.get(i);
+				List<EntityID> path = owner.getSearch().breadthFirstSearch(owner.getLocation(), moveTarget);
+				if(path != null){
+					owner.move(moveTarget);
+					return;
+				}else{
+					continue;
+				}
+			}
 		}catch(Exception e){
 			owner.getLogger().info("MoveToExtinguishPointJob: " + e);
-	//		doJob(); //再試行
 		}
 	}
 
