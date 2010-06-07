@@ -194,7 +194,7 @@ public class DebugAgentInfoViewer extends JPanel
 
         @Override
         public int getRowCount() {
-            return 6;
+            return 8;
         }
 
         @Override
@@ -217,10 +217,15 @@ public class DebugAgentInfoViewer extends JPanel
 		        		case 3:
 		        			return "Stamina";
 		        		case 4:
-		        			if(agent instanceof FireBrigade){
-		        				return "Water";
-		        			}
+							return "x";
 		        		case 5:
+							return "y";
+						case 6:
+							if(agent instanceof FireBrigade){
+								return "Water";
+							}
+						case 7:
+						case 8:
 		        		default:
 		        			return "";
 		        	}
@@ -245,10 +250,15 @@ public class DebugAgentInfoViewer extends JPanel
 		        		case 3:
 		        			return agent.getStamina() + "";
 		        		case 4:
-		        			if(agent instanceof FireBrigade){
-		        				return ((FireBrigade)agent).getWater() + "";
-		        			}
+							return agent.getX() + "";
 		        		case 5:
+							return agent.getY() + "";
+						case 6:
+							if(agent instanceof FireBrigade){
+								return ((FireBrigade)agent).getWater() + "";
+							}
+						case 7:
+						case 8:
 		        		default:
 		        			return "";
 		        	}
