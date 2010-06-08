@@ -85,8 +85,15 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 		
 		for(Task t : currentTaskList){
 			//RescueTask: 割り当て10000...5000
+			//実行中のRescueTask(運搬中のもの)には最大値を割り当てる
 			if(t instanceof RescueTask){
 				logger.info("taskRankUpdate=>RescueTask");
+				if(currentTask != null && currentTask.equals(t) && !currentTask.isFinished() && someoneOnBoard() != null){
+					logger.debug("RescueTask: agent is moving to refuge now. ただいま運搬中");
+					logger.debug("=> t.setRank(Integer.MAX_VALUE);");
+					t.setRank(Integer.MAX_VALUE); //何が何でも実行する
+					continue;
+				}
 				distance = model.getDistance(getLocation(), ((RescueTask)t).getTarget());
 				rank = basicRankAssign(10000, 5000, distance, width);
 				logger.info("t.setRank(" + rank + ");");
@@ -140,68 +147,11 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 		logger.debug("rank = " + rank);
 		return rank;
 	}
-/*
-	protected EntityID extractVisitedBuildingID(String str){
-		EntityID result;
-		if(str.startsWith("VISITED_")){
-			int id = Integer.parseInt(str.substring(8));
-			result = new EntityID(id);
-			if(model.getEntity(result) instanceof Building){
-				logger.debug("Visited Building ID is found. id = " + id);
-				return result;
-			}else{
-				logger.debug("Visited Building ID is not found. id = " + id);
-				return null;
-			}
-		}else{
-			logger.debug("str_data is not started from 'VISITED_'");
-			return null;
-		}
-	}
-*/
-/*
-	protected StandardEntity getTargetBuilding(){
-		logger.debug("getTargetBuilding();");
-		StandardEntity result = null;
-		if(team == 0){
-			int distance = Integer.MAX_VALUE;
-			result = null;
-			for(StandardEntity target : targetBuildings){
-				int dist_temp = model.getDistance(getLocation(), target);
-				if(dist_temp < distance){
-					distance = dist_temp;
-					result = target;
-				}
-			}
-		}else{
-			int distance = 0;
-			result = null;
-			for(StandardEntity target : targetBuildings){
-				int dist_temp = model.getDistance(getLocation(), target);
-				if(dist_temp > distance){
-					distance = dist_temp;
-					result = target;
-				}
-			}
-		}
-		logger.debug("result = " + result);
-		return result;
-	}
-*/
+
     protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
 		return EnumSet.of(StandardEntityURN.AMBULANCE_TEAM);
 	}
-/*
-    private boolean someoneOnBoard() {
-        for (StandardEntity next : model.getEntitiesOfType(StandardEntityURN.CIVILIAN)) {
-            if (((Human)next).getPosition().equals(getID())) {
-                Logger.debug(next + " is on board");
-                return true;
-            }
-        }
-        return false;
-    }
-*/
+
     private List<Human> getTargets() {
         List<Human> targets = new ArrayList<Human>();
         for (StandardEntity next : model.getEntitiesOfType(StandardEntityURN.CIVILIAN, StandardEntityURN.FIRE_BRIGADE, StandardEntityURN.POLICE_FORCE, StandardEntityURN.AMBULANCE_TEAM)) {

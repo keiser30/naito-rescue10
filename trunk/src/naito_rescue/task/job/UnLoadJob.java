@@ -21,7 +21,7 @@ public class UnLoadJob extends Job
 		//if(owner.getLocation() instanceof Refuge){
 
 		logger.info("UnLoadJob.doJob();");
-		if(owner.someoneOnBoard()){
+		if(owner.someoneOnBoard() != null){
 			owner.unload();
 		}else{
 			logger.debug("UnLoadJob.illegal: 誰も乗せていない");
