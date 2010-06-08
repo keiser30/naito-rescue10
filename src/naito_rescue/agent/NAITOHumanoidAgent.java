@@ -95,6 +95,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 if(isMember && !crowlingBuildings.isEmpty()){
 		 	logger.info("isMember && crowlingBuildings.isNotEmpty() ==> 建物探訪タスクをaddする");
 		 	for(Building b : crowlingBuildings){
+		 		logger.debug("廻る建物は => " + b);
 		 		currentTaskList.add(new MoveTask(this, model, (Area)b));
 		 	}
 		 }
@@ -116,6 +117,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("**  currentTask = " + currentTask);
 		if(currentTask != null)
 			logger.info("**  currentTask.jobs[] = " + currentTask.getJobs());
+		logger.info("Entities in view range:");
+		for(EntityID id : changed.getChangedEntities()){
+			StandardEntity entity = model.getEntity(id);
+			logger.debug("entity => " + entity);
+		}
 
 		//currentTaskListに関する処理
 		//currentTaskが終了していたら，そいつをリストから削除する
@@ -152,6 +158,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			// 閉塞が発生しているRoadのIDを送りつける
 			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
 			if(!(this instanceof NAITOPoliceForce)/* && !(reportedBlockedRoad.contains(location.getID())) */){
+				logger.info("There is blockade => createClearMessage();");
 				ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
 				msgManager.sendMessage(clear_msg);
 				logger.debug("Find blockade (" + getLocation() + ")");
@@ -164,10 +171,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//自分の視界に燃えている建物がある場合
 		//とりあえずその情報をFBに送りつける
 		logger.info("4. //////// 視界にある建物の処理(1) ////////");
-		if(!(this instanceof NAITOFireBrigade) && !(location instanceof Building)){
+		if(!(this instanceof NAITOFireBrigade)){
 			List<Building> view_buildings = getViewBuildings();
 			for(Building b : view_buildings){
-				if(b.isFierynessDefined() && b.isOnFire()){
+				if(b.isOnFire()){
+					logger.info("There is burning building => createExtinguishMessage();");
 					StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
 					ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea():1000));
 					msgManager.sendMessage(ex_msg);
@@ -185,6 +193,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				StandardEntity civilian_location = c.getPosition(model);
 				//道路を突っ走ってる市民に対してLoadを実行しようとするとコケる気がする...
 				if(civilian_location instanceof Building){
+					logger.info("There is victim => createRescueMessage();");
 					RescueMessage rescue_msg = msgManager.createRescueMessage(-1, ADDR_AT, false, civilian_location.getID());
 					msgManager.sendMessage(rescue_msg);
 				}
@@ -195,23 +204,28 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 
 	public List<Building> getViewBuildings(){
+		logger.info("getViewBuildings();");
 		ArrayList<Building> buildings = new ArrayList<Building>();
 		StandardEntity entity = null;
 		for(EntityID id : this.changed.getChangedEntities()){
 			entity = model.getEntity(id);
 			if(entity instanceof Building){
+				logger.debug("getViewBuildings() => " + entity);
 				buildings.add((Building)entity);
 			}
 		}
 		return buildings;
 	}
     public List<Civilian> getViewCivilians(){
+    	logger.info("getViewCivilians();");
     	List<Civilian> civilians = new ArrayList<Civilian>();
     	StandardEntity entity;
     	for(EntityID next : this.changed.getChangedEntities()){
     		entity = model.getEntity(next);
-    		logger.debug("getViewCivilians() next = " + entity);
-    		if(entity instanceof Civilian) civilians.add((Civilian)entity);
+    		if(entity instanceof Civilian){
+    			logger.debug("getViewCivilian() => " + entity);
+    			civilians.add((Civilian)entity);
+    		}
     	}
     	return civilians;
     }
@@ -385,12 +399,16 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	public abstract void taskRankUpdate();
 	
 	public Task action(){
+	/*
 		if(currentTask != null && !currentTask.isFinished()){
 			return currentTask;
 		}else{
 			taskRankUpdate();
 			return getHighestRankTask();
 		}
+	*/
+		taskRankUpdate();
+		return getHighestRankTask();
 	}
 	
 	/**
@@ -406,11 +424,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("getHighestRankTask();");
 
 		if(currentTaskList.isEmpty()){
-			//タスクリストが空っぽの時
-			//全建物探訪
-			logger.debug("やることないから全建物探訪");
-			for(StandardEntity building : allBuildings){
-				currentTaskList.add(new MoveTask(this, model, (Area)building));
+			//初期タスクの設定がここになる
+			//とりあえず全建物探訪
+			logger.info("やることないから建物探訪");
+			for(StandardEntity entity : allBuildings){
+				currentTaskList.add(new MoveTask(this, model, (Area)entity));
 			}
 		}
 		Collections.sort(currentTaskList, task_comp);
@@ -473,15 +491,15 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 	
 	//SampleAmbulanceTeamから移植
-    public boolean someoneOnBoard() {
+    public StandardEntity someoneOnBoard() {
 		logger.info("NAITOHumanoidAgent.someonwOnBoard();");
         for (StandardEntity next : model.getEntitiesOfType(StandardEntityURN.CIVILIAN)) {
             if (((Human)next).getPosition().equals(getID())) {
                 logger.debug(next + " is on board");
-                return true;
+                return next;
             }
         }
-        return false;
+        return null;
     }
 }
 

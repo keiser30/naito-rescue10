@@ -75,7 +75,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		}
 
 		//自分が閉塞の近くにいたら，そいつを啓開するタスクを追加する
-        List<Road> targets = getBlockedRoads();
+        List<Road> targets = getBlockedRoadsInView(changed);
 		if(targets != null && !targets.isEmpty()){
 			for(Road r : targets){
 				currentTaskList.add(new ClearTask(this, model, (Area)r, distance));
@@ -160,7 +160,8 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
     @Override
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
 		return EnumSet.of(StandardEntityURN.POLICE_FORCE);
-    }  
+    } 
+/*
     private List<Road> getBlockedRoads() {
         Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.ROAD);
         List<Road> result = new ArrayList<Road>();
@@ -172,6 +173,25 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
         }
         return result;
     }
+*/
+	private List<Road> getBlockedRoadsInView(ChangeSet changed){
+		logger.info("getBlockedRoadsInView();");
+		ArrayList<Road> result = new ArrayList<Road>();
+		for(EntityID id : changed.getChangedEntities()){
+			StandardEntity entity = model.getEntity(id);
+			if(entity instanceof Road){
+				Road r = (Road)entity;
+				if(r.isBlockadesDefined() && !r.getBlockades().isEmpty()){
+					logger.debug("Blocked Road => " + r);
+					result.add(r);
+				}
+			}
+		}
+		if(result.isEmpty()){
+			logger.info("getBlockedRoadsInView(); => There is no blocked road.");
+		}
+		return result;
+	}
     public Blockade getTargetBlockade() {
        // logger.debug("Looking for target blockade");
 	   	logger.info("NAITOPoliceForce.getTargetBlockade();");

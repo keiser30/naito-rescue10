@@ -83,8 +83,9 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		}//end outer-for.
 		
 		// 自分の視界にある建物についてExtinguishTaskを追加する
-		List<Building> burningBuildings = getBurningBuildings();
+		List<Building> burningBuildings = getBurningBuildings(changed);
 		if(!burningBuildings.isEmpty()){
+			logger.info("burningBuildings.isNotEmpty()=>add(new ExtinguishTask());");
 			for(Building b : burningBuildings){
 				currentTaskList.add(new ExtinguishTask(this, model, b, maxPower, maxDistance));
 			}
@@ -164,7 +165,8 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		return rank;
 	}
 	
-	private List<Building> getBurningBuildings(){
+/*
+	private List<Building> getBurningBuildings(ChangeSet changed){
 		Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.BUILDING);
 		List<Building> result = new ArrayList<Building>();
 		for (StandardEntity next : e) {
@@ -177,6 +179,20 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		}   
 		// Sort by distance
 		Collections.sort(result, new DistanceSorter(location(), model));
+		return result;
+	}
+*/
+	private List<Building> getBurningBuildings(ChangeSet changed){
+		ArrayList<Building> result = new ArrayList<Building>();
+		for(EntityID id : changed.getChangedEntities()){
+			StandardEntity entity = model.getEntity(id);
+			if(entity instanceof Building){
+				Building b = (Building)entity;
+				if(b.isOnFire()){
+					result.add(b);
+				}
+			}
+		}
 		return result;
 	}
 	@Override
