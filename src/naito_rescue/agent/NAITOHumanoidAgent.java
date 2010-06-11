@@ -437,6 +437,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 		Collections.sort(currentTaskList, task_comp);
 		logger.debug("return: " + currentTaskList.get(0));
+		logger.trace("==> rank = " + currentTaskList.get(0).getRank());
 		return currentTaskList.get(0);
 	}
 	
