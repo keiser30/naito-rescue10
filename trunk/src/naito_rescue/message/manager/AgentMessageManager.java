@@ -108,6 +108,9 @@ public class AgentMessageManager implements MessageConstants
 				//不正に読み出したら問答無用でnullを返す
 				logger.info("ArrayIndexOutOfBoundsException!!!!!");
 				return null;
+			}catch(Exception e){
+				System.err.println("Exception in AgentMessageManager!");
+				e.printStackTrace();
 			}
 		}
 	}
