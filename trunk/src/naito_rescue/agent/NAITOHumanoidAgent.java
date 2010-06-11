@@ -101,6 +101,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 }
 	}
 	
+	int ii = 0, jj = 0;
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
@@ -109,6 +110,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			logger.info("まだですよ: " + time);
 			return;
 		}
+
+		move(getLocation(), ii++, jj++);
+		//move(randomWalk());
 		logger.info("****************************************");
 		logger.info("");
 		logger.info("**********____" + time + "____**********");
