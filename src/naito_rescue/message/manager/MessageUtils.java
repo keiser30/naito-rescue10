@@ -59,7 +59,8 @@ public class MessageUtils
 			dis.skipBytes(from);
 			return dis.readInt();
 		}catch(Exception e){
-		System.err.println("Exception in readInt32();");
+			System.err.println("Exception in readInt32();");
+			e.printStackTrace();
 			return -1;
 		}
 	}
@@ -77,7 +78,8 @@ public class MessageUtils
 			}
 			return b;
 		}catch(Exception e){
-		System.err.println("Exception in readInt8();");
+			System.err.println("Exception in readInt8();");
+			e.printStackTrace();
 			return -1;
 		}
 	}
@@ -95,7 +97,8 @@ public class MessageUtils
 			}
 			return s;
 		}catch(Exception e){
-		System.err.println("Exception in readInt16();");
+			System.err.println("Exception in readInt16();");
+			e.printStackTrace();
 			return -1;
 		}
 	}
