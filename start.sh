@@ -3,7 +3,7 @@
 AGENT_DIR_BASE="."
 AGENT_JAR_FILE="$AGENT_DIR_BASE/naito_rescue.jar"
 
-KERNEL_ADDRESS="ixion"
+KERNEL_ADDRESS="localhost"
 KERNEL_PORT=7000
 
 CLASSPATH=`find ./jars -name "*.jar" | xargs | sed -e "s/ /:/g"`
