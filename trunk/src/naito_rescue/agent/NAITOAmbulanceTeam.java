@@ -102,7 +102,14 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 			//MoveTask:
 			else if(t instanceof MoveTask){
 				logger.info("taskRankUpdate=>MoveTask");
-				distance = model.getDistance(getLocation(), ((MoveTask)t).getTarget());
+				Area target = ((MoveTask)t).getTarget();
+				if(!search.isPassable(getLocation(), target)){
+					//通行不可能な場合，実行しない
+					logger.debug("MoveTask=>!isPassable(); => setRank(Integer.MIN_VALUE");
+					t.setRank(Integer.MIN_VALUE);
+					continue;
+				}
+				distance = model.getDistance(getLocation(), target);
 				if(isOnTeam){
 					//割り当て9000...5000
 					logger.debug("taskRankUpdate=>MoveTask=>isOnTeam");

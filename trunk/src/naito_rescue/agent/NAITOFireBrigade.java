@@ -120,7 +120,15 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			}else if(t instanceof MoveTask){
 				//MoveTask:
 				logger.info("taskRankUpdate=>MoveTask");
-				distance = model.getDistance(getLocation(), ((MoveTask)t).getTarget());
+				Area target = ((MoveTask)t).getTarget();
+				logger.info("MoveTask=>target = " + target);
+				if(!search.isPassable(getLocation(), target)){
+					//通行不可能な場合，実行しない
+					logger.debug("MoveTask=>!isPassable(); => setRank(Integer.MIN_VALUE);");
+					t.setRank(Integer.MIN_VALUE);
+					continue;
+				}
+				distance = model.getDistance(getLocation(), target);
 				if(isOnTeam){
 					//isMemberなら，割り当て9000...5000
 					logger.debug("taskRankUpdate=>MoveTask=>isOnTeam");
