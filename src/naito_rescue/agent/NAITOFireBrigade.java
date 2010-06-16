@@ -4,6 +4,7 @@ import java.util.*;
 import java.io.*;
 import rescuecore2.worldmodel.*;
 import rescuecore2.messages.Command;
+import rescuecore2.misc.Pair;
 import rescuecore2.log.Logger;
 import rescuecore2.standard.entities.*;
 import rescuecore2.standard.messages.*;
@@ -91,6 +92,14 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			}
 		}
 		
+		for(StandardEntity c : civilians){
+			int range = model.getDistance(c, me());
+			Building b;
+			
+			
+			
+		}
+		
 		currentTask = action();
 		currentJob = currentTask.currentJob();
 		if(currentJob != null)
@@ -116,6 +125,21 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 				distance = model.getDistance(getLocation(), ((ExtinguishTask)t).getTarget());
 				rank = basicRankAssign(10000, 5000, distance, width);
 				logger.info("t.setRank(" + rank + ");");
+				
+				//消火タスクのターゲット内に市民がいたら優先度あげる
+				//どれくらい上げればいいんだろうねぇ
+				//今は市民一体につき200あげるようにする
+				for(StandardEntity c :civilians){
+					if (c instanceof Civilian){
+						if( ((Civilian)c).getPosition() == ((ExtinguishTask) t).getTarget().getID() ){
+							rank += 200;
+						}
+						else if (true){
+							
+						}
+					}
+				}
+				
 				t.setRank(rank);
 			}else if(t instanceof MoveTask){
 				//MoveTask:
