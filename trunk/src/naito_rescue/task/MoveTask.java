@@ -39,4 +39,8 @@ public class MoveTask extends Task
 	public Area getTarget(){
 		return target;
 	}
+
+	public String toString(){
+		return "MoveTask => " + target + ".";
+	}
 }
