@@ -111,8 +111,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			return;
 		}
 
-		move(getLocation(), ii++, jj++);
-		//move(randomWalk());
 		logger.info("****************************************");
 		logger.info("");
 		logger.info("**********____" + time + "____**********");
@@ -403,16 +401,19 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	public abstract void taskRankUpdate();
 	
 	public Task action(){
-	/*
+		logger.info("action();");
 		if(currentTask != null && !currentTask.isFinished()){
+			logger.info(" => currentTask!=null && !currentTask.isFinished() => return currentTask;");
 			return currentTask;
 		}else{
+			logger.info(" => taskRankUpdate(); => return getHighestRankRask();");
 			taskRankUpdate();
 			return getHighestRankTask();
 		}
-	*/
+	/*
 		taskRankUpdate();
 		return getHighestRankTask();
+	*/
 	}
 	
 	/**
@@ -429,12 +430,24 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 		if(currentTaskList.isEmpty()){
 			//初期タスクの設定がここになる
-			//とりあえず全建物探訪
+			/*
 			logger.info("やることないから建物探訪");
 			for(StandardEntity entity : allBuildings){
 				currentTaskList.add(new MoveTask(this, model, (Area)entity));
 			}
+			*/
+
+			//建物探訪
+			if(isMember && !crowlingBuildings.isEmpty()){
+				logger.info("getHighestRankTask() => isMember => ");
+				for(Building b : crowlingBuildings){
+					logger.info("currentTaskList.add(new MoveTask(" + b + "));");
+					currentTaskList.add(new MoveTask(this, model, b));
+				}
+			}
 		}
+		logger.debug("currentTaskList = ");
+		logger.debug("[" + currentTaskList + "]");
 		Collections.sort(currentTaskList, task_comp);
 		logger.debug("return: " + currentTaskList.get(0));
 		logger.trace("==> rank = " + currentTaskList.get(0).getRank());

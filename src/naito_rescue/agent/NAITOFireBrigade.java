@@ -123,7 +123,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 				// ExtinguishTask: 割り当て10000 ... 5000
 				//とりあえず近いところから消していく
 				distance = model.getDistance(getLocation(), ((ExtinguishTask)t).getTarget());
-				rank = basicRankAssign(10000, 5000, distance, width);
+				rank = taskRankAssignWithDistance(10000, 5000, distance, width);
 				logger.info("t.setRank(" + rank + ");");
 				
 				//消火タスクのターゲット内に市民がいたら優先度あげる
@@ -156,11 +156,11 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 				if(isOnTeam){
 					//isMemberなら，割り当て9000...5000
 					logger.debug("taskRankUpdate=>MoveTask=>isOnTeam");
-					rank = basicRankAssign(9000, 5000, distance, width);
+					rank = taskRankAssignWithDistance(9000, 5000, distance, width);
 				}else{
 					//isMemberでなかったら，割り当て4000...1000(defualt)
 					logger.debug("taskRankUpdate=>MoveTask=>!isOnTeam");
-					rank = basicRankAssign(4000, 1000, distance, width);
+					rank = taskRankAssignWithDistance(4000, 1000, distance, width);
 				}
 				logger.info("t.setRank(" + rank + ");");
 				t.setRank(rank);
@@ -177,8 +177,8 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	
 	//ExtinguishTask, MoveTaskなどにおいて，自分から対象までの距離を元にしたタスク優先度の割り当てをおこなう
 	//(距離が遠くなるほど優先度は低くなる)
-	private int basicRankAssign(int maxRank, int minRank, int distance, double world_width){
-		logger.debug("basicRankAssign();");
+	private int taskRankAssignWithDistance(int maxRank, int minRank, int distance, double world_width){
+		logger.debug("taskRankAssignWithDistance();");
 		logger.debug("maxRank  = " + maxRank);
 		logger.debug("minRank  = " + minRank);
 		logger.debug("distance = " + distance);
