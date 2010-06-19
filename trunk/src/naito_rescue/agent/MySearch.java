@@ -48,8 +48,8 @@ public final class MySearch {
 		this.numBuildings = allBuildingsList.size();
 		this.road2idx = new Hashtable<Integer, Integer>();
 		this.building2idx = new Hashtable<Integer, Integer>();
-		this.initCost = new int[this.numRoads][this.numRoads];
-		this.cost = new int[this.numRoads][this.numRoads];
+		//this.initCost = new int[this.numRoads][this.numRoads];
+		//this.cost = new int[this.numRoads][this.numRoads];
 
 		for(int i = 0;i < numRoads;i++){
 			road2idx.put(allRoadsList.get(i).getID().getValue(), i);

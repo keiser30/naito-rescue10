@@ -38,6 +38,12 @@ public class AgentMessageManager implements MessageConstants
 		
 		logger.info("Extracting Message from received data...");
 		logger.debug("AKSpeak.getContent().size() = " + rawdata.length);
+		
+		//ノイズ対策
+		if(rawdata.length <= 0){
+			logger.info("rawdata.length = 0 => return null;");
+			return null;
+		}
 		int hoge = 0;
 		int idx = 0;
 		while(true){
@@ -184,7 +190,7 @@ public class AgentMessageManager implements MessageConstants
 			utils.writeInt8(TYPE_NULL, rawdata, idx);
 			logger.info("Now send rawdata...");
 			logger.debug("==> rawdata.length = " + rawdata.length);
-			owner.speak(1, rawdata); //useSpeakだろうが何だろうがspeakする
+			owner.speak(channel, rawdata);
 			logger.info("Sending Message End.");
 			logger.debug("Now(After sending messages) sendMessageList.size() = " + sendMessageList.size());
 		}//end if
