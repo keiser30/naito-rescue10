@@ -275,6 +275,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//どの種類のエージェントが探訪を担当するか決定する
 		int max = maxInt(atSize, pfSize, fbSize);
 		logger.info("max           = " + max);
+		logger.info("どっちにしても全員で廻る(RoboCup2010)");
+		/*
 		if(atSize == max && atSize > CROWLABLE_NUM){
 			//AmbulanceTeamが探訪する
 			logger.info("担当はAmbulanceTeam (atSize = " + atSize + ")");
@@ -321,19 +323,21 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				decideCrowlingBuildings();
 			}
 		}else{
-			//全員で探訪する
-			logger.info("担当は…ッ，全員……ッッ! 決する…！ここで……ッッ！！ (allAgentsList.size() = " + allAgentsList.size() + ")");
-			logger.info(this + " in crowling Team.");
-			if(allAgentsList.get(0).getID().getValue() == me().getID().getValue()){
-				logger.info("------> " + this + " is Leader!");
-				isLeader = true;
-			}else{
-				logger.info("------> " + this + " is Member.");
-				isMember = true;
-			}
-			teamMembers.addAll(allAgentsList);
-			decideCrowlingBuildings();
+		*/
+		// <-
+		//全員で探訪する
+		logger.info("みんなで仲良く廻りましょう (allAgentsList.size() = " + allAgentsList.size() + ")");
+		logger.info(this + " in crowling Team.");
+		if(allAgentsList.get(0).getID().getValue() == me().getID().getValue()){
+			logger.info("------> " + this + " is Leader!");
+			isLeader = true;
+		}else{
+			logger.info("------> " + this + " is Member.");
+			isMember = true;
 		}
+		teamMembers.addAll(allAgentsList);
+		decideCrowlingBuildings();
+		//}
 		logger.info("=======================================");
 	}
 	//探訪する建物を決定する
@@ -430,20 +434,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 		if(currentTaskList.isEmpty()){
 			//初期タスクの設定がここになる
-			/*
 			logger.info("やることないから建物探訪");
 			for(StandardEntity entity : allBuildings){
 				currentTaskList.add(new MoveTask(this, model, (Area)entity));
-			}
-			*/
-
-			//建物探訪
-			if(isMember && !crowlingBuildings.isEmpty()){
-				logger.info("getHighestRankTask() => isMember => ");
-				for(Building b : crowlingBuildings){
-					logger.info("currentTaskList.add(new MoveTask(" + b + "));");
-					currentTaskList.add(new MoveTask(this, model, b));
-				}
 			}
 		}
 		logger.debug("currentTaskList = ");

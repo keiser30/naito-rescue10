@@ -17,6 +17,10 @@ import naito_rescue.task.job.*;
 import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
 
+/**
+*  啓開隊だよ
+*
+*/
 public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements MessageConstants
 {
     private static final String DISTANCE_KEY = "clear.repair.distance";
@@ -55,7 +59,18 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 				*/
 				logger.info("Receive AKSpeak.");
 				AKSpeak speak = (AKSpeak)next;
+				//ノイズ対策
+				if(speak.getContent() == null || speak.getContent().length <= 0){
+					logger.debug("speak.getContent() => null or length<=0 ");
+					continue;
+				}
 				List<naito_rescue.message.Message> msgList = msgManager.receiveMessage(speak);
+				
+				//ノイズ対策
+				if(msgList == null){
+					logger.debug("msgList == null (maybe )");
+					continue;
+				}
 				logger.info("Extracting messages size = " + msgList.size());
 				for(naito_rescue.message.Message message : msgList){
 					if(message.getAddrAgent() != me().getID().getValue() && message.getAddrType() != ADDR_PF){
@@ -75,11 +90,15 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		}
 
 		//自分が閉塞の近くにいたら，そいつを啓開するタスクを追加する
-        List<Road> targets = getBlockedRoadsInView(changed);
+        List<Road> targets = getBlockedRoads(changed);
 		if(targets != null && !targets.isEmpty()){
+			Area last = null;
 			for(Road r : targets){
 				currentTaskList.add(new ClearTask(this, model, (Area)r, distance));
+				last = (Area)r;
 			}
+			if(last != null)
+				clear(last.getID());
 		}
         
 		currentTask = action();
@@ -90,6 +109,8 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 			currentJob.doJob();
 		else
 			logger.debug("currentJob is null.");
+			
+		move(randomWalk());
 	}
 	
 	@Override
@@ -122,7 +143,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 				if(isOnTeam){
 					//割り当て9000...5000
 					logger.debug("taskRankUpdate=>MoveTask=>isOnTeam");
-					rank = basicRankAssign(9000, 5000, distance, width);
+					rank = basicRankAssign(7000, 5000, distance, width);
 				}else{
 					//割り当て4000...1000(default)
 					logger.debug("taskRankUpdate=>MoveTask=>!isOnTeam");
@@ -181,15 +202,26 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
         return result;
     }
 */
-	private List<Road> getBlockedRoadsInView(ChangeSet changed){
+	private List<Road> getBlockedRoads(ChangeSet changed){
 		logger.info("getBlockedRoadsInView();");
 		ArrayList<Road> result = new ArrayList<Road>();
+		//まず視界情報について検査
 		for(EntityID id : changed.getChangedEntities()){
 			StandardEntity entity = model.getEntity(id);
 			if(entity instanceof Road){
 				Road r = (Road)entity;
 				if(r.isBlockadesDefined() && !r.getBlockades().isEmpty()){
 					logger.debug("Blocked Road => " + r);
+					result.add(r);
+				}
+			}
+		}
+		//次にallRoadsについて検査
+		for(StandardEntity road : allRoads){
+			if(road instanceof Road){
+				Road r = (Road)road;
+				if(r.isBlockadesDefined() && !r.getBlockades().isEmpty()){
+					logger.debug("Blocked Road(allRoads) => " + r);
 					result.add(r);
 				}
 			}

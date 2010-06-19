@@ -10,9 +10,14 @@ import rescuecore2.log.Logger;
 import rescuecore2.standard.entities.*;
 
 import naito_rescue.*;
+import naito_rescue.message.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
 
+/**
+*  救急隊だよ
+*
+*/
 public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 {
 	private Collection<StandardEntity> unexploredBuildings;
@@ -54,10 +59,43 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 				/**
 				*  無線or声データの処理
 				*/
+				logger.info("Receive AKSpeak.");
 				AKSpeak speak = (AKSpeak)next;
-				
+				//ノイズ対策
+				if(speak.getContent() == null || speak.getContent().length <= 0){
+					logger.debug("speak.getContent() => null or length<=0 ");
+					continue;
+				}
+				List<naito_rescue.message.Message> msgList = msgManager.receiveMessage(speak);
+				logger.info("Extracting messages size = " + msgList.size());
+				for(naito_rescue.message.Message message : msgList){
+
+					if(message.getAddrAgent() != me().getID().getValue() && message.getAddrType() != ADDR_AT){
+						logger.info("Ignore message.");
+						continue; //自分(もしくは自分と同じ種別のエージェント)宛のメッセージでなかったら無視
+					}
+
+					if(message.getType() == TYPE_RESCUE){
+						logger.info("TYPE_RESCUE message has received.");
+						RescueMessage resc = (RescueMessage)message;
+						EntityID target = resc.getTarget();
+						StandardEntity target_entity = model.getEntity(target);
+						logger.debug("=> target = " + target_entity);
+						logger.info("=> currentTaskList.add(new RescueTask(" + target_entity + "));");
+						currentTaskList.add(new RescueTask(this, model, (Building)target_entity));
+					}
+				}
 			}
 		}
+
+		for(Human hmn : getTargets()){
+			if(model.getEntity(hmn.getPosition()) instanceof Building){
+				Building target = (Building)(model.getEntity(hmn.getPosition()));
+				currentTaskList.add(new RescueTask(this, model, target));
+				logger.info("currentTaskList.add(new RescueTask(...));");
+			}
+		}
+/*
 		//RescueTaskのテスト
 		if(once){
 			logger.debug("DEBUG: RescueTask is valid?");
@@ -65,7 +103,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 			once = false;
 		}
 		//TODO: 視界情報にある建物にいる市民の探訪
-		
+*/
 		currentTask = action();
 		currentJob = currentTask.currentJob();
 		logger.info("currentTask = " + currentTask);
@@ -74,6 +112,8 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 			currentJob.doJob();
 		else
 			logger.debug("currentJob is null.");
+			
+		move(randomWalk());
 	}
 	
 	@Override
@@ -107,6 +147,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 					//通行不可能な場合，実行しない
 					logger.debug("MoveTask=>!isPassable(); => setRank(Integer.MIN_VALUE");
 					t.setRank(Integer.MIN_VALUE);
+					//currentTaskList.remove(t);
 					continue;
 				}
 				distance = model.getDistance(getLocation(), target);

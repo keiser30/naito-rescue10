@@ -64,6 +64,11 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 				*/
 				logger.info("Receive AKSpeak.");
 				AKSpeak speak = (AKSpeak)next;
+				//ノイズ対策
+				if(speak.getContent() == null || speak.getContent().length <= 0){
+					logger.debug("speak.getContent() => null or length<=0 ");
+					continue;
+				}
 				List<naito_rescue.message.Message> msgList = msgManager.receiveMessage(speak);
 				logger.info("Extracting messages size = " + msgList.size());
 				for(naito_rescue.message.Message message : msgList){
@@ -88,16 +93,14 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		if(!burningBuildings.isEmpty()){
 			logger.info("burningBuildings.isNotEmpty()=>add(new ExtinguishTask());");
 			for(Building b : burningBuildings){
-				currentTaskList.add(new ExtinguishTask(this, model, b, maxPower, maxDistance));
+				extinguish(b.getID(), maxPower);
+				//currentTaskList.add(new ExtinguishTask(this, model, b, maxPower, maxDistance));
 			}
 		}
 		
 		for(StandardEntity c : civilians){
 			int range = model.getDistance(c, me());
 			Building b;
-			
-			
-			
 		}
 		
 		currentTask = action();
@@ -128,14 +131,11 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 				
 				//消火タスクのターゲット内に市民がいたら優先度あげる
 				//どれくらい上げればいいんだろうねぇ
-				//今は市民一体につき200あげるようにする
-				for(StandardEntity c :civilians){
+				//今は市民一体につき/*200*/あげるようにする
+				for(StandardEntity c : model.getEntitiesOfType(StandardEntityURN.CIVILIAN)){
 					if (c instanceof Civilian){
 						if( ((Civilian)c).getPosition() == ((ExtinguishTask) t).getTarget().getID() ){
-							rank += 200;
-						}
-						else if (true){
-							
+							rank += 1000;
 						}
 					}
 				}
@@ -216,6 +216,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 */
 	private List<Building> getBurningBuildings(ChangeSet changed){
 		ArrayList<Building> result = new ArrayList<Building>();
+		//まず視界にある建物について追加する
 		for(EntityID id : changed.getChangedEntities()){
 			StandardEntity entity = model.getEntity(id);
 			if(entity instanceof Building){
@@ -223,6 +224,12 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 				if(b.isOnFire()){
 					result.add(b);
 				}
+			}
+		}
+		//次にワールドモデルから.
+		for(StandardEntity building : allBuildings){
+			if(building instanceof Building && ((Building)building).isOnFire()){
+				result.add((Building)building);
 			}
 		}
 		return result;
