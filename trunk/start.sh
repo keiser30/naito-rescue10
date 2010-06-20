@@ -1,48 +1,16 @@
-#!/bin/sh
-
-AGENT_DIR_BASE="."
-AGENT_JAR_FILE="$AGENT_DIR_BASE/naito_rescue.jar"
-
-KERNEL_ADDRESS="localhost"
-KERNEL_PORT=7000
+# $1 Server IP
+# $2 Server port
+# $3 FB
+# $4 AT
+# $5 PF
+# $6 FS
+# $7 AC
+# $8 PO
+# $9 Client number
 
 CLASSPATH=`find ./jars -name "*.jar" | xargs | sed -e "s/ /:/g"`
-CLASSPATH=$CLASSPATH:$AGENT_JAR_FILE
+#CLASSPATH=$CLASSPATH:./naito_rescue.jar
 
-java -Xmx800m -Xmn256m -cp $CLASSPATH naito_rescue.LaunchAgents -h $KERNEL_ADDRESS -p $KERNEL_PORT &
+echo $CLASSPATH
 
-echo "####     ####       ###       ######  ############    ######             "
-echo " ###      ##       ## ##        ##         ##        ##    ##            "
-echo " ## #     ##      ##   ##       ##         ##       ##      ##           "
-echo " ##  #    ##      ##   ##       ##         ##      ##        ##          "
-echo " ##   #   ##     ##     ##      ##         ##      ##        ##  ######  "
-echo " ##    #  ##     #########      ##         ##      ##        ##          "
-echo " ##     # ##    ##       ##     ##         ##       ##      ##           "
-echo " ##      ###    ##       ##     ##         ##        ##    ##            "
-echo "####     ####  ##         ##  ######       ##         ######             "
-echo ""
-echo "##########                                                               "
-echo " ##       ##                                                             "
-echo " ##       ##    #####       ####      #####    ##     ##     #####       "
-echo " ##       ##   #     #     ##   ##   #     ##  ##     ##    #     #      "
-echo " #########    ##     ##   ##        ##         ##     ##   ##     ##     "
-echo " ##  #        #########    #####    ##         ##     ##   #########     "
-echo " ##   #       ##                ##  ##         ##     ##   ##            "
-echo " ##    #       #         ##     ##   #     ##  ##     ##    #            "
-echo "####  ######    ######     #####      #####     ######  #    ######      "
-echo ""
-echo "                       ##       #######   "
-echo "                      ###      ##     ##  "
-echo "                     # ##     ##       ## "
-echo "                       ##     ##       ## "
-echo "                       ##     ##       ## "
-echo "                       ##     ##       ## "
-echo "                       ##     ##       ## "
-echo "                       ##      ##     ##  "
-echo "                     ######     #######   "
-echo ""                   
-echo "    Developed by   Aichi Institute of Technology (Japan)"
-echo "                  Nagoya Institute of Technology (Japan)"
-echo ""
-echo ""
-echo "NAITO-Rescue10 Start!"
+java -Xmx2048m -cp .:$CLASSPATH rescuecore2.LaunchComponents naito_rescue.agent.NAITOFireBrigade*$3 naito_rescue.agent.NAITOPoliceForce*$5  naito_rescue.agent.NAITOAmbulanceTeam*$4 sample.SampleCentre*n -h $1 --loadabletypes.inspect.dir=./jars --random.seed=1

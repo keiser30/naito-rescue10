@@ -38,7 +38,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 
 	@Override
 	public String toString(){
-		return "NAITOFireBrigade." + me().getID() + "";
+		return "NAITOFireBrigade.";
 	}
 
 	@Override
@@ -104,11 +104,19 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		}
 		
 		currentTask = action();
+		if(currentTask != null && currentTask.getRank() < 0){
+			logger.info("currentTask.rank < MIN_VALUE;");
+			logger.info("実行しても仕方ない(実行不可能なんだから)");
+			move(randomWalk());
+			return;
+		}
 		currentJob = currentTask.currentJob();
-		if(currentJob != null)
+		if(currentJob != null){
+			logger.info("currentJob = " + currentJob);
 			currentJob.doJob();
-		else
+		}else{
 			logger.debug("currentJob is null.");
+		}
 	}
 
 	// FireBrigadeのtaskRankUpdate
