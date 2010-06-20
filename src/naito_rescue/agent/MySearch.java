@@ -237,8 +237,9 @@ public final class MySearch {
                     found = true;
                     break;
                 }
-                else {
-                    if (!ancestors.containsKey(neighbour) && !(neighbour instanceof Building)) {
+                else {                                                                           
+                    if (!ancestors.containsKey(neighbour) && !(neighbour instanceof Building) &&
+					    neighbour instanceof Road && !((Road)neighbour).getBlockades().isEmpty()) {
                         open.add(neighbour);
                         ancestors.put(neighbour, next);
                     }

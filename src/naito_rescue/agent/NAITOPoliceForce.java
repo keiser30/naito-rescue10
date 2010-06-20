@@ -88,8 +88,9 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 				}
 			}
 		}
-
+/*
 		//自分が閉塞の近くにいたら，そいつを啓開するタスクを追加する
+		//啓開できるほどに近くならばすぐさま啓開する
         List<Road> targets = getBlockedRoads(changed);
 		if(targets != null && !targets.isEmpty()){
 			Area last = null;
@@ -97,19 +98,59 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 				currentTaskList.add(new ClearTask(this, model, (Area)r, distance));
 				last = (Area)r;
 			}
-			if(last != null)
-				clear(last.getID());
+			if(last != null){
+				List<EntityID> path = search.breadthFirstSearch(getLocation(), last);
+				Blockade b = getTargetBlockade((Road)last, -1);
+				
+				move(path, b.getX(), b.getY());
+				//clear(last.getID());
+			}
 		}
-        
+		logger.info("getTargetBlockade();");
+		Blockade bl = getTargetBlockade();
+		if(bl != null){
+			logger.info("=> clear(" + bl  + ");");
+			clear(bl.getID());
+		}
+*/
+        // Am I near a blockade?
+        Blockade target = getTargetBlockade();
+        if (target != null) {
+            logger.info("Clearing blockade " + target);
+            //sendSpeak(time, 1, ("Clearing " + target).getBytes());
+            sendClear(time, target.getID());
+            return;
+        }
+        // Plan a path to a blocked area
+        List<EntityID> path = search.breadthFirstSearch(getLocation(), getBlockedRoads(changed));
+        if (path != null) {
+            logger.info("Moving to target");
+            Road r = (Road)model.getEntity(path.get(path.size() - 1));
+            Blockade b = getTargetBlockade(r, -1);
+            sendMove(time, path, b.getX(), b.getY());
+            logger.debug("Path: " + path);
+            logger.debug("Target coordinates: " + b.getX() + ", " + b.getY());
+            return;
+        }		
+		
+		//Nothing to do の時にTask-Jobを実行する        
 		currentTask = action();
+		if(currentTask != null && currentTask.getRank() < 0){
+			logger.info("currentTask.rank < MIN_VALUE;");
+			logger.info("実行しても仕方ない(実行不可能なんだから)");
+			move(randomWalk());
+			return;
+		}
 		currentJob = currentTask.currentJob();
 		logger.info("currentTask = " + currentTask);
 		logger.info("currentJob  = " + currentJob);
-		if(currentJob != null)
+		if(currentJob != null){
+			logger.info("=> currentJob.do();");
 			currentJob.doJob();
-		else
-			logger.debug("currentJob is null.");
-			
+			return;
+		}else{
+			logger.debug("currentJob is null. => randomWalk();");
+		}	
 		move(randomWalk());
 	}
 	

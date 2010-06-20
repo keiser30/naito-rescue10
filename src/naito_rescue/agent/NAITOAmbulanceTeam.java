@@ -105,6 +105,11 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 		//TODO: 視界情報にある建物にいる市民の探訪
 */
 		currentTask = action();
+		if(currentTask != null && currentTask.getRank() < 0){
+			logger.info("currentTask.rank < MIN_VALUE;");
+			logger.info("実行しても仕方ない(実行不可能なんだから)");
+			return;
+		}
 		currentJob = currentTask.currentJob();
 		logger.info("currentTask = " + currentTask);
 		logger.info("currentJob  = " + currentJob);
@@ -145,7 +150,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 				Area target = ((MoveTask)t).getTarget();
 				if(!search.isPassable(getLocation(), target)){
 					//通行不可能な場合，実行しない
-					logger.debug("MoveTask=>!isPassable(); => setRank(Integer.MIN_VALUE");
+					logger.debug("MoveTask=>!isPassable(); => setRank(Integer.MIN_VALUE)");
 					t.setRank(Integer.MIN_VALUE);
 					//currentTaskList.remove(t);
 					continue;
