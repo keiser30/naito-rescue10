@@ -40,7 +40,8 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
-
+		AmbulanceTeam me = me();
+		
 		logger.info("NAITOAmbulanceTeam.think();");
         if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
@@ -87,23 +88,32 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 				}
 			}
 		}
-
-		for(Human hmn : getTargets()){
-			if(model.getEntity(hmn.getPosition()) instanceof Building){
-				Building target = (Building)(model.getEntity(hmn.getPosition()));
-				currentTaskList.add(new RescueTask(this, model, target));
-				logger.info("currentTaskList.add(new RescueTask(...));");
+		if(getLocation() instanceof Refuge && (me.getHP() < (me.getStamina() * 0.8))){
+			if(someoneOnBoard() != null){
+				unload();
+				return;
 			}
+			rest();
+			return;
 		}
-/*
-		//RescueTaskのテスト
-		if(once){
-			logger.debug("DEBUG: RescueTask is valid?");
-			currentTaskList.add(new RescueTask(this, model, (Building)model.getEntity(new EntityID(254))));
-			once = false;
+		//誰も乗せていないことが肝要
+		if((me.getHP() < (me.getStamina() / 5)) && someoneOnBoard() == null){
+            // Head for a refuge
+            List<EntityID> path = search.breadthFirstSearch(getLocation(), allRefuges);
+            if (path != null) {
+                logger.info("Moving to refuge");
+                move(path);
+                return;
+            }
+            else {
+                logger.debug("Couldn't plan a path to a refuge.");
+                path = randomWalk();
+                logger.info("Moving randomly");
+                move(path);
+                return;
+            }
 		}
-		//TODO: 視界情報にある建物にいる市民の探訪
-*/
+
 		currentTask = action();
 		if(currentTask != null && currentTask.getRank() < 0){
 			logger.info("currentTask.rank < MIN_VALUE;");
@@ -117,8 +127,31 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 			currentJob.doJob();
 		else
 			logger.debug("currentJob is null.");
-			
+		
+		//Nothing to do.	
 		move(randomWalk());
+	}
+	
+	@Override
+	public Task action(){
+		if(currentTask != null && currentTask instanceof RescueTask && !currentTask.isFinished()){
+			return currentTask;
+		}
+		int maxRank = -1;
+		Task resultTask = null;
+		//ClearTaskがあったら, 最高優先度のものを問答無用で実行する
+		for(Task actionTask : currentTaskList){
+			if(actionTask instanceof RescueTask && actionTask.getRank() > maxRank){
+				resultTask = actionTask;
+				maxRank = actionTask.getRank();
+			}
+		}
+		if(resultTask != null){
+			return resultTask;
+		}
+		logger.info("RescueTaskがないだと?");
+		taskRankUpdate();
+		return getHighestRankTask();
 	}
 	
 	@Override

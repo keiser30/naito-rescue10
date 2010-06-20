@@ -95,7 +95,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 if(isMember && !crowlingBuildings.isEmpty()){
 		 	logger.info("isMember && crowlingBuildings.isNotEmpty() ==> 建物探訪タスクをaddする");
 		 	for(Building b : crowlingBuildings){
-		 		logger.debug("廻る建物は => " + b);
+		 		logger.debug("廻る建物は(crowlingBuilding) => " + b);
 		 		currentTaskList.add(new MoveTask(this, model, (Area)b));
 		 	}
 		 }
@@ -434,17 +434,22 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 		if(currentTaskList.isEmpty()){
 			//初期タスクの設定がここになる
-			logger.info("やることないから建物探訪");
+			logger.info("NOT REACHED.");
 			for(StandardEntity entity : allBuildings){
 				currentTaskList.add(new MoveTask(this, model, (Area)entity));
 			}
 		}
-		logger.debug("currentTaskList = ");
-		logger.debug("[" + currentTaskList + "]");
-		Collections.sort(currentTaskList, task_comp);
-		logger.debug("return: " + currentTaskList.get(0));
-		logger.trace("==> rank = " + currentTaskList.get(0).getRank());
-		return currentTaskList.get(0);
+		int maxRank = Integer.MIN_VALUE;
+		Task resultTask = currentTaskList.get(0); //念のため初めのタスクをいれておく
+		Task tempTask;
+		for(int i = 0;i < currentTaskList.size();i++){
+			tempTask = currentTaskList.get(i);
+			logger.debug("task(" + i + ").getRank() => " + tempTask.getRank());
+			if(tempTask.getRank() > maxRank){
+				resultTask = tempTask;
+			}
+		}
+		return resultTask;
 	}
 	
 	@Override
