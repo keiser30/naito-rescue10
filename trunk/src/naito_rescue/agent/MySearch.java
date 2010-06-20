@@ -238,8 +238,8 @@ public final class MySearch {
                     break;
                 }
                 else {                                                                           
-                    if (!ancestors.containsKey(neighbour) && !(neighbour instanceof Building) &&
-					    neighbour instanceof Road && !((Road)neighbour).getBlockades().isEmpty()) {
+                    if (!ancestors.containsKey(neighbour) && !(neighbour instanceof Building)){ 
+                       //&& neighbour instanceof Road && !((Road)neighbour).isBlockadesDefined()) {
                         open.add(neighbour);
                         ancestors.put(neighbour, next);
                     }

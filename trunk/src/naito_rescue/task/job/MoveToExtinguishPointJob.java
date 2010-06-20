@@ -21,9 +21,11 @@ public class MoveToExtinguishPointJob extends Job
 	//distanceの昇順にソートする
 	Comparator<StandardEntity> distanceComparator = new Comparator<StandardEntity>(){
 		public int compare(StandardEntity e1, StandardEntity e2){
-			int dist1 = owner.getWorldModel().getDistance(owner.getID(), e1.getID());
-			int dist2 = owner.getWorldModel().getDistance(owner.getID(), e2.getID());
-
+			//int dist1 = owner.getWorldModel().getDistance(owner.getID(), e1.getID());
+			//int dist2 = owner.getWorldModel().getDistance(owner.getID(), e2.getID());
+			//ターゲットから近い順になるよう修正
+			int dist1 = owner.getWorldModel().getDistance(target.getID(), e1.getID());
+			int dist2 = owner.getWorldModel().getDistance(target.getID(), e2.getID());
 			return dist1 - dist2;
 		}
 	};

@@ -38,7 +38,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 
 	@Override
 	public String toString(){
-		return "NAITOFireBrigade.";
+		return "NAITOFireBrigade." + me().getID() + "";
 	}
 
 	@Override
@@ -88,6 +88,31 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			}
 		}//end outer-for.
 		
+        FireBrigade me = me();
+        // Are we currently filling with water?
+        if (me.isWaterDefined() && me.getWater() < (maxWater*0.8) && location() instanceof Refuge) {
+            logger.info("Filling with water at " + location());
+            rest();
+            return;
+        }
+        // Are we out of water?
+        if ((me.isWaterDefined() && me.getWater() == 0) ||
+            (me.getHP() < (me.getStamina() / 5) )) {
+            // Head for a refuge
+            List<EntityID> path = search.breadthFirstSearch(getLocation(), allRefuges);
+            if (path != null) {
+                logger.info("Moving to refuge");
+                move(path);
+                return;
+            }
+            else {
+                logger.debug("Couldn't plan a path to a refuge.");
+                path = randomWalk();
+                logger.info("Moving randomly");
+                move(path);
+                return;
+            }
+        }
 		// 自分の視界にある建物についてExtinguishTaskを追加する
 		List<Building> burningBuildings = getBurningBuildings(changed);
 		if(!burningBuildings.isEmpty()){
@@ -97,12 +122,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 				//currentTaskList.add(new ExtinguishTask(this, model, b, maxPower, maxDistance));
 			}
 		}
-		
-		for(StandardEntity c : civilians){
-			int range = model.getDistance(c, me());
-			Building b;
-		}
-		
+
 		currentTask = action();
 		if(currentTask != null && currentTask.getRank() < 0){
 			logger.info("currentTask.rank < MIN_VALUE;");
@@ -118,7 +138,27 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			logger.debug("currentJob is null.");
 		}
 	}
-
+	@Override
+	public Task action(){
+		if(currentTask != null && currentTask instanceof ExtinguishTask && !currentTask.isFinished()){
+			return currentTask;
+		}
+		int maxRank = -1;
+		Task resultTask = null;
+		//ExtinguishTaskがあったら, 最高優先度のものを問答無用で実行する
+		for(Task actionTask : currentTaskList){
+			if(actionTask instanceof ExtinguishTask && actionTask.getRank() > maxRank){
+				resultTask = actionTask;
+				maxRank = actionTask.getRank();
+			}
+		}
+		if(resultTask != null){
+			return resultTask;
+		}
+		logger.info("ExtinguishTaskがないだと?");
+		taskRankUpdate();
+		return getHighestRankTask();
+	}
 	// FireBrigadeのtaskRankUpdate
 	@Override
 	public void taskRankUpdate(){

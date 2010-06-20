@@ -9,7 +9,7 @@
 # $9 Client number
 
 CLASSPATH=`find ./jars -name "*.jar" | xargs | sed -e "s/ /:/g"`
-#CLASSPATH=$CLASSPATH:./naito_rescue.jar
+CLASSPATH=$CLASSPATH:./naito_rescue.jar
 
 echo $CLASSPATH
 
