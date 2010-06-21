@@ -46,6 +46,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected double                    maxY;
 	protected double                    w_width;
 	protected double                    w_height;
+	protected double                    width, height, x, y;
 	protected ArrayList<EntityID>       reportedBlockedRoad; //閉塞があることを送信済みの道路IDリスト
 	
 	@Override
@@ -229,6 +230,13 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
     			civilians.add((Civilian)entity);
     		}
     	}
+    	//追加
+    	for(StandardEntity next : model.getEntitiesOfType(StandardEntityURN.CIVILIAN)){
+    		Civilian civilian = (Civilian)next;
+    		if(model.getEntity(civilian.getPosition()) instanceof Building){
+    			civilians.add(civilian);
+    		}
+    	}
     	return civilians;
     }
 	public void addTaskIfNew(Task tt){
@@ -275,7 +283,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//どの種類のエージェントが探訪を担当するか決定する
 		int max = maxInt(atSize, pfSize, fbSize);
 		logger.info("max           = " + max);
-		logger.info("どっちにしても全員で廻る(RoboCup2010)");
 		/*
 		if(atSize == max && atSize > CROWLABLE_NUM){
 			//AmbulanceTeamが探訪する
@@ -293,7 +300,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				decideCrowlingBuildings();
 			}
 		}else if(pfSize == max && pfSize > CROWLABLE_NUM){
-			//PoliceForceが探訪する
+		*/
+			//PoliceForceが探訪する(RoboCup2010)
 			logger.info("担当はPoliceForce (pfSize = " + pfSize + ")");
 			if(this instanceof NAITOPoliceForce){
 				logger.info(this + " in crowling Team.");
@@ -307,6 +315,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				teamMembers.addAll(pfList);
 				decideCrowlingBuildings();
 			}
+		/*
 		}else if(fbSize == max && fbSize > CROWLABLE_NUM){
 			//FireBrigadeが探訪する
 			logger.info("担当はFireBrigade (fbSize = " + fbSize + ")");
@@ -323,22 +332,21 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				decideCrowlingBuildings();
 			}
 		}else{
-		*/
-		// <-
-		//全員で探訪する
-		logger.info("みんなで仲良く廻りましょう (allAgentsList.size() = " + allAgentsList.size() + ")");
-		logger.info(this + " in crowling Team.");
-		if(allAgentsList.get(0).getID().getValue() == me().getID().getValue()){
-			logger.info("------> " + this + " is Leader!");
-			isLeader = true;
-		}else{
-			logger.info("------> " + this + " is Member.");
-			isMember = true;
-		}
-		teamMembers.addAll(allAgentsList);
-		decideCrowlingBuildings();
-		//}
-		logger.info("=======================================");
+			//全員で探訪する
+			logger.info("みんなで仲良く廻りましょう (allAgentsList.size() = " + allAgentsList.size() + ")");
+			logger.info(this + " in crowling Team.");
+			if(allAgentsList.get(0).getID().getValue() == me().getID().getValue()){
+				logger.info("------> " + this + " is Leader!");
+				isLeader = true;
+			}else{
+				logger.info("------> " + this + " is Member.");
+				isMember = true;
+			}
+			teamMembers.addAll(allAgentsList);
+			decideCrowlingBuildings();
+			//}
+			logger.info("=======================================");
+	*/
 	}
 	//探訪する建物を決定する
 	//(多分ここの計算はものすごい時間を食う)
@@ -369,10 +377,10 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.debug("separateBlock = " + separateBlock);
 		
 		//どっからどこまでのBuildingを探訪するか決定する
-		double width  = (maxX - minX) / separateBlock;
-		double height = (maxY - minY) / separateBlock;
-		double x      = minX + width * (roleID % separateBlock);
-		double y      = minY + height * (roleID / separateBlock);
+		width  = (maxX - minX) / separateBlock;
+		height = (maxY - minY) / separateBlock;
+		x      = minX + width * (roleID % separateBlock);
+		y      = minY + height * (roleID / separateBlock);
 		
 		logger.debug("//---------- 範囲 ----------//");
 		logger.debug("x      = " + x);
@@ -446,9 +454,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			tempTask = currentTaskList.get(i);
 			logger.debug("task(" + i + ").getRank() => " + tempTask.getRank());
 			if(tempTask.getRank() > maxRank){
+				maxRank = tempTask.getRank();
 				resultTask = tempTask;
 			}
 		}
+		logger.debug("==> result.getRank() => " + resultTask.getRank());
 		return resultTask;
 	}
 	
