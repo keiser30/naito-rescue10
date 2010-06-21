@@ -27,7 +27,7 @@ public class ExtinguishTask extends Task
 	public ArrayList<Job> createJobList(){
 		ArrayList<Job> jobs = new ArrayList<Job>();
 		jobs.add(new MoveToExtinguishPointJob(owner, world, target, distance));
-		jobs.add(new ExtinguishJob(owner, world, target, power));
+		jobs.add(new ExtinguishJob(owner, world, target, power, distance));
 		return jobs;
 	}
 	public Building getTarget(){

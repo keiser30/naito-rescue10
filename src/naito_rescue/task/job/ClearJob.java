@@ -24,7 +24,7 @@ public class ClearJob extends Job
 		super(owner,model);
 		this.maxDistance = distance;
 		this.target = target;
-
+		
 		blockades = this.target.getBlockades();
 	}
 
@@ -64,6 +64,9 @@ public class ClearJob extends Job
 
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel model){
 		logger.info(" \\\\\\\\\\ ClearJob.isFinished(); \\\\\\\\\\ ");
+
+		if(blockades == null) illegal = true;
+		if(illegal) return true;
 		logger.info("return =>" + (target.isBlockadesDefined()?"false":"true"));
 		return !target.isBlockadesDefined();
 	}

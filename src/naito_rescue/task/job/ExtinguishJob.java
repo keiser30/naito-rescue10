@@ -13,16 +13,19 @@ public class ExtinguishJob extends Job
 {
 	Building target;
 	int      power;
+	int      distance;
 
-	public ExtinguishJob(NAITOHumanoidAgent owner, StandardWorldModel model, Building target, int power){
+	public ExtinguishJob(NAITOHumanoidAgent owner, StandardWorldModel model, Building target, int power, int distance){
 		super(owner, model);
 		this.target = target;
 		this.power = power;
+		this.distance = distance;
 	}
 
 	@Override
 	public void doJob(){
-		owner.extinguish(target.getID(), power);
+		if(world.getDistance(owner.getLocation().getID(), target.getID()) < distance)
+			owner.extinguish(target.getID(), power);
 	}
 
 	@Override

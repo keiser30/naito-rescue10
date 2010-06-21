@@ -48,7 +48,8 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		logger.info("NAITOFireBrigade.think();");
         if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
-				logger.info("sendSubscribe(1): " + time);
+           		 // Subscribe to channel 3
+				logger.info("sendSubscribe(" + time + ", 1");
            	 	sendSubscribe(time, 1);
 			}else{
 				return;
@@ -124,7 +125,8 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		if(!burningBuildings.isEmpty()){
 			logger.info("burningBuildings.isNotEmpty()=>add(new ExtinguishTask());");
 			for(Building b : burningBuildings){
-				extinguish(b.getID(), maxPower);
+				if(model.getDistance(me.getPosition(), b.getID()) <= maxDistance)
+					extinguish(b.getID(), maxPower);
 				//currentTaskList.add(new ExtinguishTask(this, model, b, maxPower, maxDistance));
 			}
 		}

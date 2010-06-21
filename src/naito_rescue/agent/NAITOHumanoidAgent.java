@@ -47,7 +47,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected double                    w_width;
 	protected double                    w_height;
 	protected double                    width, height, x, y;
-	protected ArrayList<EntityID>       reportedBlockedRoad; //閉塞があることを送信済みの道路IDリスト
+	protected ArrayList<Area>           reportedBlockedRoad; //閉塞があることを送信済みの道路IDリスト
+	protected ArrayList<Building>       reportedBurningBuilding;
+	protected ArrayList<Building>       reportedVictimInBuilding;
 	
 	@Override
     protected void postConnect() {
@@ -64,8 +66,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 ambulanceCenterLess = ambulancecenter.isEmpty();
 		 centerLess = fireStationLess && policeOfficeLess && ambulanceCenterLess;
 		 
-		 reportedBlockedRoad = new ArrayList<EntityID>();
-
+		 reportedBlockedRoad = new ArrayList<Area>();
+		 reportedBurningBuilding = new ArrayList<Building>();
+		 reportedVictimInBuilding = new ArrayList<Building>();
 		 world_rect = model.getBounds();
 		 minX = world_rect.getX();
 		 minY = world_rect.getY();
@@ -138,6 +141,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("//////// /////////////////////////////////////////////////////// //////// 1.");
 			
 		StandardEntity location = getLocation();
+/*
 		//啓開の発見検証用コード
 		if(location instanceof Area){
 			logger.info("2. ////////// 閉塞の発見検証用コード //////////");
@@ -155,18 +159,19 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			}
 			logger.info("////////// ////////////////////// ////////// 2.");
 		}
+*/
 		//自分の今いる場所に閉塞がある場合
 		logger.info("3. //////// 自分の身の回りにある閉塞の発見 ////////");
 		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
 			// 閉塞が発生しているRoadのIDを送りつける
 			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
-			if(!(this instanceof NAITOPoliceForce)/* && !(reportedBlockedRoad.contains(location.getID())) */){
+			if( !(reportedBlockedRoad.contains( (Area)location )) ){
 				logger.info("There is blockade => createClearMessage();");
 				ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
 				msgManager.sendMessage(clear_msg);
 				logger.debug("Find blockade (" + getLocation() + ")");
 				logger.debug("Sending ClearMessage...");
-				reportedBlockedRoad.add(location.getID());
+				reportedBlockedRoad.add((Area)location);
 			}
 		}
 		logger.info("//////// ////////////////////////////// //////// 3.");
@@ -174,14 +179,16 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//自分の視界に燃えている建物がある場合
 		//とりあえずその情報をFBに送りつける
 		logger.info("4. //////// 視界にある建物の処理(1) ////////");
-		if(!(this instanceof NAITOFireBrigade)){
+		//if(!(this instanceof NAITOFireBrigade)){
+		if(true){
 			List<Building> view_buildings = getViewBuildings();
 			for(Building b : view_buildings){
-				if(b.isOnFire()){
+				if(b.isOnFire() && !reportedBurningBuilding.contains(b)){
 					logger.info("There is burning building => createExtinguishMessage();");
 					StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
 					ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea():1000));
 					msgManager.sendMessage(ex_msg);
+					reportedBurningBuilding.add(b);
 				}
 			}
 		}
@@ -190,15 +197,17 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//自分の視界にある建物の中に市民がいる場合
 		//とりあえずその情報をATに送りつける
 		logger.info("5. //////// 視界にある建物の処理(2) ////////");
-		if(!(this instanceof NAITOAmbulanceTeam)){
+		//if(!(this instanceof NAITOAmbulanceTeam)){
+		if(true){
 			List<Civilian> civilians = getViewCivilians();
 			for(Civilian c : civilians){
 				StandardEntity civilian_location = c.getPosition(model);
 				//道路を突っ走ってる市民に対してLoadを実行しようとするとコケる気がする...
-				if(civilian_location instanceof Building){
+				if(civilian_location instanceof Building && !reportedVictimInBuilding.contains((Building)civilian_location)){
 					logger.info("There is victim => createRescueMessage();");
 					RescueMessage rescue_msg = msgManager.createRescueMessage(-1, ADDR_AT, false, civilian_location.getID());
 					msgManager.sendMessage(rescue_msg);
+					reportedVictimInBuilding.add((Building)civilian_location);
 				}
 			}
 		}
