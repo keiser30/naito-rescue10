@@ -68,6 +68,12 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 					continue;
 				}
 				List<naito_rescue.message.Message> msgList = msgManager.receiveMessage(speak);
+				
+				//ノイズ対策
+				if(msgList == null){
+					logger.debug("msgList == null (maybe )");
+					continue;
+				}
 				logger.info("Extracting messages size = " + msgList.size());
 				for(naito_rescue.message.Message message : msgList){
 
@@ -88,6 +94,28 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 				}
 			}
 		}
+		
+        // Am I transporting a civilian to a refuge?
+        if (someoneOnBoard() != null) {
+            // Am I at a refuge?
+            if (getLocation() instanceof Refuge) {
+                // Unload!
+                logger.info("Unloading");
+                unload();
+                return;
+            }
+            else {
+                // Move to a refuge
+                List<EntityID> path = search.breadthFirstSearch(getLocation(), allRefuges);
+                if (path != null) {
+                    logger.info("Moving to refuge");
+                    move(path);
+                    return;
+                }
+                // What do I do now? Might as well carry on and see if we can dig someone else out.
+                logger.debug("Failed to plan path to refuge");
+            }
+        }
 		if(getLocation() instanceof Refuge && (me.getHP() < (me.getStamina() * 0.8))){
 			if(someoneOnBoard() != null){
 				unload();
@@ -113,6 +141,33 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
                 return;
             }
 		}
+		
+        for (Human next : getTargets()) {
+            if (next.getPosition().equals(location().getID())) {
+                // Targets in the same place might need rescueing or loading
+                if ((next instanceof Civilian) && next.getBuriedness() == 0 && !(location() instanceof Refuge)) {
+                    // Load
+                    logger.info("Loading " + next);
+                    load(next.getID());
+                    return;
+                }
+                if (next.getBuriedness() > 0) {
+                    // Rescue
+                    logger.info("Rescueing " + next);
+                    rescue(next.getID());
+                    return;
+                }
+            }
+            else {
+                // Try to move to the target
+                List<EntityID> path = search.breadthFirstSearch(getLocation(), model.getEntity(next.getPosition()));
+                if (path != null) {
+                    logger.info("Moving to target");
+                    move(path);
+                    return;
+                }
+            }
+        }
 
 		currentTask = action();
 		if(currentTask != null && currentTask.getRank() < 0){
@@ -139,7 +194,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 		}
 		int maxRank = -1;
 		Task resultTask = null;
-		//ClearTaskがあったら, 最高優先度のものを問答無用で実行する
+		//RescueTaskがあったら, 最高優先度のものを問答無用で実行する
 		for(Task actionTask : currentTaskList){
 			if(actionTask instanceof RescueTask && actionTask.getRank() > maxRank){
 				resultTask = actionTask;

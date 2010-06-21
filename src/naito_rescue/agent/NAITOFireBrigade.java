@@ -70,6 +70,12 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 					continue;
 				}
 				List<naito_rescue.message.Message> msgList = msgManager.receiveMessage(speak);
+				
+				//ノイズ対策
+				if(msgList == null){
+					logger.debug("msgList == null (maybe )");
+					continue;
+				}
 				logger.info("Extracting messages size = " + msgList.size());
 				for(naito_rescue.message.Message message : msgList){
 					if(message.getAddrAgent() != me().getID().getValue() && message.getAddrType() != ADDR_FB){
@@ -90,7 +96,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		
         FireBrigade me = me();
         // Are we currently filling with water?
-        if (me.isWaterDefined() && me.getWater() < (maxWater*0.8) && location() instanceof Refuge) {
+        if (me.isWaterDefined() && me.getWater() < (maxWater*0.6) && location() instanceof Refuge) {
             logger.info("Filling with water at " + location());
             rest();
             return;

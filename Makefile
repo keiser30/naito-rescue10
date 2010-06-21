@@ -17,6 +17,7 @@ CLASSPATH := $(shell find ./jars -name "*.jar" | xargs | sed -e "s/ /:/g")
 all:
 	$(JAVAC) $(JAVACOPT) -d $(DESTDIR) -classpath $(CLASSPATH) $(SOURCES)
 	$(JAR) cvf $(JARFILENAME) -C $(DESTDIR) .
+	cp $(JARFILENAME) jars/
 .PHONY: clean 
 
 clean:
