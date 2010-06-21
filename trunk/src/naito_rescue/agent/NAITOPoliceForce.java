@@ -26,6 +26,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
     private static final String DISTANCE_KEY = "clear.repair.distance";
 	private int distance; //閉塞解除が可能な距離...?
 	private boolean isOverrideVoice;
+	private PoliceForce me;
 	@Override
 	public String toString(){
 		return "NAITOPoliceForce." + me().getID() + "";
@@ -36,25 +37,34 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
         super.postConnect();
 		distance = config.getIntValue(DISTANCE_KEY);
 		
-		if(pfList.size() < 5){
+		if(crowlingBuildings.isEmpty()){
+			//自分がisMemberなのにも関わらずcrowlingBuidlingが空っぽ...
+			//かわいそうなので声データ優先にします
+			logger.info("Kawaisou => true");
+			isOverrideVoice = true;
+		}else if(pfList.size() < 5){
 			isOverrideVoice = (pfList.indexOf(me()) % 2) == 0;
 		}else{
 			//全体の1/4が声データ優先
 			isOverrideVoice = (pfList.indexOf(me()) % 4) == 0;
 		}
+		me = me();
 	}
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
-		PoliceForce me = me();
 		logger.info("NAITOPoliceForce.think();");
 
-        if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
-            // Subscribe to channel 1
-			logger.debug("Subscribe(1);");
-            sendSubscribe(time, 1);
-        } 
+        if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
+			if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+           		 // Subscribe to channel 3
+				logger.info("sendSubscribe(" + time + ", 1");
+           	 	sendSubscribe(time, 1);
+			}else{
+				return;
+			}
+        }
         
         StandardEntity location = getLocation();
         if(location instanceof Building && crowlingBuildings != null && !crowlingBuildings.isEmpty()){
@@ -157,9 +167,8 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 */
 		//Nothing to do の時にTask-Jobを実行する        
 		currentTask = action();
-		if(currentTask != null && currentTask.getRank() < 0){
-			logger.info("currentTask.rank < MIN_VALUE;");
-			logger.info("実行しても仕方ない(実行不可能なんだから)");
+		if(currentTask == null){
+			logger.info("currentTask.rank < MIN_VALUE or currentTask == null;");
 			move(randomWalk());
 			return;
 		}
@@ -179,7 +188,16 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		ArrayList<ClearTask> result = new ArrayList<ClearTask>();
 		for(Task t : currentTaskList){
 			if(t instanceof ClearTask){
-				result.add(t);
+				result.add((ClearTask)t);
+			}
+		}
+		return result;
+	}
+	private List<MoveTask> collectMoveTask(){
+		ArrayList<MoveTask> result = new ArrayList<MoveTask>();
+		for(Task t : currentTaskList){
+			if(t instanceof MoveTask){
+				result.add((MoveTask)t);
 			}
 		}
 		return result;
@@ -198,6 +216,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 	}
 	@Override
 	public Task action(){
+	/*
 		if(currentTask != null && currentTask instanceof ClearTask && !currentTask.isFinished()){
 			return currentTask;
 		}
@@ -217,6 +236,62 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		logger.info("ClearTaskがないだと?");
 		taskRankUpdate();
 		return getHighestRankTask();
+	*/
+		List<MoveTask> moveTasks = collectMoveTask();
+		List<ClearTask> clearTasks = collectClearTask();
+		
+		if(isOverrideVoice){
+			//声データ ... つまりVoiceからのClearTask優先
+			if(!clearTasks.isEmpty()){
+				int maxDistance = Integer.MIN_VALUE;
+				int distance_temp;
+				ClearTask task_temp = null;
+				
+				//一番遠井ところから実行していく
+				for(ClearTask cl : clearTasks){
+					distance_temp = model.getDistance(me.getPosition(), cl.getTarget().getID());
+					if(distance_temp > maxDistance){
+						maxDistance = distance_temp;
+						task_temp = cl;
+					}
+				}
+				return task_temp; //自分から一番遠いところにターゲットがあるClearTask
+			}else{
+				return null; //randomWalk()させる
+			}
+		}else{
+			//建物探訪優先
+			if(!moveTasks.isEmpty()){
+				//自分に近いところから巡っていく
+				List<EntityID> path = null;
+				int minDistance = Integer.MAX_VALUE;
+				int distance_temp;
+				MoveTask task_temp = null;
+				while(path == null){
+					for(MoveTask mt : moveTasks){
+						distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
+						if(distance_temp < minDistance){
+							minDistance = distance_temp;
+							task_temp = mt;
+						}
+					}
+					path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
+					if(path == null){
+						logger.info("path==null => remove MoveTask");
+						currentTaskList.remove(task_temp);
+					}
+				}
+				return task_temp; //自分から一番近いところがターゲットになっているMoveTask
+			}else{
+				//全建物探訪ついでに啓開
+				for(StandardEntity b : allBuildings){
+					currentTaskList.add(new MoveTask(this, model, (Building)b));
+				}
+				return null; //一回だけrandomWalkさせる
+				//isOverrideVoice = true; //探訪優先から声優先へ
+				//return null; //randomWalkさせる
+			}
+		}
 	}
 	@Override
 	public void taskRankUpdate(){
@@ -232,7 +307,6 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 				int distance_temp;
 		    	List<ClearTask> clearTasks = collectClearTask();
 		    	int maxDistance = Integer.MIN_VALUE;
-		    	int distance_temp;
 		    	EntityID from = me.getPosition(), to;
 		    	
 		    	ClearTask task_temp = null;

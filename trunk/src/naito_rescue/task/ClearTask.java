@@ -43,4 +43,9 @@ public class ClearTask extends Task
 		return !(target.isBlockadesDefined());
 	}
 	public Area getTarget(){ return target; }
+
+	@Override
+	public String toString(){
+		return "ClearTask: " + target.getID().getValue() + ".";
+	}
 }

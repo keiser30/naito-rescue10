@@ -33,17 +33,21 @@ public class MoveToClearPointJob extends Job
 
 		//閉塞への経路の中で，最短のものを選択肢手移動する
 		List<EntityID> path = owner.getSearch().breadthFirstSearch(owner.getLocation(), target);
-		Blockade target_blockade = getTargetBlockade();
+		//Blockade target_blockade = getTargetBlockade();
+		/*
 		if(target_blockade == null){
 			logger.debug("target_blockade is null.");
 			logger.debug("return");
+			illegal = true;
 			return;
 		}
+		*/
 
 		if(path != null){
 			logger.info("Path to Blockade is find.");
-			logger.debug("path = " + path + ", x = " + target_blockade.getX() + ", " + target_blockade.getY());
-			owner.move(path, target_blockade.getX(), target_blockade.getY());
+			logger.debug("path = " + path);
+			//owner.move(path, target_blockade.getX(), target_blockade.getY());
+			owner.move(path);
 			logger.info("move();");
 		}else{
 			logger.info("Path to Blockade is not find.");
@@ -109,6 +113,8 @@ public class MoveToClearPointJob extends Job
 		StandardEntity location = owner.getLocation();
 		logger.debug("location = " + location);
 		logger.debug("target   = " + target);
+		if(this.blockades == null) illegal = true;
+		if(illegal) return true;
 		if(location.getID().getValue() == target.getID().getValue()){
 			logger.debug("return true;");
 			return true;
