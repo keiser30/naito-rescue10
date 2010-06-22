@@ -23,13 +23,29 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	private Collection<StandardEntity> unexploredBuildings;
 	private StandardEntity target_building;
 	private int            team;
-
+	private AmbulanceTeam  me;
+	private boolean        isOverrideVoice;
+	
+	
 	@Override
 	protected void postConnect(){
         super.postConnect();
 		model.indexClass(StandardEntityURN.CIVILIAN, StandardEntityURN.FIRE_BRIGADE, StandardEntityURN.POLICE_FORCE, StandardEntityURN.AMBULANCE_TEAM, StandardEntityURN.REFUGE, StandardEntityURN.BUILDING);
 		unexploredBuildings = model.getEntitiesOfType(StandardEntityURN.BUILDING);
+		
+		if(crowlingBuildings.isEmpty()){
+			//自分がisMemberなのにも関わらずcrowlingBuidlingが空っぽ...
+			//かわいそうなので声データ優先にします
+			logger.info("Kawaisou => true");
+			isOverrideVoice = true;
+		}else if(atList.size() < 5){
+			isOverrideVoice = (atList.indexOf(me()) % 2) == 0;
+		}else{
+			//全体の3/4が声データ優先
+			isOverrideVoice = (atList.indexOf(me()) % 4) < 3;
+		}
 
+		me = me();
 	}
 	@Override
 	public String toString(){
@@ -40,7 +56,6 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
-		AmbulanceTeam me = me();
 		
 		logger.info("NAITOAmbulanceTeam.think();");
         if (time <= config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
@@ -170,9 +185,9 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
         }
 
 		currentTask = action();
-		if(currentTask != null && currentTask.getRank() < 0){
-			logger.info("currentTask.rank < MIN_VALUE;");
-			logger.info("実行しても仕方ない(実行不可能なんだから)");
+		if(currentTask == null){
+			logger.info("currentTask.rank < MIN_VALUE or currentTask == null;");
+			move(randomWalk());
 			return;
 		}
 		currentJob = currentTask.currentJob();
@@ -189,6 +204,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	
 	@Override
 	public Task action(){
+	/*
 		if(currentTask != null && currentTask instanceof RescueTask && !currentTask.isFinished()){
 			return currentTask;
 		}
@@ -207,8 +223,100 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 		logger.info("RescueTaskがないだと?");
 		taskRankUpdate();
 		return getHighestRankTask();
+	*/
+		List<MoveTask> moveTasks = collectMoveTask();
+		List<RescueTask> rescueTasks = collectRescueTask();
+		
+		if(isOverrideVoice){
+			//声データ ... つまりVoiceからのClearTask優先
+			if(!rescueTasks.isEmpty()){
+				int maxDistance = Integer.MIN_VALUE;
+				int distance_temp;
+				RescueTask task_temp = null;
+				
+				//一番遠井ところから実行していく
+				for(RescueTask cl : rescueTasks){
+					distance_temp = model.getDistance(me.getPosition(), cl.getTarget().getID());
+					if(distance_temp > maxDistance){
+						maxDistance = distance_temp;
+						task_temp = cl;
+					}
+				}
+				return task_temp; //自分から一番遠いところにターゲットがあるClearTask
+			}else{
+				if(!moveTasks.isEmpty()){
+					//自分に近いところから巡っていく
+					List<EntityID> path = null;
+					int minDistance = Integer.MAX_VALUE;
+					int distance_temp;
+					MoveTask task_temp = null;
+					while(path == null){
+						for(MoveTask mt : moveTasks){
+							distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
+							if(distance_temp < minDistance){
+								minDistance = distance_temp;
+								task_temp = mt;
+							}
+						}
+						path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
+						if(path == null){
+							logger.info("path==null => remove MoveTask");
+							currentTaskList.remove(task_temp);
+						}
+					}
+					return task_temp; //自分から一番近いところがターゲットになっているMoveTask
+				}
+				return null;
+			}
+		}else{
+			//建物探訪優先
+			if(!moveTasks.isEmpty()){
+				//自分に近いところから巡っていく
+				List<EntityID> path = null;
+				int minDistance = Integer.MAX_VALUE;
+				int distance_temp;
+				MoveTask task_temp = null;
+				while(path == null){
+					for(MoveTask mt : moveTasks){
+						distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
+						if(distance_temp < minDistance){
+							minDistance = distance_temp;
+							task_temp = mt;
+						}
+					}
+					path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
+					if(path == null){
+						logger.info("path==null => remove MoveTask");
+						currentTaskList.remove(task_temp);
+					}
+				}
+				return task_temp; //自分から一番近いところがターゲットになっているMoveTask
+			}else{
+				
+				return null; //一回だけrandomWalkさせる
+				//isOverrideVoice = true; //探訪優先から声優先へ
+				//return null; //randomWalkさせる
+			}
+		}
 	}
-	
+	private List<MoveTask> collectMoveTask(){
+		ArrayList<MoveTask> result = new ArrayList<MoveTask>();
+		for(Task t : currentTaskList){
+			if(t instanceof MoveTask){
+				result.add((MoveTask)t);
+			}
+		}
+		return result;
+	}
+	private List<RescueTask> collectRescueTask(){
+		ArrayList<RescueTask> result = new ArrayList<RescueTask>();
+		for(Task t : currentTaskList){
+			if(t instanceof RescueTask){
+				result.add((RescueTask)t);
+			}
+		}
+		return result;
+	}
 	@Override
 	public void taskRankUpdate(){
 		logger.info("AmbulanceTeam.taskRankUpdate();");

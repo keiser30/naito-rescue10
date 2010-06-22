@@ -324,6 +324,30 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				teamMembers.addAll(pfList);
 				decideCrowlingBuildings();
 			}
+			if(this instanceof NAITOFireBrigade){
+				logger.info(this + " in crowling Team.");
+				if(pfList.get(0).getID().getValue() == me().getID().getValue()){
+					logger.info("------> " + this + " is Leader!");
+					isLeader = true;
+				}else{
+					logger.info("------> " + this + " is Member.");
+					isMember = true;
+				}
+				teamMembers.addAll(fbList);
+				decideCrowlingBuildings();
+			}
+			if(this instanceof NAITOAmbulanceTeam){
+				logger.info(this + " in crowling Team.");
+				if(pfList.get(0).getID().getValue() == me().getID().getValue()){
+					logger.info("------> " + this + " is Leader!");
+					isLeader = true;
+				}else{
+					logger.info("------> " + this + " is Member.");
+					isMember = true;
+				}
+				teamMembers.addAll(atList);
+				decideCrowlingBuildings();
+			}
 		/*
 		}else if(fbSize == max && fbSize > CROWLABLE_NUM){
 			//FireBrigadeが探訪する
@@ -451,10 +475,13 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 		if(currentTaskList.isEmpty()){
 			//初期タスクの設定がここになる
+			/*
 			logger.info("NOT REACHED.");
 			for(StandardEntity entity : allBuildings){
 				currentTaskList.add(new MoveTask(this, model, (Area)entity));
 			}
+			*/
+			return null;
 		}
 		int maxRank = Integer.MIN_VALUE;
 		Task resultTask = currentTaskList.get(0); //念のため初めのタスクをいれておく

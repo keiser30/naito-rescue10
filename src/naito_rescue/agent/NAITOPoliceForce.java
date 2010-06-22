@@ -45,8 +45,8 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		}else if(pfList.size() < 5){
 			isOverrideVoice = (pfList.indexOf(me()) % 2) == 0;
 		}else{
-			//全体の1/4が声データ優先
-			isOverrideVoice = (pfList.indexOf(me()) % 4) == 0;
+			//全体の3/4が声データ優先
+			isOverrideVoice = (pfList.indexOf(me()) % 4) < 3;
 		}
 		me = me();
 	}
@@ -257,7 +257,29 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 				}
 				return task_temp; //自分から一番遠いところにターゲットがあるClearTask
 			}else{
-				return null; //randomWalk()させる
+				if(!moveTasks.isEmpty()){
+					//自分に近いところから巡っていく
+					List<EntityID> path = null;
+					int minDistance = Integer.MAX_VALUE;
+					int distance_temp;
+					MoveTask task_temp = null;
+					while(path == null){
+						for(MoveTask mt : moveTasks){
+							distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
+							if(distance_temp < minDistance){
+								minDistance = distance_temp;
+								task_temp = mt;
+							}
+						}
+						path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
+						if(path == null){
+							logger.info("path==null => remove MoveTask");
+							currentTaskList.remove(task_temp);
+						}
+					}
+					return task_temp; //自分から一番近いところがターゲットになっているMoveTask
+				}
+				return null;
 			}
 		}else{
 			//建物探訪優先
@@ -283,10 +305,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 				}
 				return task_temp; //自分から一番近いところがターゲットになっているMoveTask
 			}else{
-				//全建物探訪ついでに啓開
-				for(StandardEntity b : allBuildings){
-					currentTaskList.add(new MoveTask(this, model, (Building)b));
-				}
+				
 				return null; //一回だけrandomWalkさせる
 				//isOverrideVoice = true; //探訪優先から声優先へ
 				//return null; //randomWalkさせる
