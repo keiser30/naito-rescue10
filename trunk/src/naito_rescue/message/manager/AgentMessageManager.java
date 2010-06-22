@@ -44,6 +44,10 @@ public class AgentMessageManager implements MessageConstants
 			logger.info("rawdata.length = 0 => return null;");
 			return null;
 		}
+		if(rawdata.length < HEADER_SIZE){
+			logger.info("rawdata.length < HEADER_SIZE => ノイズの可能性あり => return null;");
+			return null;
+		}
 		int hoge = 0;
 		int idx = 0;
 		while(true){
