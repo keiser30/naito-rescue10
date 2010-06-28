@@ -25,8 +25,8 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 {
     private static final String DISTANCE_KEY = "clear.repair.distance";
 	private int distance; //閉塞解除が可能な距離...?
-	private boolean isOverrideVoice;
-	private boolean        isOverrideNear;
+	private boolean isPreferredVoice;
+	private boolean        isPreferredNear;
 	private PoliceForce me;
 	@Override
 	public String toString(){
@@ -38,18 +38,17 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
         super.postConnect();
 		distance = config.getIntValue(DISTANCE_KEY);
 		
-		if(crowlingBuildings.isEmpty()){
+		if(isMember && crowlingBuildings.isEmpty()){
 			//自分がisMemberなのにも関わらずcrowlingBuidlingが空っぽ...
 			//かわいそうなので声データ優先にします
 			logger.info("Kawaisou => true");
-			isOverrideVoice = true;
-		}else if(pfList.size() < 5){
-			isOverrideVoice = (pfList.indexOf(me()) % 3) < 2;
-		}else{
-			//全体の3/4が声データ優先
-			isOverrideVoice = (pfList.indexOf(me()) % 4) < 3;
+			isPreferredVoice = true;
+			me = me();
+			return;
 		}
-		isOverrideNear = (atList.indexOf(me()) % 2) == 0;
+		//isPreferredVoice = ((pfList.indexOf(me()) % 2) == 0);
+		isPreferredVoice = true;
+		isPreferredNear = ((pfList.indexOf(me()) % 2) == 0);
 		me = me();
 	}
 
@@ -134,7 +133,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		}
         // Am I near a blockade?
         Blockade target = getTargetBlockade();
-        if (target != null) {
+        if (target != null && !isPreferredVoice) {
             logger.info("Clearing blockade " + target);
             //sendSpeak(time, 1, ("Clearing " + target).getBytes());
             sendClear(time, target.getID());
@@ -143,7 +142,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 
         // Plan a path to a blocked area
         List<EntityID> path = search.breadthFirstSearch(getLocation(), getBlockedRoads(changed));
-        if (path != null) {
+        if (path != null && !isPreferredVoice) {
             logger.info("Moving to target");
             Road r = (Road)model.getEntity(path.get(path.size() - 1));
             Blockade b = getTargetBlockade(r, -1);
@@ -152,22 +151,8 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
             logger.debug("Target coordinates: " + b.getX() + ", " + b.getY());
             return;
         }
-/*
-		//crowlingBuildingsを廻らせる
-		if(crowlingBuildings != null && !crowlingBuildings.isEmpty()){
-			logger.info("Crowl buildings.");
-			for(Buildings b : crowlingBuildings){
-				List<EntityID> path = search.breadthFirstSearch(getLocation(), b);
-				if(path != null){
-					logger.debug("=> targetBuilding = " + b);
-					logger.debug("=> path = " + path);
-					move(path);
-					return;
-				}
-			}
-		}
-*/
-		//Nothing to do の時にTask-Jobを実行する        
+
+		//Nothing to do の時にTask-Jobを実行する
 		currentTask = action();
 		if(currentTask == null){
 			logger.info("currentTask.rank < MIN_VALUE or currentTask == null;");
@@ -217,171 +202,69 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		logger.info("=> return false;");
 		return false;
 	}
-	@Override
-	public Task action(){
-	/*
-		if(currentTask != null && currentTask instanceof ClearTask && !currentTask.isFinished()){
-			return currentTask;
-		}
-		int maxRank = -1;
-		Task resultTask = null;
-		//ClearTaskがあったら, 最高優先度のものを問答無用で実行する
-		taskRankUpdate();
-		for(Task actionTask : currentTaskList){
-			if(actionTask instanceof ClearTask && actionTask.getRank() > maxRank){
-				resultTask = actionTask;
-				maxRank = actionTask.getRank();
+	private Task clearTaskStrategy(List<ClearTask> clearTasks){
+		int maxDistance = Integer.MIN_VALUE;
+		int distance_temp;
+		ClearTask result = null;
+		
+		//一番遠井ところから実行していく
+		for(ClearTask cl : clearTasks){
+			distance_temp = model.getDistance(me.getPosition(), cl.getTarget().getID());
+			if(distance_temp > maxDistance){
+				maxDistance = distance_temp;
+				result = cl;
 			}
 		}
-		if(resultTask != null){
-			return resultTask;
+		return result; //自分から一番遠いところにターゲットがあるClearTask
+	}
+	private Task moveTaskStrategy(List<MoveTask> moveTasks){
+		//自分に近いところから巡っていく
+		List<EntityID> path = null;
+		int minDistance = Integer.MAX_VALUE;
+		int distance_temp;
+		MoveTask result = null;
+		while(path == null){
+			for(MoveTask mt : moveTasks){
+				distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
+				if(distance_temp < minDistance){
+					minDistance = distance_temp;
+					result = mt;
+				}
+			}
+			path = search.breadthFirstSearch(getLocation(), result.getTarget());
+			if(path == null){
+				logger.info("path==null => remove MoveTask");
+				currentTaskList.remove(result);
+			}
 		}
-		logger.info("ClearTaskがないだと?");
-		taskRankUpdate();
-		return getHighestRankTask();
-	*/
+		return result; //自分から一番近いところがターゲットになっているMoveTask
+	}
+	@Override
+	public Task action(){
+
 		List<MoveTask> moveTasks = collectMoveTask();
 		List<ClearTask> clearTasks = collectClearTask();
 		if(currentTask != null && !currentTask.isFinished()){
 			return currentTask;
 		}
-		if(isOverrideVoice){
+		if(isPreferredVoice){
 			//声データ ... つまりVoiceからのClearTask優先
 			if(!clearTasks.isEmpty()){
-				int maxDistance = Integer.MIN_VALUE;
-				int distance_temp;
-				ClearTask task_temp = null;
-				
-				//一番遠井ところから実行していく
-				for(ClearTask cl : clearTasks){
-					distance_temp = model.getDistance(me.getPosition(), cl.getTarget().getID());
-					if(distance_temp > maxDistance){
-						maxDistance = distance_temp;
-						task_temp = cl;
-					}
-				}
-				return task_temp; //自分から一番遠いところにターゲットがあるClearTask
-			}else{
-				if(!moveTasks.isEmpty()){
-					if(isOverrideNear){
-						//自分に近いところから巡っていく
-						List<EntityID> path = null;
-						int minDistance = Integer.MAX_VALUE;
-						int distance_temp;
-						MoveTask task_temp = null;
-						while(path == null){
-							for(MoveTask mt : moveTasks){
-								distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
-								if(distance_temp < minDistance){
-									minDistance = distance_temp;
-									task_temp = mt;
-								}
-							}
-							path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
-							if(path == null){
-								logger.info("path==null => remove MoveTask");
-								currentTaskList.remove(task_temp);
-							}
-						}
-						return task_temp; //自分から一番近いところがターゲットになっているMoveTask
-					}else{
-						//自分に遠井ところから実行していく
-						List<EntityID> path = null;
-						int maxDistance = Integer.MIN_VALUE;
-						int distance_temp;
-						MoveTask task_temp = null;
-						while(path == null){
-							for(MoveTask mt : moveTasks){
-								distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
-								if(distance_temp >= maxDistance){
-									maxDistance = distance_temp;
-									task_temp = mt;
-								}
-							}
-							path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
-							if(path == null){
-								logger.info("path==null => remove MoveTask");
-								currentTaskList.remove(task_temp);
-							}
-						}
-						return task_temp; //自分から一番近いところがターゲットになっているMoveTask
-					}
-				}
-				try{
-					Object[] buildings = allBuildings.toArray();
-					for(int i = 0;i < (allBuildings.size() / 4);i++){
-						int rand_idx = (int)(Math.random() * allBuildings.size());
-						currentTaskList.add(new MoveTask(this, model, (Building)(buildings[rand_idx])));
-					}
-				}catch(Exception e){
-					return null; //randomWalk();
-				}
-				if(!currentTaskList.isEmpty())
-					return currentTaskList.get(0);
-				else
-					return null; //randomWalk;
+				return clearTaskStrategy(clearTasks);
+			}else if(!moveTasks.isEmpty()){
+				return moveTaskStrategy(moveTasks);
 			}
+			isPreferredVoice = false;
+			return null;
 		}else{
 			//建物探訪優先
 			if(!moveTasks.isEmpty()){
-					if(isOverrideNear){
-						//自分に近いところから巡っていく
-						List<EntityID> path = null;
-						int minDistance = Integer.MAX_VALUE;
-						int distance_temp;
-						MoveTask task_temp = null;
-						while(path == null){
-							for(MoveTask mt : moveTasks){
-								distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
-								if(distance_temp < minDistance){
-									minDistance = distance_temp;
-									task_temp = mt;
-								}
-							}
-							path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
-							if(path == null){
-								logger.info("path==null => remove MoveTask");
-								currentTaskList.remove(task_temp);
-							}
-						}
-						return task_temp; //自分から一番近いところがターゲットになっているMoveTask
-					}else{
-						//自分に遠井ところから実行していく
-						List<EntityID> path = null;
-						int maxDistance = Integer.MIN_VALUE;
-						int distance_temp;
-						MoveTask task_temp = null;
-						while(path == null){
-							for(MoveTask mt : moveTasks){
-								distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
-								if(distance_temp >= maxDistance){
-									maxDistance = distance_temp;
-									task_temp = mt;
-								}
-							}
-							path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
-							if(path == null){
-								logger.info("path==null => remove MoveTask");
-								currentTaskList.remove(task_temp);
-							}
-						}
-						return task_temp; //自分から一番近いところがターゲットになっているMoveTask
-					}
-			}else{
-				try{
-					Object[] buildings = allBuildings.toArray();
-					for(int i = 0;i < (allBuildings.size() / 4);i++){
-						int rand_idx = (int)(Math.random() * allBuildings.size());
-						currentTaskList.add(new MoveTask(this, model, (Building)(buildings[rand_idx])));
-					}
-				}catch(Exception e){
-					return null; //randomWalk();
-				}
-				if(!currentTaskList.isEmpty())
-					return currentTaskList.get(0);
-				else
-					return null; //randomWalk;
+				moveTaskStrategy(moveTasks);
+			}else if(!clearTasks.isEmpty()){
+				clearTaskStrategy(clearTasks);
 			}
+			//isPreferredVoice = true;
+			return null;
 		}
 	}
 	@Override
@@ -440,14 +323,6 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 				logger.info("t.setRank(" + rank + ");");
 				t.setRank(rank);
 			}
-			/*
-			//RestTask:
-			else if(t instanceof RestTask){
-				logger.info("taskRankUpdate=>RestTask");
-				logger.info("t.setRank(Integer.MAX_VALUE);");
-				t.setRank(Integer.MAX_VALUE);
-			}
-			*/
 		}
 	}
 	
@@ -480,19 +355,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
 		return EnumSet.of(StandardEntityURN.POLICE_FORCE);
     } 
-/*
-    private List<Road> getBlockedRoads() {
-        Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.ROAD);
-        List<Road> result = new ArrayList<Road>();
-        for (StandardEntity next : e) {
-            Road r = (Road)next;
-            if (r.isBlockadesDefined() && !r.getBlockades().isEmpty()) {
-                result.add(r);
-            }
-        }
-        return result;
-    }
-*/
+
 	private List<Road> getBlockedRoads(ChangeSet changed){
 		logger.info("getBlockedRoadsInView();");
 		ArrayList<Road> result = new ArrayList<Road>();
@@ -522,6 +385,8 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		}
 		return result;
 	}
+	
+	//MoveToClearPointJobとの整合性に注意
     public Blockade getTargetBlockade() {
        // logger.debug("Looking for target blockade");
 	   	logger.info("NAITOPoliceForce.getTargetBlockade();");
@@ -546,7 +411,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		logger.info("There is not blockade. return null;");
         return null;
     }
-
+/*
     public Blockade getTargetBlockade(Area area, int maxDistance) {
         //logger.debug("Looking for nearest blockade in " + area);
         logger.info("NAITOPoliceForce.getTargetBlockade(" + area + ", " + maxDistance + ")");
@@ -572,75 +437,9 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
         }
         logger.info("No blockades in range");
         return null;
-    }	
+    }
+*/	
 	public int getDistance(){
 		return distance;
 	}
-/*
-    private int findDistanceTo(Blockade b, int x, int y) {
-        Logger.debug("Finding distance to " + b + " from " + x + ", " + y);
-        List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(b.getApexes()), true);
-        double best = Double.MAX_VALUE;
-        Point2D origin = new Point2D(x, y);
-        for (Line2D next : lines) {
-            Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
-            double d = GeometryTools2D.getDistance(origin, closest);
-            Logger.debug("Next line: " + next + ", closest point: " + closest + ", distance: " + d);
-            if (d < best) {
-                best = d;
-                Logger.debug("New best distance");
-            }
-
-        }
-        return (int)best;
-    }
-*/
-    /**
-       Get the blockade that is nearest this agent.
-       @return The EntityID of the nearest blockade, or null if there are no blockades in the agents current location.
-    */
-    /*
-    public EntityID getNearestBlockade() {
-        return getNearestBlockade((Area)location(), me().getX(), me().getY());
-    }
-    */
-
-    /**
-       Get the blockade that is nearest a point.
-       @param area The area to check.
-       @param x The X coordinate to look up.
-       @param y The X coordinate to look up.
-       @return The EntityID of the nearest blockade, or null if there are no blockades in this area.
-    */
-    /*
-    public EntityID getNearestBlockade(Area area, int x, int y) {
-        double bestDistance = 0;
-        EntityID best = null;
-        Logger.debug("Finding nearest blockade");
-        if (area.isBlockadesDefined()) {
-            for (EntityID blockadeID : area.getBlockades()) {
-                Logger.debug("Checking " + blockadeID);
-                StandardEntity entity = model.getEntity(blockadeID);
-                Logger.debug("Found " + entity);
-                if (entity == null) {
-                    continue;
-                }
-                Pair<Integer, Integer> location = entity.getLocation(model);
-                Logger.debug("Location: " + location);
-                if (location == null) {
-                    continue;
-                }
-                double dx = location.first() - x;
-                double dy = location.second() - y;
-                double distance = Math.hypot(dx, dy);
-                if (best == null || distance < bestDistance) {
-                    bestDistance = distance;
-                    best = entity.getID();
-                }
-            }
-        }
-        Logger.debug("Nearest blockade: " + best);
-        return best;
-    }
-    */
 }
