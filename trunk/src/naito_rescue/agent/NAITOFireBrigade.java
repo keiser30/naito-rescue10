@@ -25,12 +25,11 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	private int maxPower;
 
 	private Building target;
-	private boolean isOverrideVoice;
-	private boolean        isOverrideNear;
+	private boolean isPreferredVoice;
+	private boolean        isPreferredNear;
 	private FireBrigade me;
 	// private Collection<StandardEntity> allBuildings;
 
-	@Override
     protected void postConnect() {
         super.postConnect();
         model.indexClass(StandardEntityURN.BUILDING, StandardEntityURN.REFUGE);
@@ -38,27 +37,25 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
         maxDistance = config.getIntValue(MAX_DISTANCE_KEY);
         maxPower = config.getIntValue(MAX_POWER_KEY);
         
-		if(crowlingBuildings.isEmpty()){
+		if(isMember && crowlingBuildings.isEmpty()){
 			//自分がisMemberなのにも関わらずcrowlingBuidlingが空っぽ...
 			//かわいそうなので声データ優先にします
 			logger.info("Kawaisou => true");
-			isOverrideVoice = true;
+			isPreferredVoice = true;
 		}else if(fbList.size() < 5){
-			isOverrideVoice = (fbList.indexOf(me()) % 3) < 2;
+			isPreferredVoice = (fbList.indexOf(me()) % 3) < 2;
 		}else{
 			//全体の3/4が声データ優先
-			isOverrideVoice = (fbList.indexOf(me()) % 4) < 3;
+			isPreferredVoice = (fbList.indexOf(me()) % 4) < 3;
 		}
-		isOverrideNear = (atList.indexOf(me()) % 2) == 0;
+		isPreferredNear = (atList.indexOf(me()) % 2) == 0;
 		me = me();
 	}
 
-	@Override
 	public String toString(){
 		return "NAITOFireBrigade." + me().getID() + "";
 	}
 
-	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
 
@@ -112,7 +109,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			}
 		}//end outer-for.
 		
-		// 自分の視界にある建物についてExtinguishTaskを追加する
+		// 自分の視界にある建物について消火する
 		List<Building> burningBuildings = getBurningBuildings(changed);
 		if(!burningBuildings.isEmpty()){
 			logger.info("burningBuildings.isNotEmpty()=>add(new ExtinguishTask());");
@@ -131,7 +128,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
         }
         // Are we out of water?
         if ((me.isWaterDefined() && me.getWater() == 0) ||
-            (me.getHP() < (me.getStamina() / 55555) )) {
+            (me.getHP() < (me.getStamina() / 5) )) {
             // Head for a refuge
             List<EntityID> path = search.breadthFirstSearch(getLocation(), allRefuges);
             if (path != null) {
@@ -147,19 +144,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
                 return;
             }
         }
-/*
-		// 自分の視界にある建物についてExtinguishTaskを追加する
-		List<Building> burningBuildings = getBurningBuildings(changed);
-		if(!burningBuildings.isEmpty()){
-			logger.info("burningBuildings.isNotEmpty()=>add(new ExtinguishTask());");
-			for(Building b : burningBuildings){
-				if(model.getDistance(me.getPosition(), b.getID()) <= maxDistance){
-					extinguish(b.getID(), maxPower);
-				}
-				//currentTaskList.add(new ExtinguishTask(this, model, b, maxPower, maxDistance));
-			}
-		}
-*/
 		currentTask = action();
 		if(currentTask == null){
 			logger.info("currentTask.rank < MIN_VALUE or currentTask == null;");
@@ -175,173 +159,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			logger.debug("currentJob is null.");
 		}
 	}
-	@Override
-	public Task action(){
-	/*
-		if(currentTask != null && currentTask instanceof ExtinguishTask && !currentTask.isFinished()){
-			return currentTask;
-		}
-		int maxRank = -1;
-		Task resultTask = null;
-		//ExtinguishTaskがあったら, 最高優先度のものを問答無用で実行する
-		for(Task actionTask : currentTaskList){
-			if(actionTask instanceof ExtinguishTask && actionTask.getRank() > maxRank){
-				resultTask = actionTask;
-				maxRank = actionTask.getRank();
-			}
-		}
-		if(resultTask != null){
-			return resultTask;
-		}
-		logger.info("ExtinguishTaskがないだと?");
-		taskRankUpdate();
-		return getHighestRankTask();
-	*/
-		List<MoveTask> moveTasks = collectMoveTask();
-		List<ExtinguishTask> extinguishTasks = collectExtinguishTask();
-		if(currentTask != null && !currentTask.isFinished()){
-			return currentTask;
-		}
-		if(isOverrideVoice){
-			//声データ ... つまりVoiceからのClearTask優先
-			if(!extinguishTasks.isEmpty()){
-				int maxDistance = Integer.MIN_VALUE;
-				int distance_temp;
-				ExtinguishTask task_temp = null;
-				
-				//一番遠井ところから実行していく
-				for(ExtinguishTask ex : extinguishTasks){
-					distance_temp = model.getDistance(me.getPosition(), ex.getTarget().getID());
-					if(distance_temp > maxDistance){
-						maxDistance = distance_temp;
-						task_temp = ex;
-					}
-				}
-				return task_temp; //自分から一番遠いところにターゲットがあるExtinguishTask
-			}else{
-				if(!moveTasks.isEmpty()){
-					if(isOverrideNear){
-						//自分に近いところから巡っていく
-						List<EntityID> path = null;
-						int minDistance = Integer.MAX_VALUE;
-						int distance_temp;
-						MoveTask task_temp = null;
-						while(path == null){
-							for(MoveTask mt : moveTasks){
-								distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
-								if(distance_temp < minDistance){
-									minDistance = distance_temp;
-									task_temp = mt;
-								}
-							}
-							path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
-							if(path == null){
-								logger.info("path==null => remove MoveTask");
-								currentTaskList.remove(task_temp);
-							}
-						}
-						return task_temp; //自分から一番近いところがターゲットになっているMoveTask
-					}else{
-						//自分に遠井ところから実行していく
-						List<EntityID> path = null;
-						int maxDistance = Integer.MIN_VALUE;
-						int distance_temp;
-						MoveTask task_temp = null;
-						while(path == null){
-							for(MoveTask mt : moveTasks){
-								distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
-								if(distance_temp >= maxDistance){
-									maxDistance = distance_temp;
-									task_temp = mt;
-								}
-							}
-							path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
-							if(path == null){
-								logger.info("path==null => remove MoveTask");
-								currentTaskList.remove(task_temp);
-							}
-						}
-						return task_temp; //自分から一番近いところがターゲットになっているMoveTask
-					}
-				}
-				try{
-					Object[] buildings = allBuildings.toArray();
-					for(int i = 0;i < (allBuildings.size() / 4);i++){
-						int rand_idx = (int)(Math.random() * allBuildings.size());
-						currentTaskList.add(new MoveTask(this, model, (Building)(buildings[rand_idx])));
-					}
-				}catch(Exception e){
-					return null; //randomWalk();
-				}
-				if(!currentTaskList.isEmpty())
-					return currentTaskList.get(0);
-				else
-					return null; //randomWalk;
-			}
-		}else{
-			//建物探訪優先
-			if(!moveTasks.isEmpty()){
-					if(isOverrideNear){
-						//自分に近いところから巡っていく
-						List<EntityID> path = null;
-						int minDistance = Integer.MAX_VALUE;
-						int distance_temp;
-						MoveTask task_temp = null;
-						while(path == null){
-							for(MoveTask mt : moveTasks){
-								distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
-								if(distance_temp < minDistance){
-									minDistance = distance_temp;
-									task_temp = mt;
-								}
-							}
-							path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
-							if(path == null){
-								logger.info("path==null => remove MoveTask");
-								currentTaskList.remove(task_temp);
-							}
-						}
-						return task_temp; //自分から一番近いところがターゲットになっているMoveTask
-					}else{
-						//自分に遠井ところから実行していく
-						List<EntityID> path = null;
-						int maxDistance = Integer.MIN_VALUE;
-						int distance_temp;
-						MoveTask task_temp = null;
-						while(path == null){
-							for(MoveTask mt : moveTasks){
-								distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
-								if(distance_temp >= maxDistance){
-									maxDistance = distance_temp;
-									task_temp = mt;
-								}
-							}
-							path = search.breadthFirstSearch(getLocation(), task_temp.getTarget());
-							if(path == null){
-								logger.info("path==null => remove MoveTask");
-								currentTaskList.remove(task_temp);
-							}
-						}
-						return task_temp; //自分から一番近いところがターゲットになっているMoveTask
-					}
-			}else{
-				isOverrideVoice = true;
-				try{
-					Object[] buildings = allBuildings.toArray();
-					for(int i = 0;i < (allBuildings.size() / 4);i++){
-						int rand_idx = (int)(Math.random() * allBuildings.size());
-						currentTaskList.add(new MoveTask(this, model, (Building)(buildings[rand_idx])));
-					}
-				}catch(Exception e){
-					return null; //randomWalk();
-				}
-				if(!currentTaskList.isEmpty())
-					return currentTaskList.get(0);
-				else
-					return null; //randomWalk;
-			}
-		}
-	}
+	
 	private List<ExtinguishTask> collectExtinguishTask(){
 		ArrayList<ExtinguishTask> result = new ArrayList<ExtinguishTask>();
 		for(Task t : currentTaskList){
@@ -360,8 +178,73 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		}
 		return result;
 	}
+	private Task extinguishTaskStrategy(List<ExtinguishTask> extinguishTasks){
+		int maxDistance = Integer.MIN_VALUE;
+		int distance_temp;
+		ExtinguishTask result = null;
+		
+		//(ExtinguishTaskに関する優先度決定)
+		for(ExtinguishTask ex : extinguishTasks){
+			distance_temp = model.getDistance(me.getPosition(), ex.getTarget().getID());
+			if(distance_temp > maxDistance){
+				maxDistance = distance_temp;
+				result = ex;
+			}
+		}
+		return result; //自分から一番遠いところにターゲットがあるExtinguishTask
+	}
+	private Task moveTaskStrategy(List<MoveTask> moveTasks){
+		//自分に近いところから巡っていく
+		List<EntityID> path = null;
+		int minDistance = Integer.MAX_VALUE;
+		int distance_temp;
+		MoveTask result = null;
+		
+		while(path == null){
+			for(MoveTask mt : moveTasks){
+				distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
+				if(distance_temp < minDistance){
+					minDistance = distance_temp;
+					result = mt;
+				}
+			}
+			path = search.breadthFirstSearch(getLocation(), result.getTarget());
+			if(path == null){
+				logger.info("path==null => remove MoveTask");
+				currentTaskList.remove(result);
+			}
+		}
+		return result; //自分から一番近いところがターゲットになっているMoveTask
+	}
+	public Task action(){
+		List<MoveTask> moveTasks = collectMoveTask();
+		List<ExtinguishTask> extinguishTasks = collectExtinguishTask();
+		
+		if(currentTask != null && !currentTask.isFinished()){
+			return currentTask;
+		}
+		if(isPreferredVoice){
+			//声データ ... つまりVoiceからのExtinguishTask優先
+			if(!extinguishTasks.isEmpty()){
+				return extinguishTaskStrategy(extinguishTasks);
+			}else if(!moveTasks.isEmpty()){
+				return moveTaskStrategy(moveTasks);
+			}
+			return null; //randomWalk();
+		}else{
+			//建物探訪優先
+			if(!moveTasks.isEmpty()){
+				return moveTaskStrategy(moveTasks);
+			}else if(!extinguishTasks.isEmpty()){
+				return extinguishTaskStrategy(extinguishTasks);
+			}
+			isPreferredVoice = true;
+			return null;
+		}
+	}
+
 	// FireBrigadeのtaskRankUpdate
-	@Override
+	
 	public void taskRankUpdate(){
 		logger.info("FireBrigade.taskRankUpdate();");
 		int distance;
@@ -445,24 +328,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		logger.debug("rank = " + rank);
 		return rank;
 	}
-	
-/*
-	private List<Building> getBurningBuildings(ChangeSet changed){
-		Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.BUILDING);
-		List<Building> result = new ArrayList<Building>();
-		for (StandardEntity next : e) {
-		    if (next instanceof Building) {
-		        Building b = (Building)next;
-		        if (b.isOnFire()) {
-		            result.add(b);
-		        }   
-		    }   
-		}   
-		// Sort by distance
-		Collections.sort(result, new DistanceSorter(location(), model));
-		return result;
-	}
-*/
 	private List<Building> getBurningBuildings(ChangeSet changed){
 		ArrayList<Building> result = new ArrayList<Building>();
 		//まず視界にある建物について追加する
@@ -483,7 +348,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		}
 		return result;
 	}
-	@Override
+	
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum(){
 		return EnumSet.of(StandardEntityURN.FIRE_BRIGADE);
 	}

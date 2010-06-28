@@ -24,24 +24,20 @@ public class MoveToClearPointJob extends Job
 		this.target = target;
 		this.maxDistance = distance;
 		
-		blockades = target.getBlockades();
+		//blockades = target.getBlockades();
 	}
 
 	public void doJob(){
 		logger.info("////////// MoveToClearPointJob.doJob(); //////////");
 		//logger.info("blockades = " + blockades);
 
+		//行く手を邪魔する閉塞があったら除去
+		Blockade blockade = getBlockadeOnPath();
+		if(blockade != null){
+			owner.clear(blockade.getID());
+		}
 		//閉塞への経路の中で，最短のものを選択肢手移動する
 		List<EntityID> path = owner.getSearch().breadthFirstSearch(owner.getLocation(), target);
-		//Blockade target_blockade = getTargetBlockade();
-		/*
-		if(target_blockade == null){
-			logger.debug("target_blockade is null.");
-			logger.debug("return");
-			illegal = true;
-			return;
-		}
-		*/
 
 		if(path != null){
 			logger.info("Path to Blockade is find.");
@@ -53,67 +49,34 @@ public class MoveToClearPointJob extends Job
 			logger.info("Path to Blockade is not find.");
 		}
 	}
-	//SamplePoliceForceから移植, ちょっと改造
-	private Blockade getTargetBlockade(){
-		logger.info("getTargetBlockade();");
-        if (!target.isBlockadesDefined()) {
-        	logger.debug("Target area is not defined Blockade.");
-            return null;
-        }
-        int x = owner.getX();
-        int y = owner.getY();
-        double distance = Double.MAX_VALUE;
-        Blockade result = null;
-        for (EntityID next : blockades) {
-            Blockade b = (Blockade)world.getEntity(next);
-            double d = findDistanceTo(b, x, y);
-            logger.debug("Distance to " + b + " = " + d);
-            if (d < distance) {
-                logger.debug("In range");
-                logger.debug("==> range       = " + d);
-                logger.debug("==> maxDistance = " + distance);
-                distance = d;
-                result = b;
+	//行く手を遮る閉塞を得る
+	private Blockade getBlockadeOnPath(){
+		Area location = (Area)owner.getLocation();
+		Blockade blockade = owner.getTargetBlockade(location, maxDistance);
+		if(blockade != null){
+			return blockade;
+		}
+        //logger.debug("Looking in neighbouring locations");
+        for (EntityID next : location.getNeighbours()) {
+            location = (Area)world.getEntity(next);
+            blockade = owner.getTargetBlockade(location, maxDistance);
+            if (blockade != null) {
+				logger.info("There is blockade in this.location.getNeighbours();");
+				logger.debug("" + blockade);
+                return blockade;
             }
         }
-        logger.debug("return blockade = " + result);
-        return result;
-	}
-	//SamplePoliceForceから移植
-    private int findDistanceTo(Blockade b, int x, int y) {
-    	logger.info("findDistanceTo(" + b + ", " + x + ", " + y + ")");
-        //logger.debug("Finding distance to " + b + " from " + x + ", " + y);
-        List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(b.getApexes()), true);
-        double best = Double.MAX_VALUE;
-        Point2D origin = new Point2D(x, y);
-        for (Line2D next : lines) {
-            Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
-            double d = GeometryTools2D.getDistance(origin, closest);
-            //logger.debug("Next line: " + next + ", closest point: " + closest + ", distance: " + d);
-            if (d < best) {
-                best = d;
-                //logger.debug("New best distance");
-            }
-        }
-        logger.info("returning best = " + (int)best);
-        return (int)best;
-	}
+		logger.info("There is not blockade. return null;");
+        return null;
+  	}
 	public boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
 		//if(blockades == null || blockades.isEmpty()) return true;
 		logger.info("////////// MoveToClearPointJob.isFinished(); ///////////");
-		/*
-		for(EntityID blockade : blockades){
-			logger.debug("blockade: " + blockade);
-			int distance = world.getDistance(owner.getLocation(), world.getEntity(blockade));
-			logger.debug("distance    = " + distance);
-			logger.debug("maxDistance = " + maxDistance);
-			if(distance < maxDistance) return true;
-		}
-		*/
 		StandardEntity location = owner.getLocation();
 		logger.debug("location = " + location);
 		logger.debug("target   = " + target);
-		if(this.blockades == null) illegal = true;
+		
+		//if(this.blockades == null) illegal = true;
 		if(illegal) return true;
 		if(location.getID().getValue() == target.getID().getValue()){
 			logger.debug("return true;");
