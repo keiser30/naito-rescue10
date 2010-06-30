@@ -131,15 +131,47 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 		//currentTaskListに関する処理
 		//currentTaskが終了していたら，そいつをリストから削除する
-		logger.info("1. //////// currentTaskが終了していたら，そいつをリストから削除する ////////");
 		removeFinishedTask();
-		logger.info("//////// //////////////////////////////////////////////////// //////// 1.");
-			
-		StandardEntity location = getLocation();
+		
 		//自分の今いる場所に閉塞がある場合
-		logger.info("2. //////// reportedBlockedRoadの中に，まだisBlockadesDefined()な奴がいたら報告する ////////");
-		reportBlockedRoad();
-		logger.info("2. //////// ///////////////////////////////////////////////////////////////////// ////////");
+		//情報をPFに送る
+		reportBlockedRoadInLocation();
+
+		//自分の視界に燃えている建物がある場合
+		//とりあえずその情報をFBに送りつける
+		reportBurningBuildingInView();
+
+		//自分の視界にある建物の中に市民がいる場合
+		//とりあえずその情報をATに送りつける
+		reportCivilianInView();
+	}
+	private void reportCivilianInView(){
+		List<Civilian> civilians = getViewCivilians();
+		for(Civilian c : civilians){
+			StandardEntity civilian_location = c.getPosition(model);
+			//道路を突っ走ってる市民に対してLoadを実行しようとするとコケる気がする...
+			if(civilian_location instanceof Building && !reportedVictimInBuilding.contains((Building)civilian_location)){
+				logger.info("There is victim => createRescueMessage();");
+				RescueMessage rescue_msg = msgManager.createRescueMessage(-1, ADDR_AT, false, civilian_location.getID());
+				msgManager.sendMessage(rescue_msg);
+				reportedVictimInBuilding.add((Building)civilian_location);
+			}
+		}
+	}
+	private void reportBurningBuildingInView(){
+		List<Building> view_buildings = getViewBuildings();
+		for(Building b : view_buildings){
+			if(b.isOnFire() && !reportedBurningBuilding.contains(b)){
+				logger.info("There is burning building => createExtinguishMessage();");
+				StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
+				ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea():1000));
+				msgManager.sendMessage(ex_msg);
+				reportedBurningBuilding.add(b);
+			}
+		}
+	}
+	private void reportBlockedRoadInLocation(){
+		StandardEntity location = getLocation();
 		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
 			// 閉塞が発生しているRoadのIDを送りつける
 			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
@@ -152,44 +184,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				reportedBlockedRoad.add((Area)location);
 			}
 		}
-		reportBlockedRoad();
-		logger.info("//////// ////////////////////////////// //////// 3.");
-
-		//自分の視界に燃えている建物がある場合
-		//とりあえずその情報をFBに送りつける
-		logger.info("4. //////// 視界にある建物の処理(1) ////////");
-		/*if(!(this instanceof NAITOFireBrigade))*/
-		List<Building> view_buildings = getViewBuildings();
-		for(Building b : view_buildings){
-			if(b.isOnFire() && !reportedBurningBuilding.contains(b)){
-				logger.info("There is burning building => createExtinguishMessage();");
-				StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
-				ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea():1000));
-				msgManager.sendMessage(ex_msg);
-				reportedBurningBuilding.add(b);
-			}
-		}
-		reportViewBurningBuilding();
-		logger.info("//////// /////////////////////// //////// 4.");
-
-		//自分の視界にある建物の中に市民がいる場合
-		//とりあえずその情報をATに送りつける
-		logger.info("5. //////// 視界にある建物の処理(2) ////////");
-		List<Civilian> civilians = getViewCivilians();
-		for(Civilian c : civilians){
-			StandardEntity civilian_location = c.getPosition(model);
-			//道路を突っ走ってる市民に対してLoadを実行しようとするとコケる気がする...
-			if(civilian_location instanceof Building && !reportedVictimInBuilding.contains((Building)civilian_location)){
-				logger.info("There is victim => createRescueMessage();");
-				RescueMessage rescue_msg = msgManager.createRescueMessage(-1, ADDR_AT, false, civilian_location.getID());
-				msgManager.sendMessage(rescue_msg);
-				reportedVictimInBuilding.add((Building)civilian_location);
-			}
-		}
-		reportViewCivilian();
-		logger.info("//////// /////////////////////// //////// 5.");
 	}
-
 	private void removeFinishedTask(){
 		if(currentTask != null && currentTask.isFinished()){
 			logger.debug("**  currentTaskList.remove(" + currentTask + ")");
