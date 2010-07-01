@@ -22,7 +22,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 {
     private static final String SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
     private static final String SPEAK_COMMUNICATION_MODEL = "kernel.standard.ChannelCommunicationModel";
+	private static final String DISTANCE_KEY = "clear.repair.distance";
 	private static final int            CROWLABLE_NUM = 5;
+	protected int                       maxRepairDistance; //閉塞解除可能な距離
 	protected boolean                   useSpeak;
 	protected ArrayList<Task>           currentTaskList;
 	protected ArrayList<Building>       crowlingBuildings;
@@ -47,15 +49,18 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected double                    w_width;
 	protected double                    w_height;
 	protected double                    width, height, x, y;
-	protected ArrayList<Area>           reportedBlockedRoad; //閉塞があることを送信済みの道路IDリスト
+	//protected ArrayList<Area>           reportedBlockedRoad; //閉塞があることを送信済みの道路IDリスト
+	protected HashMap<Area, Integer>    reportedBlockedRoad;
 	protected ArrayList<Building>       reportedBurningBuilding;
 	protected ArrayList<Building>       reportedVictimInBuilding;
+	
 	
 	@Override
     protected void postConnect() {
 		 super.postConnect();
 		 
 		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
+		 maxRepairDistance = config.getIntValue(DISTANCE_KEY);
 		 currentTaskList = new ArrayList<Task>();
 		 crowlingBuildings = new ArrayList<Building>();
 		 teamMembers = new ArrayList<Human>();
@@ -66,7 +71,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 ambulanceCenterLess = ambulancecenter.isEmpty();
 		 centerLess = fireStationLess && policeOfficeLess && ambulanceCenterLess;
 		 
-		 reportedBlockedRoad = new ArrayList<Area>();
+		 //reportedBlockedRoad = new ArrayList<Area>();
+		 reportedBlockedRoad = new HashMap<Area, Integer>();
 		 reportedBurningBuilding = new ArrayList<Building>();
 		 reportedVictimInBuilding = new ArrayList<Building>();
 		 world_rect = model.getBounds();
@@ -136,6 +142,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//自分の今いる場所に閉塞がある場合
 		//情報をPFに送る
 		reportBlockedRoadInLocation();
+		
+		//閉塞を報告してから3ターンたってもまだ啓開されていない
+		//かつ，自分がまだ閉塞のそばにいる
+		// -> 自分が閉塞の中に詰まっている可能性が高いので，再度報告する
+		reportBlockadeAboutSelf();
 
 		//自分の視界に燃えている建物がある場合
 		//とりあえずその情報をFBに送りつける
@@ -144,6 +155,30 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//自分の視界にある建物の中に市民がいる場合
 		//とりあえずその情報をATに送りつける
 		reportCivilianInView();
+	}
+
+//---------- report関連 ----------
+	//過去に閉塞を報告したエリアについて，
+	//. 自分がまだそのエリアにいて，
+	//. まだ閉塞が啓開されておらず，
+	//. 閉塞を報告してから3ターン以上経過している
+	//場合に，再度PFに対して閉塞を報告する.
+	//(自分が閉塞に詰まって動けなくなっている可能性が高い)
+	private void reportBlockadeAboutSelf(){
+		logger.info("reportBlockadeAboutSelf();");
+		for(Area reported : reportedBlockedRoad.keySet()){
+			if(getLocation().getID().getValue() == reported.getID().getValue() &&
+			   reported.isBlockadesDefined() &&
+			   !(reported.getBlockades().isEmpty()) &&
+			   (this.time - reportedBlockedRoad.get(reported)) > 2){
+				
+				logger.info("Re-report blockade.");
+				ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
+				msgManager.sendMessage(clear_msg);
+				reportedBlockedRoad.put(reported, this.time);
+				
+			}
+		}
 	}
 	private void reportCivilianInView(){
 		List<Civilian> civilians = getViewCivilians();
@@ -171,20 +206,24 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 	}
 	private void reportBlockedRoadInLocation(){
+		logger.info("reportBlockedRoadInLocation();");
+		logger.debug("location=> " + getLocation() + "");
 		StandardEntity location = getLocation();
 		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
 			// 閉塞が発生しているRoadのIDを送りつける
 			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
-			if( !(reportedBlockedRoad.contains( (Area)location )) ){
+			if( !(reportedBlockedRoad.containsKey( (Area)location )) ){
 				logger.info("There is blockade => createClearMessage();");
 				ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
 				msgManager.sendMessage(clear_msg);
 				logger.debug("Find blockade (" + getLocation() + ")");
 				logger.debug("Sending ClearMessage...");
-				reportedBlockedRoad.add((Area)location);
+				reportedBlockedRoad.put((Area)location, time);
 			}
 		}
 	}
+//---------- //report関連 ----------
+
 	private void removeFinishedTask(){
 		if(currentTask != null && currentTask.isFinished()){
 			logger.debug("**  currentTaskList.remove(" + currentTask + ")");
@@ -193,6 +232,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			currentTask = null;
 		}
 	}
+
+//---------- 視界情報の取得関連 ----------
 	public List<Building> getViewBuildings(){
 		logger.info("getViewBuildings();");
 		ArrayList<Building> buildings = new ArrayList<Building>();
@@ -226,6 +267,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
     	}
     	return civilians;
     }
+//---------- //視界情報の取得関連 ----------
+
 	public void addTaskIfNew(Task tt){
 		if(tt instanceof ExtinguishTask){
 			ExtinguishTask et = (ExtinguishTask)tt;
@@ -288,7 +331,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			}
 		}else if(pfSize == max && pfSize > CROWLABLE_NUM){
 		*/
-			//PoliceForceが探訪する(RoboCup2010)
 			logger.info("担当はPoliceForce (pfSize = " + pfSize + ")");
 			if(this instanceof NAITOPoliceForce){
 				logger.info(this + " in crowling Team.");
@@ -514,6 +556,38 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
         }   
         return result;
     }
+    
+//---------- 閉塞の取得関連 ----------
+    
+    //行く手を遮る閉塞を得る
+	public Blockade getBlockadeOnPath(){
+		logger.info("getBlockadeOnPath();");
+		
+		int maxDistance = maxRepairDistance;
+		//検証してみよう
+		if(getLocation() instanceof Blockade){
+			logger.debug("getLocation() instanceof Blockade;");
+			return (Blockade)(getLocation());
+		}
+		//自分のいる場所に着いて閉塞を得る
+		Area location = (Area)getLocation();
+		Blockade blockade = getTargetBlockade(location, maxDistance);
+		if(blockade != null){
+			return blockade;
+		}
+        //自分のいる場所の近傍について閉塞を得る
+        for (EntityID next : location.getNeighbours()) {
+            location = (Area)(model.getEntity(next));
+            blockade = getTargetBlockade(location, maxDistance);
+            if (blockade != null) {
+				logger.info("There is blockade in this.location.getNeighbours();");
+				logger.debug("" + blockade);
+                return blockade;
+            }
+        }
+		logger.info("There is not blockade. return null;");
+        return null;
+  	}
     public int findDistanceTo(Blockade b, int x, int y) {
         List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(b.getApexes()), true);
         double best = Double.MAX_VALUE;
@@ -528,6 +602,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
         }
         return (int)best;
 	}
+	
     public Blockade getTargetBlockade(Area area, int maxDistance) {
         //logger.debug("Looking for nearest blockade in " + area);
         logger.info("NAITOPoliceForce.getTargetBlockade(" + area + ", " + maxDistance + ")");
@@ -554,7 +629,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
         logger.info("No blockades in range");
         return null;
     }
-	
+//---------- //閉塞の取得関連 ----------
 	//SampleAmbulanceTeamから移植
     public StandardEntity someoneOnBoard() {
 		logger.info("NAITOHumanoidAgent.someonwOnBoard();");

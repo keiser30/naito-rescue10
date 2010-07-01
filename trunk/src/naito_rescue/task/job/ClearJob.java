@@ -34,7 +34,7 @@ public class ClearJob extends Job
 		NAITOPoliceForce me = (NAITOPoliceForce)owner;
 
 		//自分がターゲットエリアにいないなら、まずそこへ向けて移動する
-		if(me.getLocation().getID().getValue() != target.getID().getValue()){
+		if(owner.getLocation().getID().getValue() != target.getID().getValue()){
 			logger.debug("me.getLocation() != target ===> move.");
 			logger.trace("(Move target = " + target + ")");
 			owner.move(target);
@@ -42,23 +42,23 @@ public class ClearJob extends Job
 		}
 		//今いるところから啓開可能な閉塞を取得
 		Blockade b = null;
-		if(me.getLocation() instanceof Area){
-			b = me.getTargetBlockade((Area)(me.getLocation()), maxDistance);
+		if(owner.getLocation() instanceof Area){
+			b = owner.getBlockadeOnPath();
 		}
 		if(b != null){
 			//啓開可能な閉塞があるならそこを啓開する
 			logger.debug("閉塞発見 ===> clear.");
 			logger.trace("Blockade b = " + b);
 			owner.clear(b.getID());
-		}else if(me.getLocation().getID().getValue() == target.getID().getValue() &&
+		}else if(owner.getLocation().getID().getValue() == target.getID().getValue() &&
 		         target.isBlockadesDefined()){
-			    //ターゲットとして設定してあるエリアに存在する閉塞へ向けて移動する
-				logger.debug("閉塞はあったが啓開範囲内に存在しない ===> move.");
-			   	Blockade b_ = me.getTargetBlockade(target, Integer.MAX_VALUE);
-				if(b_ != null){
-					logger.trace("move(" + target + ", " + b_.getX() + ", " + b_.getY());
-					owner.move(target, b_.getX(), b_.getY());
-				}
+		    //ターゲットとして設定してあるエリアに存在する閉塞へ向けて移動する
+			logger.debug("閉塞はあったが啓開範囲内に存在しない ===> move.");
+		   	Blockade b_ = owner.getTargetBlockade(target, Integer.MAX_VALUE);
+			if(b_ != null){
+				logger.trace("move(" + target + ", " + b_.getX() + ", " + b_.getY());
+				owner.move(target, b_.getX(), b_.getY());
+			}
 		}
 	}
 

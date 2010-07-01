@@ -24,17 +24,17 @@ public class MoveToClearPointJob extends Job
 		this.target = target;
 		this.maxDistance = distance;
 		
-		//blockades = target.getBlockades();
 	}
 
 	public void doJob(){
 		logger.info("////////// MoveToClearPointJob.doJob(); //////////");
-		//logger.info("blockades = " + blockades);
 
 		//行く手を邪魔する閉塞があったら除去
-		Blockade blockade = getBlockadeOnPath();
+		Blockade blockade = owner.getBlockadeOnPath();
 		if(blockade != null){
+			logger.debug("MoveToClearPointJob => clear(" + blockade + ")");
 			owner.clear(blockade.getID());
+			return;
 		}
 		//閉塞への経路の中で，最短のものを選択肢手移動する
 		List<EntityID> path = owner.getSearch().breadthFirstSearch(owner.getLocation(), target);
@@ -44,31 +44,12 @@ public class MoveToClearPointJob extends Job
 			logger.debug("path = " + path);
 			//owner.move(path, target_blockade.getX(), target_blockade.getY());
 			owner.move(path);
-			logger.info("move();");
+			logger.info("doJob(); => move();");
 		}else{
 			logger.info("Path to Blockade is not find.");
 		}
 	}
-	//行く手を遮る閉塞を得る
-	private Blockade getBlockadeOnPath(){
-		Area location = (Area)owner.getLocation();
-		Blockade blockade = owner.getTargetBlockade(location, maxDistance);
-		if(blockade != null){
-			return blockade;
-		}
-        //logger.debug("Looking in neighbouring locations");
-        for (EntityID next : location.getNeighbours()) {
-            location = (Area)world.getEntity(next);
-            blockade = owner.getTargetBlockade(location, maxDistance);
-            if (blockade != null) {
-				logger.info("There is blockade in this.location.getNeighbours();");
-				logger.debug("" + blockade);
-                return blockade;
-            }
-        }
-		logger.info("There is not blockade. return null;");
-        return null;
-  	}
+
 	public boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
 		//if(blockades == null || blockades.isEmpty()) return true;
 		logger.info("////////// MoveToClearPointJob.isFinished(); ///////////");
