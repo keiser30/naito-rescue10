@@ -32,7 +32,7 @@ public class MoveJob extends Job
 	
 	@Override
 	public void doJob(){
-		//閉塞を取得 => 自分がPFなら解除して突き進む
+		//自分の身の回りの閉塞を取得 => 自分がPFなら解除して突き進む
 		Blockade blockade = owner.getBlockadeOnPath();
 		if(owner instanceof NAITOPoliceForce && blockade != null){
 			owner.clear(blockade.getID());

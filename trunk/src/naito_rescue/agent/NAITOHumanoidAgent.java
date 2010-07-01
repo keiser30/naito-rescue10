@@ -564,11 +564,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info("getBlockadeOnPath();");
 		
 		int maxDistance = maxRepairDistance;
-		//検証してみよう
-		if(getLocation() instanceof Blockade){
-			logger.debug("getLocation() instanceof Blockade;");
-			return (Blockade)(getLocation());
-		}
 		//自分のいる場所に着いて閉塞を得る
 		Area location = (Area)getLocation();
 		Blockade blockade = getTargetBlockade(location, maxDistance);
