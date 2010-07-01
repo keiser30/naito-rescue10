@@ -9,6 +9,8 @@ import naito_rescue.agent.*;
 import java.util.*;
 import java.io.*;
 
+//TODO: 閉塞周りの回避行動を積みたい．
+
 public class MoveJob extends Job
 {
 	Area target;
@@ -30,19 +32,21 @@ public class MoveJob extends Job
 	
 	@Override
 	public void doJob(){
-		try{
-			List<EntityID> path = owner.getSearch().breadthFirstSearch(owner.getLocation(), Collections.singleton(target));
-			if(path != null){
-				if(x == -1 || y == -1){
-					owner.move(path);
-				}else{
-					owner.move(path, x, y);
-				}
+		//閉塞を取得 => 自分がPFなら解除して突き進む
+		Blockade blockade = owner.getBlockadeOnPath();
+		if(owner instanceof NAITOPoliceForce && blockade != null){
+			owner.clear(blockade.getID());
+			return;
+		}
+		List<EntityID> path = owner.getSearch().breadthFirstSearch(owner.getLocation(), Collections.singleton(target));
+		if(path != null){
+			if(x == -1 || y == -1){
+				owner.move(path);
 			}else{
-				owner.getLogger().info("MoveJob().doJob() target (" + target + ") is not adjucent to " + owner.getLocation());
+				owner.move(path, x, y);
 			}
-		}catch(Exception e){
-			owner.getLogger().info("MoveJob: " + e);
+		}else{
+			owner.getLogger().info("MoveJob().doJob() target (" + target + ") is not adjucent to " + owner.getLocation());
 		}
 	}
 

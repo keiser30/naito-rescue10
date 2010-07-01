@@ -23,8 +23,8 @@ import naito_rescue.message.manager.*;
 */
 public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements MessageConstants
 {
-    private static final String DISTANCE_KEY = "clear.repair.distance";
-	private int distance; //閉塞解除が可能な距離...?
+    //private static final String DISTANCE_KEY = "clear.repair.distance";
+	//private int distance; //閉塞解除が可能な距離...?
 	private boolean isPreferredVoice;
 	private boolean        isPreferredNear;
 	private PoliceForce me;
@@ -36,7 +36,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 	@Override
 	protected void postConnect(){
         super.postConnect();
-		distance = config.getIntValue(DISTANCE_KEY);
+		//distance = config.getIntValue(DISTANCE_KEY);
 		
 		if(isMember && crowlingBuildings.isEmpty()){
 			//自分がisMemberなのにも関わらずcrowlingBuidlingが空っぽ...
@@ -106,7 +106,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 						EntityID target_id = ((ClearMessage)message).getTarget();
 						StandardEntity target = model.getEntity(target_id);
 						logger.info("PF.currentTaskList.add(ClearTask(" + target + ")");
-						currentTaskList.add(new ClearTask(this, model, (Area)target, distance));
+						currentTaskList.add(new ClearTask(this, model, (Area)target, maxRepairDistance));
 					}
 				}
 			}
@@ -131,9 +131,23 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
                 return;
             }
 		}
+
+		currentTask = action();
+		if(currentTask != null){
+			currentJob = currentTask.currentJob();
+			logger.info("currentTask = " + currentTask);
+			logger.info("currentJob  = " + currentJob);
+			if(currentJob != null){
+				logger.info("=> currentJob.do();");
+				currentJob.doJob();
+				return;
+			}else{
+				logger.debug("currentJob is null. => randomWalk();");
+			}
+		}
         // Am I near a blockade?
-        Blockade target = getTargetBlockade();
-        if (target != null && !isPreferredVoice) {
+        Blockade target = getBlockadeOnPath();
+        if (target != null /*&& !isPreferredVoice*/) {
             logger.info("Clearing blockade " + target);
             //sendSpeak(time, 1, ("Clearing " + target).getBytes());
             sendClear(time, target.getID());
@@ -142,7 +156,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 
         // Plan a path to a blocked area
         List<EntityID> path = search.breadthFirstSearch(getLocation(), getBlockedRoads(changed));
-        if (path != null && !isPreferredVoice) {
+        if (path != null /*&& !isPreferredVoice*/) {
             logger.info("Moving to target");
             Road r = (Road)model.getEntity(path.get(path.size() - 1));
             Blockade b = getTargetBlockade(r, -1);
@@ -152,25 +166,6 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
             return;
         }
 
-		//Nothing to do の時にTask-Jobを実行する
-		currentTask = action();
-		if(currentTask == null){
-			logger.info("currentTask.rank < MIN_VALUE or currentTask == null;");
-			logger.info("==>randomWalk();");
-			move(randomWalk());
-			return;
-		}
-		currentJob = currentTask.currentJob();
-		logger.info("currentTask = " + currentTask);
-		logger.info("currentJob  = " + currentJob);
-		if(currentJob != null){
-			logger.info("=> currentJob.do();");
-			currentJob.doJob();
-			return;
-		}else{
-			logger.debug("currentJob is null. => randomWalk();");
-		}	
-		move(randomWalk());
 	}
 	private List<ClearTask> collectClearTask(){
 		ArrayList<ClearTask> result = new ArrayList<ClearTask>();
@@ -218,26 +213,44 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		return result; //自分から一番遠いところにターゲットがあるClearTask
 	}
 	private Task moveTaskStrategy(List<MoveTask> moveTasks){
-		//自分に近いところから巡っていく
 		List<EntityID> path = null;
 		int minDistance = Integer.MAX_VALUE;
+		int maxDistance = Integer.MIN_VALUE;
 		int distance_temp;
 		MoveTask result = null;
-		while(path == null){
-			for(MoveTask mt : moveTasks){
-				distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
-				if(distance_temp < minDistance){
-					minDistance = distance_temp;
-					result = mt;
+		if(isPreferredNear){
+			while(path == null){
+				for(MoveTask mt : moveTasks){
+					distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
+					if(distance_temp < minDistance){
+						minDistance = distance_temp;
+						result = mt;
+					}
+				}
+				path = search.breadthFirstSearch(getLocation(), result.getTarget());
+				if(path == null){
+					logger.info("path==null => remove MoveTask");
+					currentTaskList.remove(result);
 				}
 			}
-			path = search.breadthFirstSearch(getLocation(), result.getTarget());
-			if(path == null){
-				logger.info("path==null => remove MoveTask");
-				currentTaskList.remove(result);
+			return result; //自分から一番近いところがターゲットになっているMoveTask
+		}else{
+			while(path == null){
+				for(MoveTask mt : moveTasks){
+					distance_temp = model.getDistance(me.getPosition(), mt.getTarget().getID());
+					if(distance_temp > maxDistance){
+						maxDistance = distance_temp;
+						result = mt;
+					}
+				}
+				path = search.breadthFirstSearch(getLocation(), result.getTarget());
+				if(path == null){
+					logger.info("path==null => remove MoveTask");
+					currentTaskList.remove(result);
+				}
 			}
+			return result; //自分から一番遠いところがターゲットになっているMoveTask
 		}
-		return result; //自分から一番近いところがターゲットになっているMoveTask
 	}
 	@Override
 	public Task action(){
@@ -385,14 +398,14 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		}
 		return result;
 	}
-	
+/*
 	//MoveToClearPointJobとの整合性に注意
     public Blockade getTargetBlockade() {
        // logger.debug("Looking for target blockade");
 	   	logger.info("NAITOPoliceForce.getTargetBlockade();");
         Area location = (Area)location();
         //logger.debug("Looking in current location");
-        Blockade result = getTargetBlockade(location, distance);
+        Blockade result = getTargetBlockade(location, maxRepairDistance);
         if (result != null) {
 			logger.info("There is blockade in this.location;");
 			logger.debug("" + result);
@@ -411,6 +424,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 		logger.info("There is not blockade. return null;");
         return null;
     }
+*/
 /*
     public Blockade getTargetBlockade(Area area, int maxDistance) {
         //logger.debug("Looking for nearest blockade in " + area);
@@ -440,6 +454,6 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
     }
 */	
 	public int getDistance(){
-		return distance;
+		return maxRepairDistance;
 	}
 }
