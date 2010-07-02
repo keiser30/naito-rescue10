@@ -111,7 +111,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 }
 	}
 	
-	int ii = 0, jj = 0;
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);

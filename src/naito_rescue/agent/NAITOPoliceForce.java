@@ -26,7 +26,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
     //private static final String DISTANCE_KEY = "clear.repair.distance";
 	//private int distance; //閉塞解除が可能な距離...?
 	private boolean isPreferredVoice;
-	private boolean        isPreferredNear;
+	private boolean isPreferredNear;
 	private PoliceForce me;
 	@Override
 	public String toString(){
