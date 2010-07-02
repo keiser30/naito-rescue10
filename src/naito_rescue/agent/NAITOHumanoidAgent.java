@@ -160,7 +160,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	//過去に閉塞を報告したエリアについて，
 	//. 自分がまだそのエリアにいて，
 	//. まだ閉塞が啓開されておらず，
-	//. 閉塞を報告してから3ターン以上経過している
+	//. 閉塞を報告してから2ターン以上経過している
 	//場合に，再度PFに対して閉塞を報告する.
 	//(自分が閉塞に詰まって動けなくなっている可能性が高い)
 	private void reportBlockadeAboutSelf(){
@@ -169,7 +169,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			if(getLocation().getID().getValue() == reported.getID().getValue() &&
 			   reported.isBlockadesDefined() &&
 			   !(reported.getBlockades().isEmpty()) &&
-			   (this.time - reportedBlockedRoad.get(reported)) > 2){
+			   (this.time - reportedBlockedRoad.get(reported)) >= 2){
 				
 				logger.info("Re-report blockade.");
 				ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
