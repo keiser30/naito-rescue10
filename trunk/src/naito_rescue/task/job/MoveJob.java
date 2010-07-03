@@ -32,14 +32,13 @@ public class MoveJob extends Job
 	
 	@Override
 	public void doJob(){
-		//自分の身の回りの閉塞を取得 => 自分がPFなら解除して突き進む
-		Blockade blockade = owner.getBlockadeOnPath();
-		if(owner instanceof NAITOPoliceForce && blockade != null){
-			owner.clear(blockade.getID());
-			return;
-		}
 		List<EntityID> path = owner.getSearch().breadthFirstSearch(owner.getLocation(), Collections.singleton(target));
 		if(path != null){
+			Blockade blockade = owner.getBlockadeOnPath(path);
+			if(owner instanceof NAITOPoliceForce && blockade != null){
+				owner.clear(blockade.getID());
+				return;
+			}
 			if(x == -1 || y == -1){
 				owner.move(path);
 			}else{

@@ -26,23 +26,23 @@ public class MoveToAnyRefugeJob extends Job
 			if(path != null){
 				owner.move(path);
 			}else{
-				logger.info("MoveToAnyRefugesJob().doJob() target (" + refuges + ") is not adjucent to " + owner.getLocation());
+				
 			}
 		}catch(Exception e){
-			logger.info("MoveToAnyRefugeMoveJob: " + e);
+			
 		}
 	}
 
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
-		logger.info("MoveToAyRefugeJob.isFinished();");
+		
 		StandardEntity location = owner.getLocation();
 
 		if(illegal == true){
-			logger.debug("There are something illegal.");
+			
 			return true;
 		}
-		logger.debug("location = " + location);
+		
 		if(location instanceof Refuge){
 			return true;
 		}else{

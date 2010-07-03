@@ -50,7 +50,7 @@ public class DebugRoadLayer extends AreaLayer<Road> {
 		FontMetrics metrics = g.getFontMetrics();
 		int width  = metrics.stringWidth(str);
 		int height = metrics.getHeight();
-		g.drawString(str, (x - (width / 2)), (y + (height / 2)));
+		//g.drawString(str, (x - (width / 2)), (y + (height / 2)));
     }
 
     @Override

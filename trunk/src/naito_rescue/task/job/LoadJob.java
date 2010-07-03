@@ -23,19 +23,19 @@ public class LoadJob extends Job
 	}
 	@Override 
 	public void doJob(){
-		logger.info("LoadJob.doJob();");
+		
 		if(civilian != null){
-			logger.debug("civilian != null");
-			logger.debug("今まさに運搬中です");
+			
+			
 			return;
 		}
 		//Collection<StandardEntity> civilians = world.getEntitiesOfType(StandardEntityURN.CIVILIAN);
 		List<Civilian> civilians = owner.getViewCivilians();
-		logger.debug("civilians = " + civilians);
+		
 		if(civilians.isEmpty()){
 			//視界範囲に市民エージェントがいない
-			logger.debug("LoadJob.illegal: 中に誰もいませんよ");
-			logger.debug("illegal = true");
+			
+			
 			illegal = true;
 			return;
 		}
@@ -43,10 +43,10 @@ public class LoadJob extends Job
 		for(Civilian next : civilians){
 			//Civilian c = (Civilian)next;
 			Civilian c = next;
-			logger.debug("c.getBuriedness() = " + c.getBuriedness());
+			
 			if(c.getBuriedness() <= 0){
-				logger.debug("Decide target civilian = " + c);
-				logger.debug("    |____ load(" + c.getID() + ")");
+				
+				
 				civilian = c;
 				owner.load(c.getID());
 				return;
@@ -54,41 +54,41 @@ public class LoadJob extends Job
 		}
 		//パスがここにたどり着いたとき...
 		//   |___ buriednes() == 0な市民がいなかった
-		logger.debug("LoadJob.illegal: 視界範囲にいる市民すべては埋没していない");
-		logger.debug("illegal = true");
+		
+		
 		illegal = true;
 	}
 
 	@Override 
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel model){
-		logger.info("LoadJob.isFinished();");
+		
 		if(illegal == true){
-			logger.debug("illegal");
+			
 			return true;
 		}
 		if(civilian == null){
-			logger.debug("civilian is null.");
-			logger.debug("    |____ return false;");
+			
+			
 			return false;
 		}else{
-			logger.debug("civilian != null");
-			logger.debug("    |____ 今市民を乗せました.");
+			
+			
 			return true;
 		}
 /*
 		StandardEntity location = owner.getLocation();
-		logger.debug("owner.getLocation() = " + location);
+		
 		for(StandardEntity next : world.getEntitiesOfType(StandardEntityURN.CIVILIAN)){
 			Civilian c = (Civilian)next;
-			logger.debug("c.location = " + c.getPosition());
+			
 			if(c.getPosition().equals(owner.getID())){
-				logger.debug("c.getPosition().equals(location.getID())");
-				logger.debug("   |____ return true;");
+				
+				
 				return true;
 			}
 		}
-		logger.debug("All civilian is not on AT.");
-		logger.debug("    |____ return false;");
+		
+		
 		return false;
 */
 	}

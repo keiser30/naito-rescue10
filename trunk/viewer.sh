@@ -9,4 +9,4 @@ KERNEL_PORT=7000
 CLASSPATH=`find ./jars -name "*.jar" | xargs | sed -e "s/ /:/g"`
 CLASSPATH=$CLASSPATH:$AGENT_JAR_FILE
 
-java -Xmx256m -cp $CLASSPATH rescuecore2.LaunchComponents naito_rescue.viewer.NAITOViewer -h $KERNEL_ADDRESS -p $KERNEL_PORT &
+java -Xmx256m -cp $CLASSPATH rescuecore2.LaunchComponents naito_rescue.viewer.NAITOViewer -h $KERNEL_ADDRESS -p $KERNEL_PORT --viewer.maximise=true --loadabletypes.inspect.dir=./jars &

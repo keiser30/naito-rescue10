@@ -132,70 +132,78 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		//ダイクストラ法の経路探索が実装できるまで，breadthFirstSearchを使う
 		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
 		if(path != null){
+			logger.info("path = " + path);
 			move(path);
 		}else{
-			logger.debug("path is null.");
-			logger.debug("location = " + getLocation());
-			logger.debug("target   = " + target);
 		}
 	}
 	public void move(StandardEntity target, int x, int y){
 		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
 		if(path != null){
+			logger.info("path = " + path + ", (x, y) = (" + x + ", " + y + ")");
 			move(path, x, y);
 		}else{
-			logger.debug("path is null.");
-			logger.debug("location = " + getLocation());
-			logger.debug("target   = " + target);
+			
+			
+			
 		}
 	}
 	public void move(List<EntityID> path){
-		logger.debug("NAITOHumanoidAgent.move(path);");
+		logger.info("path = " + path);
 		sendMove(time, path);
 	}
 
 	public void move(List<EntityID> path, int x, int y){
-		logger.debug("move(path,x,y)");
+		logger.info("path = " + path + ", (x, y) = (" + x + ", " + y + ")");
 		sendMove(time, path, x, y);
 	}
 	public void extinguish(EntityID target, int water){
+		logger.info("extinguish(" + target + ", " + water + ");");
 		sendExtinguish(time, target, water);
 	}
 	public void clear(EntityID target){
+		logger.info("clear(" + target + ");");
 		sendClear(time, target);
 	}
 	public void load(EntityID target){
+		logger.info("load(" + target + ");");
 		sendLoad(time, target);
 	}
 	public void unload(){
+		logger.info("unload();");
 		sendUnload(time);
 	}
 	public void rescue(EntityID target){
+		logger.info("rescue(" + target + ");");
 		sendRescue(time, target);
 	}
 	public void rest(){
+		logger.info("rest();");
 		sendRest(time);
 	}
 	public void speak(int channel, byte[] data){
+		logger.info("speak(" + channel + ", data);");
 		sendSpeak(time, channel, data);
 	}
 	public void subscribe(int... channels){
+		logger.info("subscribe(" + channels + ");");
 		sendSubscribe(time, channels);
 	}
 	public void say(byte[] data){
-		logger.debug("say();");
+		logger.info("say(data);");
 		
 //		if(useSpeak){
-//			logger.debug("say -> sendSpeak();");
+//			
 //			sendSpeak(time, 0, data);
 //		}else{
-//			logger.debug("say -> sendSay();");
+//			
 //			sendSay(time, data);
 //		}
 //		
 		sendSpeak(time, 0, data);
 	}
 	public void tell(byte[] data){
+		logger.info("tell(data);");
 		sendTell(time, data);
 	}
 	
