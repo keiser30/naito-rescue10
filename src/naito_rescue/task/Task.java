@@ -38,14 +38,14 @@ public abstract class Task
 	public abstract ArrayList<Job> createJobList();
 	
 	public boolean isFinished(){
-		logger.info("Task.isFinished();");
-		logger.debug("jobs = " + jobs);
+		
+		
 		for(Iterator<Job> it = jobs.iterator(); it.hasNext();){
 			Job next = it.next();
-			logger.debug(next + ".isFinished() = " + next.isFinished());
+			
 			if(next.isFinished()){
 				//終了しているジョブを削除する
-				logger.debug("remove(" + next + ");");
+				
 				it.remove(); //nextが削除される
 			}else{
 				return false;
@@ -53,32 +53,32 @@ public abstract class Task
 		}
 		//パスがここに到達した時点で, jobs.isEmpty()は
 		//保証されている.
-		logger.info("======> return true;");
+		
 		return true;
 	}
 	protected abstract boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world);
 
 	public Job currentJob(){
-		logger.info("Task.currentJob();");
+		
 		if(jobs.isEmpty()){
-			logger.debug("jobs.isEmpty()...");
+			
 			if(isCreateJobsNow){
-				logger.debug("jobs.addAll(createJobList());");
+				
 				jobs.addAll(createJobList());
-				logger.debug("|____ jobs = " + jobs);
+				
 				isCreateJobsNow = false;
 				return jobs.get(0);
 			}else{
 				//ここにパスが到達するということは,
 				//このタスクは終わっていなければならない.
 				// --> 異常としてnullを返す
-				logger.debug("jobs.isEmpty() && !isCreateJobsNow");
-				logger.debug("なぜここにパスが通るし");
+				
+				
 				return null;
 			}
 		}else{
 			Job j = jobs.get(0);
-			logger.debug("return " + j);
+			
 			return j;
 		}
 	}

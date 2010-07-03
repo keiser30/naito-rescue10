@@ -40,15 +40,15 @@ public class RescueTask extends Task
 
 	@Override
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel world){
-		logger.info("RescueTask.isFinished();");
+		
 		//ここ，もっとうまく書けないかなぁ…
 		for(Job job : jobs){
 			if(!job.isFinished()){
-				logger.debug(job + "is not Finished.");
+				
 				return false;
 			}
 		}
-		logger.debug("return true;");
+		
 		return true;
 	}
 }

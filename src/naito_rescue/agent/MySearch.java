@@ -57,12 +57,12 @@ public final class MySearch {
 		for(int i = 0;i < numBuildings;i++){
 			building2idx.put(allBuildingsList.get(i).getID().getValue(), i);
 		}
-		logger.info("MySearch is constructed.");
+		
 //		costInit();
 	}
 
 	private void costInit(){
-		logger.info("Mysearch.costInit();");
+		
 		for(int i = 0;i < numRoads;i++){
 			Arrays.fill(initCost[i], 0);
 			initCost[i][i] = -1;
@@ -77,17 +77,17 @@ public final class MySearch {
 		for(int i = 0;i < numRoads;i++){
 			from = allRoadsList.get(i);
 
-			logger.trace("Now processing... "+from);
+			
 			fromIdx = from.getID().getValue();
 			neighbours = findNeighbours(from);
 			for(StandardEntity neighbour : neighbours){
-				logger.trace("neighbour = " + neighbour);
+				
 				if(neighbour instanceof Road){
-					//logger.trace("neighbour = " + neighbour);
+					//
 					toIdx = ((Road)neighbour).getID().getValue();
 					initCost[road2idx.get(fromIdx)][road2idx.get(toIdx)] = world.getDistance(from.getID(), neighbour.getID());
 					initCost[road2idx.get(toIdx)][road2idx.get(fromIdx)] = world.getDistance(from.getID(), neighbour.getID());
-					logger.trace("initCost["+fromIdx+"]["+toIdx+"] = " + initCost[road2idx.get(fromIdx)][road2idx.get(toIdx)]);
+					
 				}
 			}
 		}
@@ -98,19 +98,19 @@ public final class MySearch {
 			}
 		}
 
-		logger.info("MySearch.costInit(); DONE!");
+		
 	}
 
 
 	public List<EntityID> getRoute(EntityID fromID, EntityID toID){
-		logger.info("MySearch.getRoute();");
+		
 		for(int i = 0;i < numRoads;i++){
 			for(int j = 0;j < numRoads;j++){
 				cost[i][j] = initCost[i][j];
 			}
 		}
 
-		logger.debug("fromID = " + fromID.getValue() + ", toID = " + toID.getValue());
+		
 		boolean     doneArea[] = new boolean[numRoads];
 		EntityID    prevArea[] = new EntityID[numRoads];
 		EntityID    areaIdx;
@@ -118,14 +118,14 @@ public final class MySearch {
 		areaIdx = fromID;
 		doneArea[road2idx.get(fromID.getValue())] = true;
 		prevArea[road2idx.get(fromID.getValue())] = fromID;
-		logger.trace("Entering while loop");
+		
 		//EntityID nextIdx = null, prevIdx = null;
 		while(areaIdx.getValue() != toID.getValue()){
 			int minCost = Integer.MAX_VALUE;
 			EntityID nextIdx = null;
 			EntityID prevIdx = null;
 
-			logger.trace("areaIdx = " + areaIdx.getValue());
+			
 			for(int i = 0;i < numRoads;i++){
 				if(doneArea[i]){
 					for(int j = 0;j < numRoads;j++){
@@ -140,17 +140,17 @@ public final class MySearch {
 				}
 			}
 			if(nextIdx == null){
-				logger.trace("--------------------- nextIdx is null!");
+				
 			}
 			/*else{
-				logger.debug("^^^^^^^^^^^^^^^^^^^^ unknown is null!");
+				
 			}
-			logger.debug(" --> nextIdx = " + nextIdx.getValue());
+			
 			*/
 			prevArea[road2idx.get(nextIdx.getValue())] = prevIdx;
 			if(nextIdx.getValue() == toID.getValue()){
-				logger.trace("break while loop.");
-				logger.trace("nextIdx = " + nextIdx.getValue() + ", toID.getValue() = " + toID.getValue());
+				
+				
 				break;
 			}
 			int myCost = cost[road2idx.get(prevIdx.getValue())][road2idx.get(nextIdx.getValue())];
@@ -168,22 +168,22 @@ public final class MySearch {
 
 		LinkedList<EntityID> ll = new LinkedList<EntityID>();
 		ll.addFirst(toID);
-		logger.trace("ll.addFirst(" + toID.getValue() + ")");
+		
 		int no = road2idx.get(toID.getValue());
 		while(prevArea[no] != fromID){
 			ll.addFirst(prevArea[no]);
-			logger.trace("ll.addFirst(" + (prevArea[no]).getValue() + ")");
+			
 			no = road2idx.get((prevArea[no]).getValue());
 		}
 		ll.addFirst(fromID);
-		logger.trace("ll.addFirst(" + fromID.getValue() + ")");
+		
 
 		StringBuffer logstr = new StringBuffer();
 		for(int i = 0;i < ll.size();i++){
 			logstr.append(ll.get(i).getValue()+" -> ");
 		}
-		logger.debug(logstr.toString());
-		logger.info("MySearch.getRoute(); DONE!");
+		
+		
 		return ll;
 	}
 

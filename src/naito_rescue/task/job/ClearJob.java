@@ -30,44 +30,44 @@ public class ClearJob extends Job
 
 	@Override
 	public void doJob(){
-		logger.info(" \\\\\\\\\\ ClearJob.doJob(); \\\\\\\\\\ ");
+		
 		NAITOPoliceForce me = (NAITOPoliceForce)owner;
 
 		//自分がターゲットエリアにいないなら、まずそこへ向けて移動する
 		if(owner.getLocation().getID().getValue() != target.getID().getValue()){
-			logger.debug("me.getLocation() != target ===> move.");
-			logger.trace("(Move target = " + target + ")");
+			
+			
 			owner.move(target);
 			return;
 		}
 		//今いるところから啓開可能な閉塞を取得
 		Blockade b = null;
 		if(owner.getLocation() instanceof Area){
-			b = owner.getBlockadeOnPath();
+			b = owner.getTargetBlockade();
 		}
 		if(b != null){
 			//啓開可能な閉塞があるならそこを啓開する
-			logger.debug("閉塞発見 ===> clear.");
-			logger.trace("Blockade b = " + b);
+			
+			
 			owner.clear(b.getID());
 		}else if(owner.getLocation().getID().getValue() == target.getID().getValue() &&
 		         target.isBlockadesDefined()){
 		    //ターゲットとして設定してあるエリアに存在する閉塞へ向けて移動する
-			logger.debug("閉塞はあったが啓開範囲内に存在しない ===> move.");
+			
 		   	Blockade b_ = owner.getTargetBlockade(target, Integer.MAX_VALUE);
 			if(b_ != null){
-				logger.trace("move(" + target + ", " + b_.getX() + ", " + b_.getY());
+				
 				owner.move(target, b_.getX(), b_.getY());
 			}
 		}
 	}
 
 	protected boolean isFinished(NAITOHumanoidAgent owner, StandardWorldModel model){
-		logger.info(" \\\\\\\\\\ ClearJob.isFinished(); \\\\\\\\\\ ");
+		
 
 		if(blockades == null) illegal = true;
 		if(illegal) return true;
-		logger.info("return =>" + (target.isBlockadesDefined()?"false":"true"));
+		
 		return !target.isBlockadesDefined();
 	}
 }

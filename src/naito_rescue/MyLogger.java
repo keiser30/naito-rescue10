@@ -9,6 +9,9 @@ public class MyLogger
 {
 	File        logfile;
 	PrintStream logger;
+	Throwable   debugInfo;
+	StackTraceElement[] element;
+	int         time;
 
 /**
 *  LOGLEVEL(上から下に行くほどレベルが下がる)
@@ -29,11 +32,12 @@ public class MyLogger
 	String prefix;
 	static HashMap<Class, String> prefix_map = new HashMap<Class, String>();
 	static{
-		prefix_map.put(NAITOFireBrigade.class, "FB:");
-		prefix_map.put(NAITOAmbulanceTeam.class, "AT:");
-		prefix_map.put(NAITOPoliceForce.class, "PF:");
+		prefix_map.put(NAITOFireBrigade.class, "FB");
+		prefix_map.put(NAITOAmbulanceTeam.class, "AT");
+		prefix_map.put(NAITOPoliceForce.class, "PF");
 	}
-
+	String      context = "";
+	
 	int         loglevel = TRACE; //NOTHINGなら何もしない
 
 	public MyLogger(NAITOAgent owner, boolean isStdout){
@@ -52,31 +56,50 @@ public class MyLogger
 			System.err.println("*************************************************");
 			System.exit(-1);
 		}
-		prefix = prefix_map.get(owner.getClass());
-		if(prefix == null){
-			prefix = "UNKNOWN:";
+		
+		// "Type(ID)"
+		prefix = "";
+		String type = prefix_map.get(owner.getClass());
+		if(type == null){
+			prefix += "UNKNOWN";
+		}else{
+			prefix += type;
 		}
-
+		prefix += "(" + owner.getID().getValue() + ")";
+		time = 0;
 	}
-
+	public void setTime(int t){
+		this.time = t;
+	}
+	public void setLogContext(String str){
+		// "[str]"
+		this.context = "::" + str;
+	}
 	public void info(String str){
 		if(loglevel >= NOTHING) return;
-		println(str);
+		println("--> "+str);
 	}
 	public void debug(String str){
 		if(loglevel > DEBUG) return;
-		println("...."+str);
+		println("----> "+str);
 	}
 	public void trace(String str){
 		if(loglevel > TRACE) return;
-		println("........"+str);
+		println("--------> "+str);
 	}
 
 	 
 	private void println(String str){
 		if(loglevel >= NOTHING) return;
-
-		logger.println(prefix+str);
+/*
+		debugInfo = new Throwable();
+		element = debugInfo.getStackTrace();
+		element = (new Throwable()).getStackTrace();
+		
+		context = "::" + element[2].getMethodName();
+*/
+		context = "";
+		logger.println(time+":"+"["+prefix+context+"]"+str);
 	}
 	public void flush(){
 		if(loglevel <= NOTHING) return;

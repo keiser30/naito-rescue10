@@ -83,29 +83,14 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 w_width = world_rect.getWidth();
 		 w_height = world_rect.getHeight();
 		 
-		 logger.info(this.toString() + " start!");
-		 logger.debug("useSpeak            = " + useSpeak);
-		 logger.debug("fireStationLess     = " + fireStationLess);
-		 logger.debug("policeOfficeLess    = " + policeOfficeLess);
-		 logger.debug("ambulanceCenterLess = " + ambulanceCenterLess);
-		 logger.debug("    => centerLess   = " + centerLess);
-		 
 		 //チーム分け
 		 isLeader = isMember = isOnTeam = false;
 		 createCrowlingTeam();
 		 isOnTeam = isLeader || isMember;
 		 
-		 logger.debug("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-		 logger.debug("createCrowlingTeam() is end.");
-		 logger.debug("isLeader = " + isLeader);
-		 logger.debug("isMember = " + isMember);
-		 logger.debug("   |___ isOnTeam = " + isOnTeam);
-		 logger.debug("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-		 
 		 if(isMember && !crowlingBuildings.isEmpty()){
-		 	logger.info("isMember && crowlingBuildings.isNotEmpty() ==> 建物探訪タスクをaddする");
+		 	logger.info("Crowling. \n" + crowlingBuildings);
 		 	for(Building b : crowlingBuildings){
-		 		logger.debug("廻る建物は(crowlingBuilding) => " + b);
 		 		currentTaskList.add(new MoveTask(this, model, (Area)b));
 		 	}
 		 }
@@ -114,25 +99,24 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
-
+		
+		logger.setTime(time);
 		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
-			logger.info("まだですよ: " + time);
 			return;
 		}
-
-		logger.info("****************************************");
-		logger.info("");
-		logger.info("**********____" + time + "____**********");
-		logger.info("**  NAITOHumanoidAgent.think();");
-		logger.info("**  location    = " + getLocation());
-		logger.info("**  currentTask = " + currentTask);
-		if(currentTask != null)
-			logger.info("**  currentTask.jobs[] = " + currentTask.getJobs());
-		logger.info("Entities in view range:");
+		
+		logger.info("currentTaskList = " + currentTaskList);
+		logger.info("currentTask = " + currentTask);
+		logger.debug("__Entities in View__");
+		StringBuffer pretty_entities = new StringBuffer();
+		pretty_entities.append("\n");
 		for(EntityID id : changed.getChangedEntities()){
 			StandardEntity entity = model.getEntity(id);
-			logger.debug("entity => " + entity);
+			//logger.debug("Entity => " + entity);
+			pretty_entities.append("Entity => " + model.getEntity(id) + "\n");
 		}
+		pretty_entities.append("\n");
+		logger.debug(pretty_entities.toString());
 
 		//currentTaskListに関する処理
 		//currentTaskが終了していたら，そいつをリストから削除する
@@ -164,18 +148,19 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	//場合に，再度PFに対して閉塞を報告する.
 	//(自分が閉塞に詰まって動けなくなっている可能性が高い)
 	private void reportBlockadeAboutSelf(){
-		logger.info("reportBlockadeAboutSelf();");
-		for(Area reported : reportedBlockedRoad.keySet()){
-			if(getLocation().getID().getValue() == reported.getID().getValue() &&
-			   reported.isBlockadesDefined() &&
-			   !(reported.getBlockades().isEmpty()) &&
-			   (this.time - reportedBlockedRoad.get(reported)) >= 2){
-				
-				logger.info("Re-report blockade.");
-				ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
-				msgManager.sendMessage(clear_msg);
-				reportedBlockedRoad.put(reported, this.time);
-				
+		if(!(this instanceof NAITOPoliceForce)){
+			for(Area reported : reportedBlockedRoad.keySet()){
+				if(getLocation().getID().getValue() == reported.getID().getValue() &&
+				   reported.isBlockadesDefined() &&
+				   !(reported.getBlockades().isEmpty()) &&
+				   (this.time - reportedBlockedRoad.get(reported)) >= 2){
+					
+					logger.info("Help me. reported = " + reported);
+					ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
+					msgManager.sendMessage(clear_msg);
+					reportedBlockedRoad.put(reported, this.time);
+					
+				}
 			}
 		}
 	}
@@ -185,7 +170,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			StandardEntity civilian_location = c.getPosition(model);
 			//道路を突っ走ってる市民に対してLoadを実行しようとするとコケる気がする...
 			if(civilian_location instanceof Building && !reportedVictimInBuilding.contains((Building)civilian_location)){
-				logger.info("There is victim => createRescueMessage();");
+				logger.info("Report victim. victim = " + c + ", location = " + civilian_location);
 				RescueMessage rescue_msg = msgManager.createRescueMessage(-1, ADDR_AT, false, civilian_location.getID());
 				msgManager.sendMessage(rescue_msg);
 				reportedVictimInBuilding.add((Building)civilian_location);
@@ -196,7 +181,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		List<Building> view_buildings = getViewBuildings();
 		for(Building b : view_buildings){
 			if(b.isOnFire() && !reportedBurningBuilding.contains(b)){
-				logger.info("There is burning building => createExtinguishMessage();");
+				logger.info("Report Burning Building. building = " + b);
 				StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
 				ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea():1000));
 				msgManager.sendMessage(ex_msg);
@@ -205,19 +190,18 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 	}
 	private void reportBlockedRoadInLocation(){
-		logger.info("reportBlockedRoadInLocation();");
-		logger.debug("location=> " + getLocation() + "");
-		StandardEntity location = getLocation();
-		if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
-			// 閉塞が発生しているRoadのIDを送りつける
-			//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
-			if( !(reportedBlockedRoad.containsKey( (Area)location )) ){
-				logger.info("There is blockade => createClearMessage();");
-				ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
-				msgManager.sendMessage(clear_msg);
-				logger.debug("Find blockade (" + getLocation() + ")");
-				logger.debug("Sending ClearMessage...");
-				reportedBlockedRoad.put((Area)location, time);
+		if(!(this instanceof NAITOPoliceForce)){
+			StandardEntity location = getLocation();
+			if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
+				// 閉塞が発生しているRoadのIDを送りつける
+				//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
+				if( !(reportedBlockedRoad.containsKey( (Area)location )) ){
+					logger.info("Report Blockade. blocked road = " + location);
+					ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
+					msgManager.sendMessage(clear_msg);
+					
+					reportedBlockedRoad.put((Area)location, time);
+				}
 			}
 		}
 	}
@@ -225,8 +209,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 	private void removeFinishedTask(){
 		if(currentTask != null && currentTask.isFinished()){
-			logger.debug("**  currentTaskList.remove(" + currentTask + ")");
-			logger.debug("**  ==> currentTaskList = " + currentTaskList);
+			
+			logger.info("Remove currentTask. currentTask = " + currentTask);
 			currentTaskList.remove(currentTask);
 			currentTask = null;
 		}
@@ -234,26 +218,26 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 //---------- 視界情報の取得関連 ----------
 	public List<Building> getViewBuildings(){
-		logger.info("getViewBuildings();");
+		
 		ArrayList<Building> buildings = new ArrayList<Building>();
 		StandardEntity entity = null;
 		for(EntityID id : this.changed.getChangedEntities()){
 			entity = model.getEntity(id);
 			if(entity instanceof Building){
-				logger.debug("getViewBuildings() => " + entity);
+				
 				buildings.add((Building)entity);
 			}
 		}
 		return buildings;
 	}
     public List<Civilian> getViewCivilians(){
-    	logger.info("getViewCivilians();");
+    	
     	List<Civilian> civilians = new ArrayList<Civilian>();
     	StandardEntity entity;
     	for(EntityID next : this.changed.getChangedEntities()){
     		entity = model.getEntity(next);
     		if(entity instanceof Civilian){
-    			logger.debug("getViewCivilian() => " + entity);
+    			
     			civilians.add((Civilian)entity);
     		}
     	}
@@ -303,26 +287,20 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 	//建物探訪をするチームを作成する
 	public void createCrowlingTeam(){
-		logger.info("=======================================");
-		logger.info("createCrowlingTeam();");
-		logger.info("CLOWLABLE_NUM = " + CROWLABLE_NUM);
-		logger.info("atSize        = " + atSize);
-		logger.info("pfSize        = " + pfSize);
-		logger.info("fbSize        = " + fbSize);
 		//どの種類のエージェントが探訪を担当するか決定する
 		int max = maxInt(atSize, pfSize, fbSize);
-		logger.info("max           = " + max);
+		
 		/*
 		if(atSize == max && atSize > CROWLABLE_NUM){
 			//AmbulanceTeamが探訪する
-			logger.info("担当はAmbulanceTeam (atSize = " + atSize + ")");
+			
 			if(this instanceof NAITOAmbulanceTeam){
-				logger.info(this + " in crowling Team.");
+				
 				if(atList.get(0).getID().getValue() == me().getID().getValue()){
-					logger.info("------> " + this + " is Leader!");
+					
 					isLeader = true;
 				}else{
-					logger.info("------> " + this + " is Member.");
+					
 					isMember = true;
 				}
 				teamMembers.addAll(atList);
@@ -330,38 +308,31 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			}
 		}else if(pfSize == max && pfSize > CROWLABLE_NUM){
 		*/
-			logger.info("担当はPoliceForce (pfSize = " + pfSize + ")");
+			//各種エージェントが，それぞれチームを作って回る
+			/*
 			if(this instanceof NAITOPoliceForce){
-				logger.info(this + " in crowling Team.");
 				if(pfList.get(0).getID().getValue() == me().getID().getValue()){
-					logger.info("------> " + this + " is Leader!");
 					isLeader = true;
 				}else{
-					logger.info("------> " + this + " is Member.");
 					isMember = true;
 				}
 				teamMembers.addAll(pfList);
 				decideCrowlingBuildings();
 			}
+			*/
 			if(this instanceof NAITOFireBrigade){
-				logger.info(this + " in crowling Team.");
 				if(pfList.get(0).getID().getValue() == me().getID().getValue()){
-					logger.info("------> " + this + " is Leader!");
 					isLeader = true;
 				}else{
-					logger.info("------> " + this + " is Member.");
 					isMember = true;
 				}
 				teamMembers.addAll(fbList);
 				decideCrowlingBuildings();
 			}
 			if(this instanceof NAITOAmbulanceTeam){
-				logger.info(this + " in crowling Team.");
 				if(pfList.get(0).getID().getValue() == me().getID().getValue()){
-					logger.info("------> " + this + " is Leader!");
 					isLeader = true;
 				}else{
-					logger.info("------> " + this + " is Member.");
 					isMember = true;
 				}
 				teamMembers.addAll(atList);
@@ -370,14 +341,14 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		/*
 		}else if(fbSize == max && fbSize > CROWLABLE_NUM){
 			//FireBrigadeが探訪する
-			logger.info("担当はFireBrigade (fbSize = " + fbSize + ")");
+			
 			if(this instanceof NAITOFireBrigade){
-				logger.info(this + " in crowling Team.");
+				
 				if(fbList.get(0).getID().getValue() == me().getID().getValue()){
-					logger.info("------> " + this + " is Leader!");
+					
 					isLeader = true;
 				}else{
-					logger.info("------> " + this + " is Member.");
+					
 					isMember = true;
 				}
 				teamMembers.addAll(fbList);
@@ -385,38 +356,27 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			}
 		}else{
 			//全員で探訪する
-			logger.info("みんなで仲良く廻りましょう (allAgentsList.size() = " + allAgentsList.size() + ")");
-			logger.info(this + " in crowling Team.");
+			
+			
 			if(allAgentsList.get(0).getID().getValue() == me().getID().getValue()){
-				logger.info("------> " + this + " is Leader!");
+				
 				isLeader = true;
 			}else{
-				logger.info("------> " + this + " is Member.");
+				
 				isMember = true;
 			}
 			teamMembers.addAll(allAgentsList);
 			decideCrowlingBuildings();
 			//}
-			logger.info("=======================================");
+			
 	*/
 	}
 	//探訪する建物を決定する
 	//(多分ここの計算はものすごい時間を食う)
 	private void decideCrowlingBuildings(){
-		logger.info("|```````````````````````````````````|");
-		logger.info(this + ".decideCrowlingBuildings();");
-		logger.info("allBuildings.size() = " + allBuildings.size());
-		
 		int roleID = teamMembers.indexOf(me());
 		int separateBlock = 1;
 		
-		logger.debug("minX     = " + minX);
-		logger.debug("minY     = " + minY);
-		logger.debug("maxX     = " + maxX);
-		logger.debug("maxY     = " + maxY);
-		logger.debug("w_width  = " + w_width);
-		logger.debug("w_height = " + w_height);
-		logger.debug("roleID   = " + roleID);
 		//DisasterSpaceをいくつのブロックに分割するかを決める
 		for(; (separateBlock * separateBlock) < teamMembers.size();separateBlock++);
 		
@@ -426,51 +386,47 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//roleIDの正規化...roleID=[0 ... pow(separateBlock)-1]になるように
 		while(roleID >= (separateBlock * separateBlock)) roleID -= separateBlock;
 		
-		logger.debug("separateBlock = " + separateBlock);
-		
 		//どっからどこまでのBuildingを探訪するか決定する
 		width  = (maxX - minX) / separateBlock;
 		height = (maxY - minY) / separateBlock;
 		x      = minX + width * (roleID % separateBlock);
 		y      = minY + height * (roleID / separateBlock);
 		
-		logger.debug("//---------- 範囲 ----------//");
-		logger.debug("x      = " + x);
-		logger.debug("y      = " + y);
-		logger.debug("width  = " + width);
-		logger.debug("height = " + height);
-		logger.debug("//--------------------------//");
+		StringBuffer pretty = new StringBuffer();
+		logger.info("Crowling range:");
+		pretty.append("\n");
+		pretty.append("    width  = " + width + "\n");
+		pretty.append("    height = " + height + "\n");
+		pretty.append("    x      = " + x + "\n");
+		pretty.append("    y      = " + y + "\n");
+		pretty.append("\n");
+		logger.info(pretty.toString());
+		logger.debug("roleID = " + roleID + ", separateBlock = " + separateBlock);
+		
 		Building b = null;
+		StringBuffer pretty_crowling = new StringBuffer();
+		pretty_crowling.append("\n");
 		for(StandardEntity building : allBuildings){
 			b = (Building)building;
-			logger.debug("//----------------------//");
-			logger.debug(b + ":");
-			logger.debug("b.getX() = " + b.getX());
-			logger.debug("b.getY() = " + b.getY());
-			logger.debug("//----------------------//");
 			if(b.getX() > x && b.getX() <= (x + width) &&
 			   b.getY() > y && b.getY() <= (y + height)){
-			   	logger.debug("In range:");
-			   	logger.debug("minX = " + x + ", minY = " + y);
-			   	logger.trace("b.x = " + b.getX());
-			   	logger.trace("b.y = " + b.getY());
-			   	logger.debug("maxX = " + (x + width) + ", maxY = " + (y + height));
+			   	pretty_crowling.append("In range: Building = " + b + " (x,y)=(" + x + "," + y + ") \n");
 				crowlingBuildings.add(b);
 			}
 		}
-		logger.info("crowlingBuildings = " + crowlingBuildings);
-		logger.info("|___________________________________|");
+		pretty_crowling.append("\n");
+		logger.info(pretty_crowling.toString());
 	}
 	
 	public abstract void taskRankUpdate();
 	
 	public Task action(){
-		logger.info("action();");
+		
 		if(currentTask != null && !currentTask.isFinished()){
-			logger.info(" => currentTask!=null && !currentTask.isFinished() => return currentTask;");
+			
 			return currentTask;
 		}else{
-			logger.info(" => taskRankUpdate(); => return getHighestRankRask();");
+			
 			taskRankUpdate();
 			return getHighestRankTask();
 		}
@@ -490,12 +446,12 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 	};
 	public Task getHighestRankTask(){
-		logger.info("getHighestRankTask();");
+		
 
 		if(currentTaskList.isEmpty()){
 			//初期タスクの設定がここになる
 			/*
-			logger.info("NOT REACHED.");
+			
 			for(StandardEntity entity : allBuildings){
 				currentTaskList.add(new MoveTask(this, model, (Area)entity));
 			}
@@ -507,13 +463,13 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		Task tempTask;
 		for(int i = 0;i < currentTaskList.size();i++){
 			tempTask = currentTaskList.get(i);
-			logger.debug("task(" + i + ").getRank() => " + tempTask.getRank());
+			
 			if(tempTask.getRank() > maxRank){
 				maxRank = tempTask.getRank();
 				resultTask = tempTask;
 			}
 		}
-		logger.debug("==> result.getRank() => " + resultTask.getRank());
+		
 		return resultTask;
 	}
 	
@@ -559,14 +515,30 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 //---------- 閉塞の取得関連 ----------
     
     //行く手を遮る閉塞を得る
-	public Blockade getBlockadeOnPath(){
-		logger.info("getBlockadeOnPath();");
+    public Blockade getBlockadeOnPath(List<EntityID> path){
+    	logger.info("path = " + path);
+		for(EntityID next : path){
+			Area area = (Area)(model.getEntity(next));
+			Blockade result = getTargetBlockade(area, maxRepairDistance);
+			if(result != null){
+				logger.info("Find blockade. blockade = " + result
+				            + ", at " + area
+				            + "(ID=" + area.getID().getValue() + ")");
+				return result;
+			}
+		}
+		//自分の身の回りについてみる
+		return getTargetBlockade();
+    }
+    //自分が今いる場所から啓開可能な閉塞を返す
+	public Blockade getTargetBlockade(){
 		
 		int maxDistance = maxRepairDistance;
 		//自分のいる場所に着いて閉塞を得る
 		Area location = (Area)getLocation();
 		Blockade blockade = getTargetBlockade(location, maxDistance);
 		if(blockade != null){
+			logger.info("Find blockade. blockade = " + blockade + "at " + location);
 			return blockade;
 		}
         //自分のいる場所の近傍について閉塞を得る
@@ -574,12 +546,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
             location = (Area)(model.getEntity(next));
             blockade = getTargetBlockade(location, maxDistance);
             if (blockade != null) {
-				logger.info("There is blockade in this.location.getNeighbours();");
-				logger.debug("" + blockade);
+            	logger.info("Find blockade. blockade = " + blockade + "at " + location);
                 return blockade;
             }
         }
-		logger.info("There is not blockade. return null;");
+		logger.info("There's no blockade.");
         return null;
   	}
     public int findDistanceTo(Blockade b, int x, int y) {
@@ -598,11 +569,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 	
     public Blockade getTargetBlockade(Area area, int maxDistance) {
-        //logger.debug("Looking for nearest blockade in " + area);
-        logger.info("NAITOPoliceForce.getTargetBlockade(" + area + ", " + maxDistance + ")");
+        
 		if (!area.isBlockadesDefined()) {
-            //Logger.debug("Blockades undefined");
-			logger.info("!area.isBlockadesDefined(); ==> return null;");
+			logger.info(area + " is not defined blockade.");
             return null;
         }
         List<EntityID> ids = area.getBlockades();
@@ -612,28 +581,22 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
         for (EntityID next : ids) {
             Blockade b = (Blockade)model.getEntity(next);
             double d = findDistanceTo(b, x, y);
-            //logger.debug("Distance to " + b + " = " + d);
             if (maxDistance < 0 || d < maxDistance) {
-                //logger.debug("In range");
-				logger.info("There is blockade.");
-				logger.debug("" + b);
+            	logger.info("Find blockade. blockade = " + b);
                 return b;
             }
         }
-        logger.info("No blockades in range");
+        
         return null;
     }
 //---------- //閉塞の取得関連 ----------
 	//SampleAmbulanceTeamから移植
     public StandardEntity someoneOnBoard() {
-		logger.info("NAITOHumanoidAgent.someonwOnBoard();");
         for (StandardEntity next : model.getEntitiesOfType(StandardEntityURN.CIVILIAN)) {
             if (((Human)next).getPosition().equals(getID())) {
-                logger.debug(next + " is on board");
                 return next;
             }
         }
         return null;
     }
 }
-
