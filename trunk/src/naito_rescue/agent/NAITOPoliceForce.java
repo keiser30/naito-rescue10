@@ -97,7 +97,6 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 				logger.info("Receive Message List = " + msgList);
 				for(naito_rescue.message.Message message : msgList){
 					if(message.getAddrAgent() != me().getID().getValue() && message.getAddrType() != ADDR_PF){
-						
 						continue; //自分(もしくは自分と同じ種別のエージェント)宛のメッセージでなかったら無視
 					}
 
