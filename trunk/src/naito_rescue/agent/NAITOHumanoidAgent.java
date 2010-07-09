@@ -23,7 +23,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
     private static final String SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
     private static final String SPEAK_COMMUNICATION_MODEL = "kernel.standard.ChannelCommunicationModel";
 	private static final String DISTANCE_KEY = "clear.repair.distance";
-	private static final int            CROWLABLE_NUM = 5;
+	private static final int           CROWLABLE_NUM = 5;
 	protected int                       maxRepairDistance; //閉塞解除可能な距離
 	protected boolean                   useSpeak;
 	protected ArrayList<Task>           currentTaskList;
@@ -53,12 +53,21 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	protected HashMap<Area, Integer>    reportedBlockedRoad;
 	protected ArrayList<Building>       reportedBurningBuilding;
 	protected ArrayList<Building>       reportedVictimInBuilding;
-	
+	protected int                       MY_MESSAGE_ADDRESS_TYPE;
 	
 	@Override
     protected void postConnect() {
 		 super.postConnect();
 		 
+		 if(this instanceof NAITOFireBrigade){
+		 	MY_MESSAGE_ADDRESS_TYPE = ADDR_FB;
+		 }else if(this instanceof NAITOPoliceForce){
+		 	MY_MESSAGE_ADDRESS_TYPE = ADDR_PF;
+		 }else if(this instanceof NAITOAmbulanceTeam){
+		 	MY_MESSAGE_ADDRESS_TYPE = ADDR_AT;
+		 }else{
+		 	MY_MESSAGE_ADDRESS_TYPE = ADDR_UNKNOWN;
+		 }
 		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
 		 maxRepairDistance = config.getIntValue(DISTANCE_KEY);
 		 currentTaskList = new ArrayList<Task>();
@@ -140,6 +149,26 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		reportCivilianInView();
 	}
 
+	//メッセージの取得
+	public List<naito_rescue.message.Message> receiveMessage(AKSpeak speak){
+		if(speak.getContent() == null || speak.getContent().length <= 0){
+			return null;
+		}
+		
+		List<naito_rescue.message.Message> msgList = msgManager.receiveMessage(speak);
+		if(msgList == null){
+			return null;
+		}
+		
+		for(naito_rescue.message.Message mes : msgList){
+			if(mes.getAddrAgent() != me.getID().getValue() && mes.getAddrType() != MY_MESSAGE_ADDRESS_TYPE){
+				//自分(もしくは自分と同種別のエージェント)に対するメッセージでなかったら無視する
+				msgList.remove(mes);
+			}
+		}
+		
+		return msgList;
+	}
 //---------- report関連 ----------
 	//過去に閉塞を報告したエリアについて，
 	//. 自分がまだそのエリアにいて，
