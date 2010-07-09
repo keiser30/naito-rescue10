@@ -10,7 +10,7 @@ public interface MessageConstants
 	public static final int ADDR_FB = 0x00000011;
 	public static final int ADDR_PF = 0x00000012;
 	public static final int ADDR_AT = 0x00000013;
-	
+	public static final int ADDR_UNKNOWN = 0x00000020;
 	
 	public static final int HEADER_TYPE_SIZE = 1; //メッセージヘッダの「メッセージの種類」は1バイト
 	public static final int HEADER_MSG_ID_SIZE = 4;
