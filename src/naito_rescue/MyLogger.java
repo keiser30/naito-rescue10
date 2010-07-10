@@ -91,13 +91,6 @@ public class MyLogger
 	 
 	private void println(String str){
 		if(loglevel >= NOTHING) return;
-/*
-		debugInfo = new Throwable();
-		element = debugInfo.getStackTrace();
-		element = (new Throwable()).getStackTrace();
-		
-		context = "::" + element[2].getMethodName();
-*/
 		context = "";
 		logger.println(time+":"+"["+prefix+context+"]"+str);
 	}

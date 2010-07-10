@@ -161,7 +161,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 		
 		for(naito_rescue.message.Message mes : msgList){
-			if(mes.getAddrAgent() != me.getID().getValue() && mes.getAddrType() != MY_MESSAGE_ADDRESS_TYPE){
+			if(mes.getAddrAgent() != me().getID().getValue() && mes.getAddrType() != MY_MESSAGE_ADDRESS_TYPE){
 				//自分(もしくは自分と同種別のエージェント)に対するメッセージでなかったら無視する
 				msgList.remove(mes);
 			}
