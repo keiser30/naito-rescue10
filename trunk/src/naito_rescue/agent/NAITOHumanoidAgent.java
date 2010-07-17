@@ -447,24 +447,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.info(pretty_crowling.toString());
 	}
 	
-	public abstract void taskRankUpdate();
-	
-	public Task action(){
-		
-		if(currentTask != null && !currentTask.isFinished()){
-			
-			return currentTask;
-		}else{
-			
-			taskRankUpdate();
-			return getHighestRankTask();
-		}
-	/*
-		taskRankUpdate();
-		return getHighestRankTask();
-	*/
-	}
-	
 	/**
 	*  currentTaskListを降順ソートして1番目の要素を返す
 	*  (Taskのランク値の大きい方が優先される)
