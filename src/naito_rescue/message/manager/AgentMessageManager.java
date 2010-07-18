@@ -30,26 +30,17 @@ public class AgentMessageManager implements MessageConstants
 	}
 	
 	public List<naito_rescue.message.Message> receiveMessage(AKSpeak speak){
-		
-		
 		byte[] rawdata = speak.getContent();
 		List<naito_rescue.message.Message> result = new ArrayList<naito_rescue.message.Message>();
-		//List<naito_rescue.message.Message> result = null;
-		
-		
-		
-		
+
 		//ノイズ対策
-		if(rawdata.length <= 0){
-			
-			return null;
-		}
-		if(rawdata.length < HEADER_SIZE){
+		if(rawdata == null || rawdata.length < HEADER_SIZE){
 			
 			return null;
 		}
 		int hoge = 0;
 		int idx = 0;
+		
 		while(true){
 			try{
 				naito_rescue.message.Message mes = null;
@@ -61,8 +52,6 @@ public class AgentMessageManager implements MessageConstants
 				int msg_type        = utils.readInt8(rawdata, idx);        idx += 1;
 
 				if(msg_type == TYPE_NULL){
-					
-					
 					return result;
 				}
 
@@ -73,16 +62,7 @@ public class AgentMessageManager implements MessageConstants
 				boolean broadcast  = (utils.readInt8(rawdata, idx) > 0);   idx += 1;
 				int ttl            = utils.readInt8(rawdata, idx);         idx += 1;
 				int datasize       = utils.readInt8(rawdata, idx);         idx += 1;
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
+
 				int target_id_num = utils.readInt32(rawdata, idx); idx += 4;//datasizeを鮮やかに無視
 				EntityID target = new EntityID(target_id_num);
 
@@ -105,14 +85,10 @@ public class AgentMessageManager implements MessageConstants
 						
 				}
 				if(mes != null){
-					
-					
 					received.add(mes);
 					result.add(mes);
 				}else{
 					//エラーは吐くけど何もしない
-					
-					
 				}
 			}catch(ArrayIndexOutOfBoundsException aioobe){
 				//不正に読み出したら問答無用でnullを返す
@@ -144,8 +120,6 @@ public class AgentMessageManager implements MessageConstants
 				if(rawdata_size+thisSize < 61){
 					remove_idx++;
 					rawdata_size += thisSize;
-					
-					
 				}else{
 					break;
 				}
@@ -180,8 +154,6 @@ public class AgentMessageManager implements MessageConstants
 					case TYPE_CLEAR:
 						
 						ClearMessage cm = (ClearMessage)mes;
-						
-						
 						utils.writeInt32(cm.getTarget().getValue(), rawdata, idx); idx += 4;
 						break;
 					default:
@@ -192,8 +164,6 @@ public class AgentMessageManager implements MessageConstants
 				sended.add(mes);
 			}//end for
 			utils.writeInt8(TYPE_NULL, rawdata, idx);
-			
-			
 			owner.speak(channel, rawdata);
 			
 			
@@ -214,17 +184,17 @@ public class AgentMessageManager implements MessageConstants
 		return owner.getID().getValue() * (int)(Math.pow(10, getDigit(create_mes_count))) + create_mes_count;
 	}
 	public RescueMessage createRescueMessage(int addrAgent, int addrType, boolean broadcast, EntityID target){
-		RescueMessage result = new RescueMessage(createMsgID(), addrAgent, addrType, broadcast, target);
+		RescueMessage result = new RescueMessage(createMsgID(), addrAgent, TYPE_RESCUE, broadcast, target);
 		create_mes_count++;
 		return result;
 	}
 	public ExtinguishMessage createExtinguishMessage(int addrAgent, int addrType, boolean broadcast, EntityID target, int size){
-		ExtinguishMessage result = new ExtinguishMessage(createMsgID(), addrAgent, addrType, broadcast, target, size);
+		ExtinguishMessage result = new ExtinguishMessage(createMsgID(), addrAgent, TYPE_FIRE, broadcast, target, size);
 		create_mes_count++;
 		return result;
 	}
 	public ClearMessage createClearMessage(int addrAgent, int addrType, boolean broadcast, EntityID target){
-		ClearMessage result = new ClearMessage(createMsgID(), addrAgent, addrType, broadcast, target);
+		ClearMessage result = new ClearMessage(createMsgID(), addrAgent, TYPE_CLEAR, broadcast, target);
 		create_mes_count++;
 		return result;
 	}
