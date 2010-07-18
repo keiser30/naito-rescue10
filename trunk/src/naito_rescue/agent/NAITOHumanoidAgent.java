@@ -20,39 +20,16 @@ import naito_rescue.message.manager.*;
 
 public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITOAgent<E> implements MessageConstants
 {
-    private static final String SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
-    private static final String SPEAK_COMMUNICATION_MODEL = "kernel.standard.ChannelCommunicationModel";
-	private static final String DISTANCE_KEY = "clear.repair.distance";
+
 	private static final int           CROWLABLE_NUM = 5;
-	protected int                       maxRepairDistance; //閉塞解除可能な距離
-	protected boolean                   useSpeak;
-	protected ArrayList<Task>           currentTaskList;
+//	protected ArrayList<Task>           currentTaskList;
 	protected ArrayList<Building>       crowlingBuildings;
 	protected ArrayList<Human>          teamMembers;
-	protected Task                      currentTask;
-	protected Job                       currentJob;
-	protected boolean                   centerLess;
-	protected boolean                   fireStationLess;
-	protected boolean                   ambulanceCenterLess;
-	protected boolean                   policeOfficeLess;
-	protected boolean                   ignoreBroadcast;
 	
 	protected boolean                   isLeader;
 	protected boolean                   isMember;
 	protected boolean                   isOnTeam;
 
-	protected java.awt.geom.Rectangle2D world_rect;
-	protected double                    minX;
-	protected double                    minY;
-	protected double                    maxX;
-	protected double                    maxY;
-	protected double                    w_width;
-	protected double                    w_height;
-	protected double                    width, height, x, y;
-	//protected ArrayList<Area>           reportedBlockedRoad; //閉塞があることを送信済みの道路IDリスト
-	protected HashMap<Area, Integer>    reportedBlockedRoad;
-	protected ArrayList<Building>       reportedBurningBuilding;
-	protected ArrayList<Building>       reportedVictimInBuilding;
 	protected int                       MY_MESSAGE_ADDRESS_TYPE;
 	
 	@Override
@@ -68,30 +45,12 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 }else{
 		 	MY_MESSAGE_ADDRESS_TYPE = ADDR_UNKNOWN;
 		 }
-		 useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
-		 maxRepairDistance = config.getIntValue(DISTANCE_KEY);
-		 currentTaskList = new ArrayList<Task>();
+
 		 crowlingBuildings = new ArrayList<Building>();
 		 teamMembers = new ArrayList<Human>();
-
-		 //センターレスに関する設定
-		 fireStationLess = firestation.isEmpty();
-		 policeOfficeLess = policeoffice.isEmpty();
-		 ambulanceCenterLess = ambulancecenter.isEmpty();
-		 centerLess = fireStationLess && policeOfficeLess && ambulanceCenterLess;
 		 
-		 //reportedBlockedRoad = new ArrayList<Area>();
-		 reportedBlockedRoad = new HashMap<Area, Integer>();
-		 reportedBurningBuilding = new ArrayList<Building>();
-		 reportedVictimInBuilding = new ArrayList<Building>();
-		 world_rect = model.getBounds();
-		 minX = world_rect.getX();
-		 minY = world_rect.getY();
-		 maxX = minX + world_rect.getWidth();
-		 maxY = minY + world_rect.getHeight();
-		 w_width = world_rect.getWidth();
-		 w_height = world_rect.getHeight();
-		 
+		
+/*
 		 //チーム分け
 		 isLeader = isMember = isOnTeam = false;
 		 createCrowlingTeam();
@@ -103,6 +62,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 		currentTaskList.add(new MoveTask(this, model, (Area)b));
 		 	}
 		 }
+*/
 	}
 	
 	@Override
@@ -113,19 +73,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			return;
 		}
-		
-		logger.info("currentTaskList = " + currentTaskList);
-		logger.info("currentTask = " + currentTask);
-		logger.debug("__Entities in View__");
-		StringBuffer pretty_entities = new StringBuffer();
-		pretty_entities.append("\n");
-		for(EntityID id : changed.getChangedEntities()){
-			StandardEntity entity = model.getEntity(id);
-			//logger.debug("Entity => " + entity);
-			pretty_entities.append("Entity => " + model.getEntity(id) + "\n");
-		}
-		pretty_entities.append("\n");
-		logger.debug(pretty_entities.toString());
 
 		//currentTaskListに関する処理
 		//currentTaskが終了していたら，そいつをリストから削除する
@@ -403,8 +350,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	//探訪する建物を決定する
 	//(多分ここの計算はものすごい時間を食う)
 	private void decideCrowlingBuildings(){
-		int roleID = teamMembers.indexOf(me());
-		int separateBlock = 1;
+		int    roleID = teamMembers.indexOf(me());
+		int    separateBlock = 1;
+		double crowlingWidth, crowlingHeight, crowlingX, crowlingY;
 		
 		//DisasterSpaceをいくつのブロックに分割するかを決める
 		for(; (separateBlock * separateBlock) < teamMembers.size();separateBlock++);
@@ -416,34 +364,21 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		while(roleID >= (separateBlock * separateBlock)) roleID -= separateBlock;
 		
 		//どっからどこまでのBuildingを探訪するか決定する
-		width  = (maxX - minX) / separateBlock;
-		height = (maxY - minY) / separateBlock;
-		x      = minX + width * (roleID % separateBlock);
-		y      = minY + height * (roleID / separateBlock);
-		
-		StringBuffer pretty = new StringBuffer();
-		logger.info("Crowling range:");
-		pretty.append("\n");
-		pretty.append("    width  = " + width + "\n");
-		pretty.append("    height = " + height + "\n");
-		pretty.append("    x      = " + x + "\n");
-		pretty.append("    y      = " + y + "\n");
-		pretty.append("\n");
-		logger.info(pretty.toString());
-		logger.debug("roleID = " + roleID + ", separateBlock = " + separateBlock);
+		crowlingWidth  = (w_maxX - w_minX) / separateBlock;
+		crowlingHeight = (w_maxY - w_minY) / separateBlock;
+		crowlingX      = w_minX + w_width * (roleID % separateBlock);
+		crowlingY      = w_minY + w_height * (roleID / separateBlock);
 		
 		Building b = null;
 		StringBuffer pretty_crowling = new StringBuffer();
 		pretty_crowling.append("\n");
 		for(StandardEntity building : allBuildings){
 			b = (Building)building;
-			if(b.getX() > x && b.getX() <= (x + width) &&
-			   b.getY() > y && b.getY() <= (y + height)){
-			   	pretty_crowling.append("In range: Building = " + b + " (x,y)=(" + x + "," + y + ") \n");
+			if(b.getX() > crowlingX && b.getX() <= (crowlingX + w_width) &&
+			   b.getY() > crowlingY && b.getY() <= (crowlingY + w_height)){
 				crowlingBuildings.add(b);
 			}
 		}
-		pretty_crowling.append("\n");
 		logger.info(pretty_crowling.toString());
 	}
 	
