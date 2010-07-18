@@ -1,5 +1,6 @@
 package naito_rescue.agent;
 
+import rescuecore2.*;
 import rescuecore2.misc.*;
 import rescuecore2.components.*;
 import rescuecore2.worldmodel.*;
@@ -24,11 +25,20 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	protected int                 time;
 	protected ChangeSet           changed;
 	protected MySearch            search;
+	protected ArrayList<Task>           currentTaskList;
+	protected Task                      currentTask;
+	protected Job                       currentJob;
 	protected Collection<StandardEntity> allBuildings;
 	protected Collection<StandardEntity> allRoads;
 	protected Collection<StandardEntity> firebrigades;
 	protected Collection<StandardEntity> policeforces;
 	protected Collection<StandardEntity> ambulanceteams;
+	
+    private static final String SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
+    private static final String SPEAK_COMMUNICATION_MODEL = "kernel.standard.ChannelCommunicationModel";
+	private static final String DISTANCE_KEY = "clear.repair.distance";
+	protected int                       maxRepairDistance; //閉塞解除可能な距離
+	protected boolean                   useSpeak;          //AKSpeakを用いるかどうか
 	
 	//FB, PF, ATのリスト
 	//IDの昇順に並べる
@@ -38,14 +48,36 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	protected ArrayList<Human>            allAgentsList; //ただしCivilianは除く
 	protected int                         fbSize, pfSize, atSize, allAgentsSize;
 	
+	//センター群
 	protected Collection<StandardEntity> allRefuges;
 	protected Collection<StandardEntity> firestation;
 	protected Collection<StandardEntity> policeoffice;
 	protected Collection<StandardEntity> ambulancecenter;
 	protected Collection<StandardEntity> civilians;
 	
+	//センターレスに関する設定
+	protected boolean                   centerLess;
+	protected boolean                   fireStationLess;
+	protected boolean                   ambulanceCenterLess;
+	protected boolean                   policeOfficeLess;
+	
+	protected java.awt.geom.Rectangle2D world_rect;
+	protected double                    w_minX;
+	protected double                    w_minY;
+	protected double                    w_maxX;
+	protected double                    w_maxY;
+	protected double                    w_width;
+	protected double                    w_height;
+	
+	protected HashMap<Area, Integer>    reportedBlockedRoad;
+	protected ArrayList<Building>       reportedBurningBuilding;
+	protected ArrayList<Building>       reportedVictimInBuilding;
+	
 	protected MyLogger            logger;
 	protected AgentMessageManager msgManager;
+	
+	
+	
 	
 	protected static final EntityTools.IDComparator ID_COMP = new EntityTools.IDComparator();
 	
@@ -63,6 +95,8 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		 policeforces = model.getEntitiesOfType(StandardEntityURN.POLICE_FORCE);
 		 ambulanceteams = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM);
 		 civilians = model.getEntitiesOfType(StandardEntityURN.CIVILIAN);
+		 
+		 currentTaskList = new ArrayList<Task>();
 		 
 		 fbSize = pfSize = atSize = allAgentsSize = 0;
 		 fbList = new ArrayList<FireBrigade>();
@@ -98,6 +132,27 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		 firestation = model.getEntitiesOfType(StandardEntityURN.FIRE_STATION);
 		 policeoffice = model.getEntitiesOfType(StandardEntityURN.POLICE_OFFICE);
 		 ambulancecenter = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_CENTRE);
+		 
+		 //センターレスに関する設定
+		 fireStationLess = firestation.isEmpty();
+		 policeOfficeLess = policeoffice.isEmpty();
+		 ambulanceCenterLess = ambulancecenter.isEmpty();
+		 centerLess = fireStationLess && policeOfficeLess && ambulanceCenterLess;
+		 
+		 reportedBlockedRoad = new HashMap<Area, Integer>();
+		 reportedBurningBuilding = new ArrayList<Building>();
+		 reportedVictimInBuilding = new ArrayList<Building>();
+		 
+		 useSpeak          = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
+		 maxRepairDistance = config.getIntValue(DISTANCE_KEY);
+		 
+		 world_rect = model.getBounds();
+		 w_minX = world_rect.getX();
+		 w_minY = world_rect.getY();
+		 w_maxX = w_minX + world_rect.getWidth();
+		 w_maxY = w_minY + world_rect.getHeight();
+		 w_width = world_rect.getWidth();
+		 w_height = world_rect.getHeight();
     }
     
     @Override
