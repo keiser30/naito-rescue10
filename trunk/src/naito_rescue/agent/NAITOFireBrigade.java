@@ -16,19 +16,6 @@ import naito_rescue.message.*;
 
 public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 {
-	private static final String MAX_WATER_KEY = "fire.tank.maximum";
-	private static final String MAX_DISTANCE_KEY = "fire.extinguish.max-distance";
-	private static final String MAX_POWER_KEY = "fire.extinguish.max-sum";
-
-	private int maxWater;
-	private int maxDistance;
-	private int maxPower;
-
-	private Building target;
-	private boolean isPreferredVoice;
-	private boolean        isPreferredNear;
-	private FireBrigade me;
-	// private Collection<StandardEntity> allBuildings;
 
     protected void postConnect() {
         super.postConnect();

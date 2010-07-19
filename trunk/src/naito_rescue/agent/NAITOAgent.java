@@ -42,18 +42,25 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	protected Collection<StandardEntity> firebrigades;
 	protected Collection<StandardEntity> policeforces;
 	protected Collection<StandardEntity> ambulanceteams;
+	protected Collection<StandardEntity> civilians;
 	
 	//コンフィグからとってくる情報のキー(URN)
-    private static final String          SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
-    private static final String          SPEAK_COMMUNICATION_MODEL = "kernel.standard.ChannelCommunicationModel";
-    private static final String          VIEW_DISTANCE_KEY = "perception.los.max-distance";
-	private static final String REPAIR_DISTANCE_KEY = "clear.repair.distance";
+	private static final String          SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
+	private static final String          SPEAK_COMMUNICATION_MODEL = "kernel.standard.ChannelCommunicationModel";
+	private static final String          VIEW_DISTANCE_KEY = "perception.los.max-distance";
+	private static final String          REPAIR_DISTANCE_KEY = "clear.repair.distance";
+	private static final String          MAX_WATER_KEY = "fire.tank.maximum";
+	private static final String          MAX_DISTANCE_KEY = "fire.extinguish.max-distance";
+	private static final String          MAX_POWER_KEY = "fire.extinguish.max-sum";
 	
 	//コンフィグからとってくる情報
-	protected int                       maxRepairDistance; //閉塞解除可能な距離
-	protected int                       viewDistance;
-	protected int                       startActionTime;
-	protected boolean                   useSpeak;          //AKSpeakを用いるかどうか
+	protected int                       maxRepairDistance;     //閉塞解除可能な距離
+	protected int                       viewDistance;          //視界範囲
+	protected int                       startActionTime;       //行動を開始できる時刻
+	protected int                       maxWater;              //最大給水量(FB)
+	protected int                       maxExtinguishDistance; //消火可能範囲
+	protected int                       maxExtinguishPower;    //消火水量
+	protected boolean                   useSpeak;              //AKSpeakを用いるかどうか
 	
 	//FB, PF, ATのリスト
 	//IDの昇順に並べる
@@ -68,7 +75,6 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	protected Collection<StandardEntity> firestation;
 	protected Collection<StandardEntity> policeoffice;
 	protected Collection<StandardEntity> ambulancecenter;
-	protected Collection<StandardEntity> civilians;
 	
 	//センターレスに関する設定
 	protected boolean                   centerLess;
@@ -151,27 +157,30 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		 Collections.sort(allAgentsList, ID_COMP);
 		 
 		 //センターの情報を収集
-		 allRefuges = model.getEntitiesOfType(StandardEntityURN.REFUGE);
-		 firestation = model.getEntitiesOfType(StandardEntityURN.FIRE_STATION);
-		 policeoffice = model.getEntitiesOfType(StandardEntityURN.POLICE_OFFICE);
+		 allRefuges      = model.getEntitiesOfType(StandardEntityURN.REFUGE);
+		 firestation     = model.getEntitiesOfType(StandardEntityURN.FIRE_STATION);
+		 policeoffice    = model.getEntitiesOfType(StandardEntityURN.POLICE_OFFICE);
 		 ambulancecenter = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_CENTRE);
 		 
 		 //センターレスに関する設定
-		 fireStationLess = firestation.isEmpty();
-		 policeOfficeLess = policeoffice.isEmpty();
+		 fireStationLess     = firestation.isEmpty();
+		 policeOfficeLess    = policeoffice.isEmpty();
 		 ambulanceCenterLess = ambulancecenter.isEmpty();
-		 centerLess = fireStationLess && policeOfficeLess && ambulanceCenterLess;
+		 centerLess          = fireStationLess && policeOfficeLess && ambulanceCenterLess;
 		 
 		 //レポート関連の初期化
-		 reportedBlockedRoad = new HashMap<Area, Integer>();
-		 reportedBurningBuilding = new ArrayList<Building>();
+		 reportedBlockedRoad      = new HashMap<Area, Integer>();
+		 reportedBurningBuilding  = new ArrayList<Building>();
 		 reportedVictimInBuilding = new ArrayList<Building>();
 		 
 		 //コンフィグからのプロパティ設定
-		 useSpeak          = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
-		 maxRepairDistance = config.getIntValue(REPAIR_DISTANCE_KEY);
-		 viewDistance      = config.getIntValue(VIEW_DISTANCE_KEY, 30000);
-		 startActionTime   = config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY);
+		 useSpeak              = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
+		 maxRepairDistance     = config.getIntValue(REPAIR_DISTANCE_KEY);
+		 viewDistance          = config.getIntValue(VIEW_DISTANCE_KEY, 30000);
+		 startActionTime       = config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY);
+        maxWater              = config.getIntValue(MAX_WATER_KEY);
+        maxExtinguishDistance = config.getIntValue(MAX_DISTANCE_KEY);
+        maxExtinguishPower    = config.getIntValue(MAX_POWER_KEY);
 		 
 		 //マップの境界情報の取得 ... 後々のdecideCrowlingBuildingで使う
 		 world_rect = model.getBounds();
@@ -232,10 +241,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		if(path != null){
 			logger.info("path = " + path + ", (x, y) = (" + x + ", " + y + ")");
 			move(path, x, y);
-		}else{
-			
-			
-			
+		}else{	
 		}
 	}
 	public void move(List<EntityID> path){
@@ -271,6 +277,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		logger.info("rest();");
 		sendRest(time);
 	}
+	//全部これに統一した方が楽
 	public void speak(int channel, byte[] data){
 		logger.info("speak(" + channel + ", data);");
 		sendSpeak(time, channel, data);
@@ -320,6 +327,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		}
 		
 		public void update(ChangeSet changed){
+			//各セットを初期化
 			buildingsInView = new HashSet<Building>();
 			roadsInView = new HashSet<Road>();
 			humansInView = new HashSet<Human>();
@@ -343,9 +351,9 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 			StringBuffer ret = new StringBuffer();
 			ret.append("naito_rescue.agent.NAITOAgent.ViewInformationManager;");
 			ret.append("******   View Information ******\n");
-			ret.append("Buildings = [" + buildingsInView + "]\n");
-			ret.append("Humans    = [" + humansInView + "]\n");
-			ret.append("Blockades = [" + blockadesInView + "]\n");
+			ret.append("    Buildings = [" + buildingsInView + "]\n");
+			ret.append("    Humans    = [" + humansInView + "]\n");
+			ret.append("    Blockades = [" + blockadesInView + "]\n");
 			ret.append("****** //View Information ******\n");
 			return ret.toString();
 		}

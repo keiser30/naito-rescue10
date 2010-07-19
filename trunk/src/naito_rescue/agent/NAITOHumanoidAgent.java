@@ -21,8 +21,8 @@ import naito_rescue.message.manager.*;
 public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITOAgent<E> implements MessageConstants
 {
 
-	private static final int           CROWLABLE_NUM = 5;
-//	protected ArrayList<Task>           currentTaskList;
+	private static final int            CROWLABLE_NUM = 5;
+	
 	protected ArrayList<Building>       crowlingBuildings;
 	protected ArrayList<Human>          teamMembers;
 	
