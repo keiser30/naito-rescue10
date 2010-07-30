@@ -6,6 +6,7 @@ public interface MessageConstants
 	public static final int TYPE_FIRE       = 0x01;
 	public static final int TYPE_RESCUE     = 0x02;
 	public static final int TYPE_CLEAR      = 0x03;
+	public static final int TYPE_HELPME     = 0x04;
 	
 	public static final int ADDR_FB = 0x00000011;
 	public static final int ADDR_PF = 0x00000012;

@@ -70,8 +70,6 @@ public class AgentMessageManager implements MessageConstants
 				switch(msg_type){
 					case TYPE_FIRE:
 						int size = utils.readInt32(rawdata, idx);  idx += 4;
-						
-						
 						mes = new ExtinguishMessage(msgId, addrAgent, addrType, broadcast, target, size);
 						break;
 					case TYPE_RESCUE:
@@ -79,8 +77,9 @@ public class AgentMessageManager implements MessageConstants
 						break;
 					case TYPE_CLEAR:
 						mes = new ClearMessage(msgId, addrAgent, addrType, broadcast, target);
-						
 						break;
+					case TYPE_HELPME:
+					
 					default:
 						
 				}

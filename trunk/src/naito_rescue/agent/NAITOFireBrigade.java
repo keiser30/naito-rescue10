@@ -20,9 +20,6 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
     protected void postConnect() {
         super.postConnect();
         model.indexClass(StandardEntityURN.BUILDING, StandardEntityURN.REFUGE);
-        maxWater = config.getIntValue(MAX_WATER_KEY);
-        maxDistance = config.getIntValue(MAX_DISTANCE_KEY);
-        maxPower = config.getIntValue(MAX_POWER_KEY);
 	}
 
 	public String toString(){
