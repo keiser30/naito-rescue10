@@ -4,14 +4,15 @@ import naito_rescue.agent.*;
 
 public abstract class Message
 {
-	protected int msgID;
-	protected int msgType;
-	protected int addressAgent;
-	protected int addressType;
-	protected boolean broadcast;
-	protected int sendTime;
+	protected int msgID; //メッセージID
+	protected int msgType; //メッセージタイプ
+	protected int addressAgent; //エージェントIDを指定した宛先
+	protected int addressType; //エージェントタイプを指定した宛先
+	protected boolean broadcast; //このメッセージをブロードキャストするか否か(未使用)
+	protected int sendTime;　//送信時間(多分未使用)
+	protected int from; //送信元のエージェントID
 	
-	public Message(int type, int id, int addrAgent, int addrType, boolean broadcast){
+	public Message(int type, int id, int addrAgent, int addrType, boolean broadcasts){
 		this.msgType = type;
 		this.msgID = id;
 		this.addressAgent = addrAgent;

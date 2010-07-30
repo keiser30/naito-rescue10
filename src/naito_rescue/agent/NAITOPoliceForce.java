@@ -23,9 +23,6 @@ import naito_rescue.message.manager.*;
 */
 public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements MessageConstants
 {
-    //private static final String DISTANCE_KEY = "clear.repair.distance";
-	//private int distance; //閉塞解除が可能な距離...?
-	private PoliceForce me;
 	
 	@Override
 	public String toString(){
@@ -67,7 +64,6 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 			if(road instanceof Road){
 				Road r = (Road)road;
 				if(r.isBlockadesDefined() && !r.getBlockades().isEmpty()){
-					
 					result.add(r);
 				}
 			}
