@@ -9,7 +9,7 @@ public abstract class Message
 	protected int addressAgent; //エージェントIDを指定した宛先
 	protected int addressType; //エージェントタイプを指定した宛先
 	protected boolean broadcast; //このメッセージをブロードキャストするか否か(未使用)
-	protected int sendTime;　//送信時間(多分未使用)
+	protected int sendTime;
 	protected int from; //送信元のエージェントID
 	
 	public Message(int type, int id, int addrAgent, int addrType, boolean broadcasts){

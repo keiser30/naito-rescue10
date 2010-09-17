@@ -56,8 +56,9 @@ public class DebugAnimatedWorldModelViewer extends StandardWorldModelViewer {
         //addLayer(new DebugBuildingLayer());
         //addLayer(new DebugRoadLayer());
         addLayer(new DebugAreaNeighboursLayer());
-        addLayer(new RoadBlockageLayer());
+        //addLayer(new RoadBlockageLayer());
 		addLayer(new DebugRoadLayer());
+		addLayer(new RoadBlockageLayer());
 		addLayer(new DebugBuildingLayer());
         addLayer(new BuildingIconLayer());
         humans = new DebugAnimatedHumanLayer();
