@@ -28,7 +28,8 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 {
 	protected int                 time;
 	protected ChangeSet           changed;
-	protected MySearch            search;
+	//protected MySearch            search;
+	protected NAITORouter         search;
 	protected E                   me;
 	
 	//Task-Job関連
@@ -111,8 +112,8 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
     protected void postConnect() {
     	logger = new MyLogger(this, false);
     	msgManager = new AgentMessageManager(this);
-    	search = new MySearch(model, this);
-    	
+    	//search = new MySearch(model, this);
+    	search = new NAITORouter(this);
     	
 		 /**
 		  * 各種建物, エージェントに関する情報を収集する
@@ -216,7 +217,12 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	public StandardWorldModel getWorldModel(){
 		return model;
 	}
+	/*
 	public MySearch getSearch(){
+		return search;
+	}
+	*/
+	public NAITORouter getSearch(){
 		return search;
 	}
 	public int getTime(){

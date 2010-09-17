@@ -5,13 +5,15 @@ import naito_rescue.agent.*;
 import java.io.*;
 import java.util.*;
 import java.text.*;
+
 public class MyLogger
 {
-	File        logfile;
-	PrintStream logger;
-	Throwable   debugInfo;
+	File                logfile;
+	PrintStream         logger;
+	Throwable           debugInfo;
 	StackTraceElement[] element;
-	int         time;
+	Stack<String>       contextStack;
+	int                 time;
 
 /**
 *  LOGLEVEL(上から下に行くほどレベルが下がる)
@@ -59,6 +61,7 @@ public class MyLogger
 		
 		// "Type(ID)"
 		prefix = "";
+		contextStack = new Stack<String>();
 		String type = prefix_map.get(owner.getClass());
 		if(type == null){
 			prefix += "UNKNOWN";
@@ -71,9 +74,22 @@ public class MyLogger
 	public void setTime(int t){
 		this.time = t;
 	}
-	public void setLogContext(String str){
+	public void setContext(String str){
 		// "[str]"
-		this.context = "::" + str;
+		contextStack.push("::" + str);
+		this.context = contextStack.peek(); //not remove.
+	}
+	public void unsetContext(){
+		if(!contextStack.isEmpty()) contextStack.pop(); //remove
+		if(contextStack.isEmpty()){
+			this.context = "";
+		}else{
+			this.context = contextStack.peek(); //not remove.
+		}
+	}
+	public void unsetAllContext(){
+		if(!contextStack.isEmpty()) contextStack.removeAllElements();
+		this.context = "";
 	}
 	public void info(String str){
 		if(loglevel >= NOTHING) return;
@@ -91,7 +107,6 @@ public class MyLogger
 	 
 	private void println(String str){
 		if(loglevel >= NOTHING) return;
-		context = "";
 		logger.println(time+":"+"["+prefix+context+"]"+str);
 	}
 	public void flush(){
