@@ -177,6 +177,38 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 					apexesStr.append("]");
 					logger.setContext("get Apexes");
 					logger.info("Apexes => " + apexesStr.toString());
+					
+					//線分による表現
+					List<Line2D> allBlockadesLines = new ArrayList<Line2D>();
+					StringBuilder prettyApexes = new StringBuilder();
+					prettyApexes.append("[ ");
+					for(int k = 0; k < apexes.length-3; k += 2){
+						//Point2D first = new Point2D(apexes[i], apexes[i+1]);
+						//Point2D second = new Point2D(apexes[i+2], apexes[i+3]);
+						prettyApexes.append("(" + apexes[k] + ", " + apexes[k+1] + ")=>(" + apexes[k+2] + ", " + apexes[k+3] + ")");
+						allBlockadesLines.add(new Line2D(new Point2D(apexes[k], apexes[k+1]), new Point2D(apexes[k+2], apexes[k+3])));
+					}
+					//Point2D last = new Point2D(apexes[apexes.length-2], apexes[apexes.length-1]);
+					//Point2D first = new Point2D(apexes[0], apexes[1]);
+					prettyApexes.append("(" + apexes[apexes.length-2] + ", " + apexes[apexes.length-1] + ")=>" + "(" + apexes[0] + ", " + apexes[1] + ")");
+					prettyApexes.append(" ]");
+					allBlockadesLines.add(new Line2D(new Point2D(apexes[apexes.length-2], apexes[apexes.length-1]), new Point2D(apexes[0], apexes[1])));
+					logger.info(prettyApexes.toString());
+					
+					//. 線分通過の判定
+					logger.setContext("check blockades line");
+					logger.info("----- Start checking -----");
+					logger.info("CenterLine = " + centerLineF2N);
+					for(Line2D blockadeLine : allBlockadesLines){
+						logger.info("Blockade Line = " + blockadeLine);
+						if(GeometryTools2D.getSegmentIntersectionPoint(centerLineF2N, blockadeLine) != null){
+							logger.info("NG!");
+						}else{
+							logger.info("OK!");
+						}
+					}
+					logger.info("----- End checking -----");
+					logger.unsetContext();
 					logger.unsetContext();
 					logger.unsetContext();
 				}
