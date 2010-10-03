@@ -8,12 +8,21 @@ import naito_rescue.*;
 import java.util.*;
 
 public final class NAITORouter{
-    private StandardWorldModel world;
+	private StandardWorldModel world;
 	private NAITOAgent         owner;
+	private MyLogger           logger;
+	
+	ArrayList<Area> OPEN, CLOSED;
+	HashMap<Area, Integer> estimates;
 
     public NAITORouter(NAITOAgent owner) {
 		this.owner = owner;
 		this.world = owner.getWorldModel();
+		this.logger = this.owner.getLogger();
+		
+		OPEN = new ArrayList<Area>();
+		CLOSED = new ArrayList<Area>();
+		estimates = new HashMap<Area, Integer>();
 	}
 
     public List<EntityID> breadthFirstSearch(StandardEntity start, StandardEntity... goals) {
@@ -23,11 +32,41 @@ public final class NAITORouter{
 
 	// A*
 	public List<EntityID> AStar(Area from, Area to){
+		//初期化
+		OPEN.clear();
+		CLOSED.clear();
+		estimates.clear();
+		
+		return null; //for compile.
+	}
+	public int estimateCost(Area from, Area to, Area current){
+		int g = 0, h = 0; //f(current) = g(current) + h(current);
+		
+		if(from.getID().getValue() == current.getID().getValue()){
+			//g = 0なので、hの見積り(currentからtoへのユークリッド距離)を返す
+			return euclidDistance(current, to);
+		}
+		
+		//1. gの見積り　... fromからcurrentまでの距離の見積り
+		//1.1 fromから次のAreaまでの距離の見積り
+		//1.2 fromの次からcurrentまでの距離の見積り
+		
+		return -1; //for compile.
 		
 	}
-	private int estimateCost(Area from, Area to, Area current){
+	private int euclidDistance(Area a, Area b){
+		//aからbまでのユークリッド距離を返す
+		double startX = a.getX();
+		double startY = a.getY();
+		double toX = b.getX();
+		double toY = b.getY();
+		
+		double disX = toX - startX;
+		double disY = toY - startY;
+		return (int) Math.sqrt((disX*disX) + (disY*disY));
 	}
-	private boolean isPassable(Area from, Area neighbour){
+	public boolean isPassable(Area previous, Area current, Area next){
+		return false; //for compile.
 	}
     /**
 	   経路の幅優先探索
