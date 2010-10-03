@@ -7,7 +7,7 @@ import rescuecore2.standard.entities.*;
 import naito_rescue.*;
 import java.util.*;
 
-public final class NAITORouter implements Router{
+public final class NAITORouter{
     private StandardWorldModel world;
 	private NAITOAgent         owner;
 
@@ -16,19 +16,19 @@ public final class NAITORouter implements Router{
 		this.world = owner.getWorldModel();
 	}
 
-
-
-	public List<EntityID> getRoute(StandardEntity from, StandardEntity to){
-		return null;
-	}
-	
-	public boolean isPassable(StandardEntity area){
-		return false;
-	}
     public List<EntityID> breadthFirstSearch(StandardEntity start, StandardEntity... goals) {
         return breadthFirstSearch(start, Arrays.asList(goals));
     }
 
+
+	// A*
+	public List<EntityID> AStar(Area from, Area to){
+		
+	}
+	private int estimateCost(Area from, Area to, Area current){
+	}
+	private boolean isPassable(Area from, Area neighbour){
+	}
     /**
 	   経路の幅優先探索
        Do a breadth first search from one location to the closest (in terms of number of nodes) of a set of goals.
