@@ -181,7 +181,7 @@ public final class NAITORouter{
 		logger.info("CLOSED tekuteku.");
 		Area lastArea = CLOSED.get(CLOSED.size()-1);
 		logger.debug("lastArea = " + lastArea);
-		for(int i = 0;CLOSED.get(i).getID().getValue() != lastArea.getID().getValue();){
+		for(int i = 0;CLOSED.get(i).getID().getValue() != lastArea.getID().getValue();i++){
 			Area currentArea = CLOSED.get(i);
 			Area nextArea = CLOSED.get(i+1);
 			
@@ -197,6 +197,7 @@ public final class NAITORouter{
 			int distance = adjacentDistance(currentArea, nextArea);
 			logger.debug("distance = " + distance);
 			g += distance;
+			logger.trace("iii = " + i);
 		}
 		//for debug.
 		boolean success = false;
@@ -284,6 +285,7 @@ public final class NAITORouter{
 		
 		int result = (int) Math.sqrt((dx*dx) + (dy*dy));
 		logger.info("return " + result);
+		logger.unsetContext();
 		return result;
 	}
 	private int euclidDistance(Area a, Area b){
