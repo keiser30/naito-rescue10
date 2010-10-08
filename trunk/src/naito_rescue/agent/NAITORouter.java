@@ -47,7 +47,6 @@ public final class NAITORouter{
 		
 		//BIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIG EYE!!!!!!!!
 		Area minCostArea = null;
-		List<EntityID> neighbours = null;
 		logger.setContext("AStar=>enter_while_loop");
 		while(!estimates.isEmpty() && (minCostArea = getMinCostArea()) != null){
 			logger.trace("estimates = " + estimates);
@@ -64,15 +63,18 @@ public final class NAITORouter{
 			CLOSED.add(minCostArea);
 			logger.debug("CLOSED = " + CLOSED.toString());
 			
-			neighbours = minCostArea.getNeihbours();
-			Area neighbour;
+			List<EntityID> neighbours = minCostArea.getNeihbours();
 			if(neighbours != null){
 				for(EntityID id : neighbours){
 					StandardEntity entity = model.getEntity(id);
 					if(entity instanceof Area){
-						neighbour = (Area)entity;
+						Area neighbour = (Area)entity;
 						int currentCost = estimateCost(from, to, neighbour);
 						if(CLOSED.containsKey(neighbour)){
+							if(! estimates.containsKey(neighbour)){
+								//Bad.
+								
+							}
 							int previousCost = estimates.get(neighbour);
 							if(previousCost > currentCost){
 								estimates.remove(neighbour);
@@ -89,10 +91,19 @@ public final class NAITORouter{
 			}
 		}
 		logger.unsetContext();
-		return null; //for compile.
+		return null;
 	}
 	public List<EntityID> closed2idList(){
-		return null; //for compile.
+		if(CLOSED == null || CLOSED.isEmpty()){
+			//Bad.
+			return null;
+		}
+		ArrayList<EntityID> result = new ArrayList<EntityID>();
+		for(int i = 0;i < CLOSED.size();i++){
+			result.add(CLOSED.get(i).getID());
+		}
+		return result;
+		//return null; //for compile.
 	}
 	public int estimateCost(Area from, Area to, Area current){
 		logger.setContext("estimateCost(" + from.getID().getValue() + ", " + to.getID().getValue() + ", " + current.getID().getValue() + ")");
@@ -114,10 +125,70 @@ public final class NAITORouter{
 			logger.debug("CLOSED.isEmpty() -> return " + result + "");
 			return euclidDistance(from, to);
 		}
-		
+		//CLOSEDを順番にたどってg値の見積りを行う
+		Area lastArea = CLOSED.get(CLOSED.size()-1);
+		for(int i = 0;!(CLOSED.get(i).getID().getValue() != lastArea.getID().getValue())){
+			Area currentArea = CLOSED.get(i);
+			Area nextArea = CLOSED.get(i+1);
+			
+			//for debug.
+			Edge centerToAdj = currentArea.getEdgeTo(nextArea);
+			if(centerToAdj == null){
+				//Bad.
+			}
+			//end for debug.
+			int distance = adjacentDistance(currentArea, nextArea);
+			
+			g += distance;
+		}
+		//for debug.
+		boolean success = false;
+		List<EntityID> neighbours = lastArea.getNeighbours();
+		for(EntityID id : neighbours){
+			StandardEntity entity = model.getEntity(id);
+			if(entity.getID.getValue() == current.getID().getValue()){
+				logger.info("Estimate \" g\" is SUCCESS!!!!!!!!!!!!!(多分)");
+				success = true;
+			}
+		}
+		if(success){
+			int lastAreaToCurrent = adjacentDistance(lastArea, current);
+			g += lastAreaToCurrent;
+		}
+		//end for debug.
+		// h値の見積り
+		h = euclidDistance(current, to);
 		logger.unsetContext();
-		return -1; //for compile.
+		return g + h;
+		//return -1; //for compile.
 		
+	}
+	
+	//adjacentDistance(Area, Area);
+	//a1の中点 -> a1とa2をつなぐエッジ -> a2の中点までの距離を返す
+	//(つまりエージェントがa1からa2まで通る軌跡の距離)
+	//a1とa2は隣接していなければならない
+	private int adjacentDistance(Area a1, Area a2){
+		Edge centerToAdj = a1.getEdgeTo(a2);
+		
+		int adjCenterX = centerToAdj.getEndX() - centerToAdj.getStartX();
+		int adjCenterY = centerToAdj.getEndY() - centerToAdj.getStartY();
+		Line2D fromCenterToEdge = new Line2D(a1.getX(), a1.getY(), adjCenterX, adjCenterY);
+		Line2D fromEdgeToNextArea = new Line2D(adjCenterX, adjCenterY, a2.getX(), a2.getY());
+		
+		int d1 = euclidDistance(fromCenterToEdge);
+		int d2 = euclidDistance(fromEdgeToNextArea);
+		return d1 + d2;
+	}
+	private int euclidDistance(Line2D line){
+		int startX = (int) line.getOrigin().getX();
+		int startY = (int) line.getOrigin().getY();
+		int endX = (int) line.getEndPoint().getX();
+		int endY = (int) line.getEndPoint().getY();
+
+		int dx = endX - startX;
+		int dy = endY - startY;
+		return (int) Math.sqrt((dx*dx) + (dy*dy));
 	}
 	private int euclidDistance(Area a, Area b){
 		//aからbまでのユークリッド距離を返す
@@ -129,7 +200,7 @@ public final class NAITORouter{
 		
 		double disX = toX - startX;
 		double disY = toY - startY;
-		logger.debug("(" + startX + ", " + startY + ") => (" + toX + ", " + toY + ") (" + disX + ":" + disY + ")");
+		logger.trace("(" + startX + ", " + startY + ") => (" + toX + ", " + toY + ") (" + disX + ":" + disY + ")");
 		
 		logger.unsetContext();
 		return (int) Math.sqrt((disX*disX) + (disY*disY));
