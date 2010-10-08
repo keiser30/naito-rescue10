@@ -32,30 +32,50 @@ public final class NAITORouter{
 
 	// A*
 	public List<EntityID> AStar(Area from, Area to){
-		//初期化
-		OPEN.clear();
-		CLOSED.clear();
-		estimates.clear();
+		logger.setContext("AStar");
+		logger.info("********** AStar **********");
 		
+		//リストの初期化
+		OPEN.clear(); logger.debug("OPEN.clear();");
+		CLOSED.clear(); logger.debug("CLOSED.clear();");
+		estimates.clear(); logger.debug("estimates.clear();");
+		
+		OPEN.add(from); logger.debug("OPEN.add(" + from + ");");
+		int result = estimateCost(from, to, (Area)(owner.getLocation()));
+		logger.info("estimateCost(from, to, current) = " + result + " (... first time)");
+		estimates.put(from, new Integer(result));
+		
+		logger.unsetContext();
 		return null; //for compile.
 	}
 	public int estimateCost(Area from, Area to, Area current){
+		logger.setContext("estimateCost(" + from.getID().getValue() + ", " + to.getID().getValue() + ", " + current.getID().getValue() + ")");
+		logger.info("estimateCost();");
 		int g = 0, h = 0; //f(current) = g(current) + h(current);
 		
-		if(from.getID().getValue() == current.getID().getValue()){
-			//g = 0なので、hの見積り(currentからtoへのユークリッド距離)を返す
-			return euclidDistance(current, to);
+		if(CLOSED.isEmpty()){
+			logger.info("CLOSED.isEmpty();");
+			if(from.getID().getValue() != current.getID().getValue()){
+				//Bad.
+				logger.info("AStar開始時点の呼び出しのはずがそうではなかったようだ");
+				logger.debug("from    = " + from);
+				logger.debug("current = " + current);
+				logger.unsetContext();
+				return -1;
+			}
+			
+			int result = euclidDistance(from, to);
+			logger.debug("CLOSED.isEmpty() -> return " + result + "");
+			return euclidDistance(from, to);
 		}
 		
-		//1. gの見積り　... fromからcurrentまでの距離の見積り
-		//1.1 fromから次のAreaまでの距離の見積り
-		//1.2 fromの次からcurrentまでの距離の見積り
-		
+		logger.unsetContext();
 		return -1; //for compile.
 		
 	}
 	private int euclidDistance(Area a, Area b){
 		//aからbまでのユークリッド距離を返す
+		logger.setContext("euclidDistance(" + a.getID().getValue() + ", " + b.getID().getValue() + ")");
 		double startX = a.getX();
 		double startY = a.getY();
 		double toX = b.getX();
@@ -63,6 +83,9 @@ public final class NAITORouter{
 		
 		double disX = toX - startX;
 		double disY = toY - startY;
+		logger.debug("(" + startX + ", " + startY + ") => (" + toX + ", " + toY + ") (" + disX + ":" + disY + ")");
+		
+		logger.unsetContext();
 		return (int) Math.sqrt((disX*disX) + (disY*disY));
 	}
 	public boolean isPassable(Area previous, Area current, Area next){

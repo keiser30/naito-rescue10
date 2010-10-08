@@ -34,7 +34,19 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		if(time < 3){
 			return;
 		}
-
+		if(debug){
+			//AStarのテスト(denen_test12_1)
+			logger.setContext("think");
+			logger.info("********** TEST AStar! yeah! Good for you!!! **********");
+			Area from = (Area)getLocation();
+			Area to   = (Area)model.getEntity(new EntityID(409));
+			logger.info("Path from = " + from);
+			logger.info("Path to   = " + to);
+			List<EntityID> path = search.AStar(from, to);
+			logger.unsetContext();
+		
+			debug = false;
+		}
 	}
 	
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum(){
