@@ -95,8 +95,10 @@ public final class NAITORouter{
 							}
 						}else{
 							logger.debug("OPEN.add(" + neighbour + ")");
+							logger.debug("estimates.put(" + neighbour + ", " + currentCost);
 							CLOSED.remove(neighbour);
 							OPEN.add(neighbour);
+							estimates.put(neighbour, new Integer(currentCost));
 						}
 					}
 				}
@@ -112,8 +114,12 @@ public final class NAITORouter{
 		logger.setContext("getMinCostArea()");
 		Area result = null;
 		int minCost = Integer.MAX_VALUE;
-		for(Area area : estimates.keySet()){
+		for(Area area : OPEN){
 			logger.info("Candidate: " + area);
+			if(!estimates.containsKey(area)){
+				logger.info("あり得ないことだとは思いますが");
+				continue;
+			}
 			int cost = estimates.get(area);
 			if(cost < minCost){
 				logger.debug("Exchange area.");
