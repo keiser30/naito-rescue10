@@ -96,7 +96,7 @@ public class MyLogger
 		println("--> "+str);
 	}
 	public void debug(String str){
-		if(loglevel > DEBUG) return;
+		//if(loglevel > DEBUG) return;
 		println("----> "+str);
 	}
 	public void trace(String str){
@@ -110,7 +110,7 @@ public class MyLogger
 		logger.println(time+":"+"["+prefix+context+"]"+str);
 	}
 	public void flush(){
-		if(loglevel <= NOTHING) return;
+		if(loglevel >= NOTHING) return;
 		logger.flush();
 	}
 }
