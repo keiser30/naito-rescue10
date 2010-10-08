@@ -45,7 +45,53 @@ public final class NAITORouter{
 		logger.info("estimateCost(from, to, current) = " + result + " (... first time)");
 		estimates.put(from, new Integer(result));
 		
+		//BIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIG EYE!!!!!!!!
+		Area minCostArea = null;
+		List<EntityID> neighbours = null;
+		logger.setContext("AStar=>enter_while_loop");
+		while(!estimates.isEmpty() && (minCostArea = getMinCostArea()) != null){
+			logger.trace("estimates = " + estimates);
+			logger.info("minCostArea = " + minCostArea + ", cost = " + estimates.get(minCostArea) + ".");
+			estimates.remove(minCostArea);
+			if(minCostArea.getID().getValue() == to.getID().getValue()){
+				//find path.
+				logger.info("++++++++ Find Path!! ++++++++");
+				CLOSED.add(minCostArea);
+				logger.unsetContext();
+				return closed2idList();
+			}
+			OPEN.remove(minCostArea);
+			CLOSED.add(minCostArea);
+			logger.debug("CLOSED = " + CLOSED.toString());
+			
+			neighbours = minCostArea.getNeihbours();
+			Area neighbour;
+			if(neighbours != null){
+				for(EntityID id : neighbours){
+					StandardEntity entity = model.getEntity(id);
+					if(entity instanceof Area){
+						neighbour = (Area)entity;
+						int currentCost = estimateCost(from, to, neighbour);
+						if(CLOSED.containsKey(neighbour)){
+							int previousCost = estimates.get(neighbour);
+							if(previousCost > currentCost){
+								estimates.remove(neighbour);
+								estimates.put(neighbour, new Integer(currentCost));
+								CLOSED.remove(neighbour); OPEN.add(neighbour);
+								break; //exit for loop.
+							}
+						}else{
+							CLOSED.remove(neighbour);
+							OPEN.add(neighbour);
+						}
+					}
+				}
+			}
+		}
 		logger.unsetContext();
+		return null; //for compile.
+	}
+	public List<EntityID> closed2idList(){
 		return null; //for compile.
 	}
 	public int estimateCost(Area from, Area to, Area current){
