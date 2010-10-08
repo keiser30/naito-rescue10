@@ -1,6 +1,7 @@
 package naito_rescue.agent;
 
 import rescuecore2.misc.*;
+import rescuecore2.misc.geometry.*;
 import rescuecore2.worldmodel.*;
 import rescuecore2.standard.entities.*;
 
@@ -52,6 +53,8 @@ public final class NAITORouter{
 			logger.trace("estimates = " + estimates);
 			logger.info("minCostArea = " + minCostArea + ", cost = " + estimates.get(minCostArea) + ".");
 			estimates.remove(minCostArea);
+			logger.trace("after remove estimates = " + estimates);
+			
 			if(minCostArea.getID().getValue() == to.getID().getValue()){
 				//find path.
 				logger.info("++++++++ Find Path!! ++++++++");
@@ -63,26 +66,35 @@ public final class NAITORouter{
 			CLOSED.add(minCostArea);
 			logger.debug("CLOSED = " + CLOSED.toString());
 			
-			List<EntityID> neighbours = minCostArea.getNeihbours();
+			List<EntityID> neighbours = minCostArea.getNeighbours();
+			logger.info("Checking minCostArea.neighbours...");
 			if(neighbours != null){
 				for(EntityID id : neighbours){
-					StandardEntity entity = model.getEntity(id);
+					StandardEntity entity = world.getEntity(id);
 					if(entity instanceof Area){
 						Area neighbour = (Area)entity;
+						logger.info("Candidate: " + neighbour);
 						int currentCost = estimateCost(from, to, neighbour);
-						if(CLOSED.containsKey(neighbour)){
+						logger.debug("currentCost = " + currentCost);
+						if(CLOSED.contains(neighbour)){
+							logger.debug("CLOSED.contains(" + neighbour + ")");
 							if(! estimates.containsKey(neighbour)){
 								//Bad.
-								
+								logger.info("estimatesがneighbourをkeyとして含んでいない");
+								continue;
 							}
 							int previousCost = estimates.get(neighbour);
+							logger.debug("previousCost = " + previousCost);
 							if(previousCost > currentCost){
+								logger.info("Exchange CLOSED and OPEN. area = " + neighbour);
+								logger.debug("previousCost(" + previousCost + ") > currentCost(" + currentCost + ")");
 								estimates.remove(neighbour);
 								estimates.put(neighbour, new Integer(currentCost));
 								CLOSED.remove(neighbour); OPEN.add(neighbour);
 								break; //exit for loop.
 							}
 						}else{
+							logger.debug("OPEN.add(" + neighbour + ")");
 							CLOSED.remove(neighbour);
 							OPEN.add(neighbour);
 						}
@@ -91,17 +103,50 @@ public final class NAITORouter{
 			}
 		}
 		logger.unsetContext();
+		logger.unsetContext();
+		logger.info("return null; ... path is not found.");
 		return null;
 	}
+	//estimatesリストからコスト最小のAreaを返す
+	private Area getMinCostArea(){
+		logger.setContext("getMinCostArea()");
+		Area result = null;
+		int minCost = Integer.MAX_VALUE;
+		for(Area area : estimates.keySet()){
+			logger.info("Candidate: " + area);
+			int cost = estimates.get(area);
+			if(cost < minCost){
+				logger.debug("Exchange area.");
+				minCost = cost;
+				result = area;
+				logger.debug("minCost = " + minCost + ", result = " + result);
+			}
+		}
+		if(result == null){
+			//Bad.
+			logger.info("resultがnull estimates.keySet()がnullを返してたりしてね");
+			logger.unsetContext();
+			return null;
+		}
+		logger.info("return " + result);
+		logger.unsetContext();
+		return result;
+	}
 	public List<EntityID> closed2idList(){
+		logger.setContext("closed2idList()");
 		if(CLOSED == null || CLOSED.isEmpty()){
 			//Bad.
+			logger.info("CLOSED == null || CLOSED.isEmpty() => return null;");
+			logger.info("うそーん");
+			logger.unsetContext();
 			return null;
 		}
 		ArrayList<EntityID> result = new ArrayList<EntityID>();
 		for(int i = 0;i < CLOSED.size();i++){
 			result.add(CLOSED.get(i).getID());
 		}
+		logger.info("return " + result);
+		logger.unsetContext();
 		return result;
 		//return null; //for compile.
 	}
@@ -123,30 +168,37 @@ public final class NAITORouter{
 			
 			int result = euclidDistance(from, to);
 			logger.debug("CLOSED.isEmpty() -> return " + result + "");
+			logger.unsetContext();
 			return euclidDistance(from, to);
 		}
 		//CLOSEDを順番にたどってg値の見積りを行う
+		logger.info("CLOSED tekuteku.");
 		Area lastArea = CLOSED.get(CLOSED.size()-1);
-		for(int i = 0;!(CLOSED.get(i).getID().getValue() != lastArea.getID().getValue())){
+		logger.debug("lastArea = " + lastArea);
+		for(int i = 0;CLOSED.get(i).getID().getValue() != lastArea.getID().getValue();){
 			Area currentArea = CLOSED.get(i);
 			Area nextArea = CLOSED.get(i+1);
 			
+			logger.debug("currentArea = " + currentArea);
+			logger.debug("nextArea = " + nextArea);
 			//for debug.
-			Edge centerToAdj = currentArea.getEdgeTo(nextArea);
+			Edge centerToAdj = currentArea.getEdgeTo(nextArea.getID());
 			if(centerToAdj == null){
 				//Bad.
+				logger.info("隣接してないよぶわあぁーか (c)みつどもえ");
 			}
 			//end for debug.
 			int distance = adjacentDistance(currentArea, nextArea);
-			
+			logger.debug("distance = " + distance);
 			g += distance;
 		}
 		//for debug.
 		boolean success = false;
 		List<EntityID> neighbours = lastArea.getNeighbours();
 		for(EntityID id : neighbours){
-			StandardEntity entity = model.getEntity(id);
-			if(entity.getID.getValue() == current.getID().getValue()){
+			StandardEntity entity = world.getEntity(id);
+			logger.debug("lastArea.neighbour = " + entity);
+			if(entity.getID().getValue() == current.getID().getValue()){
 				logger.info("Estimate \" g\" is SUCCESS!!!!!!!!!!!!!(多分)");
 				success = true;
 			}
@@ -154,10 +206,15 @@ public final class NAITORouter{
 		if(success){
 			int lastAreaToCurrent = adjacentDistance(lastArea, current);
 			g += lastAreaToCurrent;
+		}else{
+			logger.info("lastAreaとcurrentが隣接していない");
+			logger.debug("lastArea = " + lastArea + ", current = " + current);
 		}
 		//end for debug.
 		// h値の見積り
 		h = euclidDistance(current, to);
+		
+		logger.info("h = " + h + ", g = " + g + " => return " + (g + h));
 		logger.unsetContext();
 		return g + h;
 		//return -1; //for compile.
@@ -169,30 +226,64 @@ public final class NAITORouter{
 	//(つまりエージェントがa1からa2まで通る軌跡の距離)
 	//a1とa2は隣接していなければならない
 	private int adjacentDistance(Area a1, Area a2){
-		Edge centerToAdj = a1.getEdgeTo(a2);
+		logger.setContext("adjacentDistance()");
+		logger.debug("a1 = " + a1 + ", a2 = " + a2);
+		Edge centerToAdj = a1.getEdgeTo(a2.getID());
+		
+		if(centerToAdj == null){
+			logger.info(a1 + "と" + a2 + "は隣接していません");
+			return 1;
+		}
+		logger.debug("Adjacent Edge: " + centerToAdj);
 		
 		int adjCenterX = centerToAdj.getEndX() - centerToAdj.getStartX();
 		int adjCenterY = centerToAdj.getEndY() - centerToAdj.getStartY();
 		Line2D fromCenterToEdge = new Line2D(a1.getX(), a1.getY(), adjCenterX, adjCenterY);
 		Line2D fromEdgeToNextArea = new Line2D(adjCenterX, adjCenterY, a2.getX(), a2.getY());
 		
+		logger.debug("Adjacent Edge center X = " + adjCenterX);
+		logger.debug("Adjacent Edge center Y = " + adjCenterY);
+		logger.debug("Area a1's center X = " + a1.getX());
+		logger.debug("Area a1's center Y = " + a1.getY());
+		logger.debug("Area a2's center X = " + a2.getX());
+		logger.debug("Area a2's center Y = " + a2.getY());
+		logger.debug("a1's center to adjacent edge: " + fromCenterToEdge);
+		logger.debug("adjacent edge to a2's center: " + fromEdgeToNextArea);
+		
 		int d1 = euclidDistance(fromCenterToEdge);
 		int d2 = euclidDistance(fromEdgeToNextArea);
+		
+		logger.debug("distance from a1's center to edge = " + d1);
+		logger.debug("distance from edge to a2's center = " + d2);
+		logger.info("return " + (d1+d2));
+		logger.unsetContext();
 		return d1 + d2;
 	}
 	private int euclidDistance(Line2D line){
+		logger.setContext("euclidDistance(Line2D)");
 		int startX = (int) line.getOrigin().getX();
 		int startY = (int) line.getOrigin().getY();
 		int endX = (int) line.getEndPoint().getX();
 		int endY = (int) line.getEndPoint().getY();
-
+		logger.debug("line = " + line);
+		logger.debug("line start X = " + startX);
+		logger.debug("line start Y = " + startY);
+		logger.debug("line end   X = " + endX);
+		logger.debug("line end   Y = " + endY);
+		
 		int dx = endX - startX;
 		int dy = endY - startY;
-		return (int) Math.sqrt((dx*dx) + (dy*dy));
+		logger.debug("difference of X = " + dx);
+		logger.debug("difference of Y = " + dy);
+		
+		int result = (int) Math.sqrt((dx*dx) + (dy*dy));
+		logger.info("return " + result);
+		return result;
 	}
 	private int euclidDistance(Area a, Area b){
 		//aからbまでのユークリッド距離を返す
-		logger.setContext("euclidDistance(" + a.getID().getValue() + ", " + b.getID().getValue() + ")");
+		logger.setContext("euclidDistance(Area, Area)");
+		logger.debug("euclidDistance(" + a.getID().getValue() + ", " + b.getID().getValue() + ")");
 		double startX = a.getX();
 		double startY = a.getY();
 		double toX = b.getX();
@@ -202,8 +293,10 @@ public final class NAITORouter{
 		double disY = toY - startY;
 		logger.trace("(" + startX + ", " + startY + ") => (" + toX + ", " + toY + ") (" + disX + ":" + disY + ")");
 		
+		int result = (int) Math.sqrt((disX*disX) + (disY*disY));
+		logger.info("return " + result);
 		logger.unsetContext();
-		return (int) Math.sqrt((disX*disX) + (disY*disY));
+		return result;
 	}
 	public boolean isPassable(Area previous, Area current, Area next){
 		return false; //for compile.

@@ -39,7 +39,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			logger.setContext("think");
 			logger.info("********** TEST AStar! yeah! Good for you!!! **********");
 			Area from = (Area)getLocation();
-			Area to   = (Area)model.getEntity(new EntityID(409));
+			Area to   = (Area)model.getEntity(new EntityID(593));
 			logger.info("Path from = " + from);
 			logger.info("Path to   = " + to);
 			List<EntityID> path = search.AStar(from, to);
