@@ -52,7 +52,7 @@ public final class NAITORouter{
 		while(!estimates.isEmpty() && (minCostArea = getMinCostArea()) != null){
 			logger.trace("estimates = " + estimates);
 			logger.info("minCostArea = " + minCostArea + ", cost = " + estimates.get(minCostArea) + ".");
-			estimates.remove(minCostArea);
+			//? estimates.remove(minCostArea);
 			logger.trace("after remove estimates = " + estimates);
 			
 			if(minCostArea.getID().getValue() == to.getID().getValue()){
@@ -62,6 +62,14 @@ public final class NAITORouter{
 				logger.unsetContext();
 				return closed2idList();
 			}
+			//for debug.
+			if(OPEN.contains(minCostArea)){
+				logger.debug("OPEN.contains(" + minCostArea + ")");
+			}else{
+				logger.debug("! OPEN.contains(" + minCostArea + ")");
+			}
+			//end for debug.
+			
 			OPEN.remove(minCostArea);
 			CLOSED.add(minCostArea);
 			logger.debug("CLOSED = " + CLOSED.toString());
