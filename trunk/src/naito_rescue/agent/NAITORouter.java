@@ -15,6 +15,7 @@ public final class NAITORouter{
 	
 	ArrayList<Area> OPEN, CLOSED;
 	HashMap<Area, Integer> estimates;
+	HashMap<Area, Area>    ancestors;
 
     public NAITORouter(NAITOAgent owner) {
 		this.owner = owner;
@@ -24,6 +25,7 @@ public final class NAITORouter{
 		OPEN = new ArrayList<Area>();
 		CLOSED = new ArrayList<Area>();
 		estimates = new HashMap<Area, Integer>();
+		ancestors = new HashMap<Area, Area>();
 	}
 
     public List<EntityID> breadthFirstSearch(StandardEntity start, StandardEntity... goals) {
@@ -44,7 +46,7 @@ public final class NAITORouter{
 		OPEN.add(from); logger.debug("OPEN.add(" + from + ");");
 		int result = estimateCost(from, to, (Area)(owner.getLocation()));
 		logger.info("estimateCost(from, to, current) = " + result + " (... first time)");
-		estimates.put(from, new Integer(result));
+		estimates.put(from, new Integer(0));
 		
 		//BIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIG EYE!!!!!!!!
 		Area minCostArea = null;
@@ -62,8 +64,15 @@ public final class NAITORouter{
 				//find path.
 				logger.info("++++++++ Find Path!! ++++++++");
 				CLOSED.add(minCostArea);
+				//ancestors.put(minCostArea, to);
+				
+				List<EntityID> results = closed2idList(to);
+				for(EntityID hoge : results){
+					logger.info("++ " + hoge + ", estimates(" + hoge + ").get = " + estimates.get(hoge));
+				}
+				
 				logger.unsetContext();
-				return closed2idList();
+				return results;
 			}
 			//for debug.
 			if(OPEN.contains(minCostArea)){
@@ -73,7 +82,7 @@ public final class NAITORouter{
 			}
 			//end for debug.
 			
-			OPEN.remove(minCostArea);
+			//OPEN.remove(minCostArea);
 			//OPEN.clear();
 			CLOSED.add(minCostArea);
 			logger.debug("CLOSED = " + CLOSED.toString());
@@ -86,9 +95,18 @@ public final class NAITORouter{
 					if(entity instanceof Area){
 						Area neighbour = (Area)entity;
 						logger.info("Candidate: " + neighbour);
-						int currentCost = estimateCost(from, to, neighbour);
+					//	int currentCost = estimateCost(from, to, neighbour, minCostArea);
+					//	int g = g.get(currentArea) + distance(currentArea/*minCostArea*/ , neighbour); //distance = neighbour's distance.
+					//	int h = h(neighbour); //euclid distance.
+					//	if(!OPEN.containsValue(neighbour) || g.get(neighbour) > g ){
+					//		g.put(neighbour, g);
+					//		OPEN.removeByValue(neighbour);
+					//		OPEN.put(h + g, neighbour);
+					//	}
+					// //xxまでの部分がゴソッといらなくなる
 						logger.debug("currentCost = " + currentCost);
-						if(CLOSED.contains(neighbour)){
+						//if(CLOSED.contains(neighbour)){
+						if(OPEN.contains(neighbour)){
 							logger.debug("CLOSED.contains(" + neighbour + ")");
 							if(! estimates.containsKey(neighbour)){
 								//Bad.
@@ -102,16 +120,21 @@ public final class NAITORouter{
 								logger.debug("previousCost(" + previousCost + ") > currentCost(" + currentCost + ")");
 								estimates.remove(neighbour);
 								estimates.put(neighbour, new Integer(currentCost));
-								CLOSED.remove(neighbour); OPEN.add(neighbour);
+								ancestors.remove(neighbour);
+								ancestors.put(neighbour, minCostArea);
+								System.out.println("++  edit "+neighbour + ";;;" + minCostArea);
+								//OPEN.add(neighbour);
 								break; //exit for loop.
 							}
 						}else{
 							logger.debug("OPEN.add(" + neighbour + ")");
 							logger.debug("estimates.put(" + neighbour + ", " + currentCost);
-							CLOSED.remove(neighbour);
+							//CLOSED.remove(neighbour);
 							OPEN.add(neighbour);
 							estimates.put(neighbour, new Integer(currentCost));
-						}
+							ancestors.put(neighbour, minCostArea);
+							System.out.println("++  add "+neighbour + ";;;" + minCostArea);
+						} //xx
 					}
 				}
 			}
@@ -152,7 +175,7 @@ public final class NAITORouter{
 		return result;
 	}
 	
-	public List<EntityID> closed2idList(){
+	public List<EntityID> closed2idList(Area goal){
 		logger.setContext("closed2idList()");
 		if(CLOSED == null || CLOSED.isEmpty()){
 			//Bad.
@@ -162,9 +185,13 @@ public final class NAITORouter{
 			return null;
 		}
 		ArrayList<EntityID> result = new ArrayList<EntityID>();
-		for(int i = 0;i < CLOSED.size();i++){
-			result.add(CLOSED.get(i).getID());
+		int hoge = 0;System.out.println("++      foal"+goal);
+		System.out.println(ancestors.containsKey(goal)+"A*とかマジファック +++ " + ancestors);
+		for(Area ret = goal; ret != null ;ret = ancestors.get(ret)){
+			result.add(ret);
+			//System.out.println((hoge++) + ";;;" + ret);
 		}
+		Collections.reverse(result);
 		logger.info("return " + result);
 		logger.unsetContext();
 		return result;
@@ -257,8 +284,8 @@ public final class NAITORouter{
 		}
 		logger.debug("Adjacent Edge: " + centerToAdj);
 		
-		int adjCenterX = centerToAdj.getEndX() - centerToAdj.getStartX();
-		int adjCenterY = centerToAdj.getEndY() - centerToAdj.getStartY();
+		int adjCenterX = (centerToAdj.getEndX() + centerToAdj.getStartX()) / 2;
+		int adjCenterY = (centerToAdj.getEndY() + centerToAdj.getStartY()) / 2;
 		Line2D fromCenterToEdge = new Line2D(a1.getX(), a1.getY(), adjCenterX, adjCenterY);
 		Line2D fromEdgeToNextArea = new Line2D(adjCenterX, adjCenterY, a2.getX(), a2.getY());
 		
