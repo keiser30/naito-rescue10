@@ -19,6 +19,8 @@
       (2) ant 1.7.1以上
 	    (antが使うjarファイルの揃い具合によっては，
 		より古いantでもビルドが可能かもしれません)
+		(Ubuntu10.04以上なら，普通に入れたantで大丈夫
+		です)
 	  (3) GNU Makefile
 
 ビルドおよび実行について:
@@ -32,9 +34,10 @@
   2. 実行
    2-A. エージェントからサーバにつなげる方法
         (通常はこちらの起動方法になると思います)
-      (0) サーバを立ち上げます
+      (0) サーバを立ち上げます(ここに書いてある方法が全てとは限りません．
+	      シミュレーションをシェルスクリプトから立ち上げる方法もあります)
           (0-1) サーバが置かれているディレクトリの
-                    boot/config/kernel.cfg
+                    boot/config/kernel-inline.cfg
                 を開き，
                     kernel.agents.auto
                 で始まる行をすべてコメントアウトします．
@@ -48,14 +51,14 @@
                 "Agents"と書かれた枠の中に何も表示されていないことを確認
                 します．
                 その後，下の(1)以降を実行してください．
-      (1) "start.sh"ファイルの中にある
+      (1) "go.sh"ファイルの中にある
 	          ・KERNEL_ADDRESS
 		      ・KERNEL_PORT
 		  という2つの変数を環境に合わせて書き換える
 		  (KERNEL_ADDRESS ... 接続するサーバのIPアドレス
 		   KERNEL_PORT    ... 接続するサーバのポート番号)
-      (2) start.shを実行する
-	           $./start.sh
+      (2) go.shを実行する
+	           $./go.sh
 	      "Kernel GUI"の画面にある"Agents"の中に，
 	           naito_rescue.NAITOFireBrigade
 	           naito_rescue.NAITOAmbulanceTeam
@@ -172,11 +175,11 @@
     
   B.ソースを読む
       各サンプルエージェントのソースコードは以下にあります．
-      %SERVER_TOP_DIRECTORY%modules/%SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleFireBrigade.java
-      %SERVER_TOP_DIRECTORY%modules/%SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleAmbulanceTeam.java
-      %SERVER_TOP_DIRECTORY%modules/%SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SamplePoliceForce.java
-      %SERVER_TOP_DIRECTORY%modules/%SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleCivilian.java
-      %SERVER_TOP_DIRECTORY%modules/%SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleCentre.java
+      %SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleFireBrigade.java
+      %SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleAmbulanceTeam.java
+      %SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SamplePoliceForce.java
+      %SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleCivilian.java
+      %SERVER_TOP_DIRECTORY%/modules/sample/src/sample/SampleCentre.java
       
       それぞれのエージェントの行動は，各ソースコードのthinkメソッドの中に書かれています．
       
