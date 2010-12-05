@@ -31,8 +31,126 @@ public final class NAITORouter{
     public List<EntityID> breadthFirstSearch(StandardEntity start, StandardEntity... goals) {
         return breadthFirstSearch(start, Arrays.asList(goals));
     }
+	
+	//isPassable => delegete
+	public boolean isPassable(List<EntityID> path){
+		logger.setContext("isPassable()");
+		if(path.size() == 2){
+			logger.trace("path.size() = 2 (" + path + ")");
+			logger.debug("Delegate to isPassableFromCenterToNext()");
+			logger.unsetContext();
+			return isPassableFromCenterToNext(path);
+		}else if(path.size() > 2){
+			logger.trace("path.size() > 2 (" + path + ")");
+			logger.debug("Delegate to isPassableAll()");
+			logger.unsetContext();
+			return isPassableAll(path);
+		}else{
+			//error.
+			logger.info("path.size() != 2 && path.size() <= 2 ... error.");
+			return true;
+		}
+	}
+	
+	private boolean isPassableArea(Line2D passLine, Area area){
+		logger.setContext("isPassableArea()");
+		
+		List<EntityID> blockades = area.getBlockades();
+		if(blockades == null || blockades.size() == 0){
+			logger.info("No Blockade in " + area + "");
+			logger.unsetContext();
+			return true;
+		}
+		
+		//全閉塞についてのLine2Dを取得
+		List<Line2D> blockadeLines = new ArrayList<Line2D>();
+		for(EntityID bID : blockades){
+			Blockade b = (Blockade) (world.getEntity(bID));
+			int[] apexes = b.getApexes();
+			for(int i = 0; i < apexes.length-3; i += 2){
+				Point2D first  = new Point2D(apexes[i], apexes[i+1]);
+				Point2D second = new Point2D(apexes[i+2], apexes[i+3]);
+				blockadeLines.add(new Line2D(first, second));
+				logger.debug("blockadesLines.add(" + first + " => " + second + "");
+			}
+			Point2D last = new Point2D(apexes[apexes.length-2], apexes[apexes.length-1]);
+			Point2D first = new Point2D(apexes[0], apexes[1]);
+			logger.debug("blockadesLines.add(" + last + " => " + first + "");
+			blockadeLines.add(new Line2D(last, first));
+			
+		}
+		for(Line2D line : blockadeLines){
+			if(GeometryTools2D.getSegmentIntersectionPoint(line, passLine) != null){
+				logger.debug("blockade line = " + line);
+				logger.debug("passLine      = " + passLine);
+				logger.debug("=> return false;");
+				logger.unsetContext();
+				return false;
+			}else{
+				logger.debug("getSegmentIntersectionPoint() == null.ok.");
+			}
+		}
+		logger.debug("return true;");
+		logger.unsetContext();
+		return true;
+	}
+	private boolean isPassableFromCenterToNext(List<EntityID> path){
+		logger.setContext("isPassableFromCenterToNext");
+		Area from = (Area) (world.getEntity(path.get(0)));
+		Area to   = (Area) (world.getEntity(path.get(1)));
+		
+		int fromX = from.getX();
+		int fromY = from.getY();
+		
+		Edge adjacentEdge = from.getEdgeTo(to.getID());
+		int toX = ( adjacentEdge.getEndX() - adjacentEdge.getStartX() ) / 2;
+		int toY = ( adjacentEdge.getEndY() - adjacentEdge.getStartY() ) / 2;
+		
+		Line2D passLine = new Line2D(new Point2D(fromX, fromY), new Point2D(toX, toY));
 
-
+		
+		logger.unsetContext();
+		return isPassableArea(passLine, from);
+	}
+	private boolean isPassableAll(List<EntityID> path){
+		logger.setContext("isPassableAll()");
+		if(!isPassableFromCenterToNext(path)){
+			logger.debug("return false;");
+			logger.unsetContext();
+			return false;
+		}
+		//2番目の要素から見ていく
+		logger.debug("Entering for loop...");
+		for(int i = 1; i < path.size()-1; i++){
+			Area currentArea = (Area)(world.getEntity(path.get(i)));
+			Area previousArea = (Area)(world.getEntity(path.get(i-1)));
+			Area nextArea = (Area)(world.getEntity(path.get(i+1)));
+			logger.debug("currentArea  = " + currentArea);
+			logger.debug("previousArea = " + previousArea);
+			logger.debug("nextArea     = " + nextArea);
+			
+			Edge previousEdge = currentArea.getEdgeTo(previousArea.getID());
+			Edge nextEdge = currentArea.getEdgeTo(nextArea.getID());
+			
+			int fromX = ( previousEdge.getEndX() - previousEdge.getStartX() ) / 2;
+			int fromY = ( previousEdge.getEndY() - previousEdge.getStartY() ) / 2;
+			int toX = ( nextEdge.getEndX() - nextEdge.getStartX() ) / 2;
+			int toY = ( nextEdge.getEndY() - nextEdge.getStartY() ) / 2;
+			
+			Line2D passLine = new Line2D(new Point2D(fromX, fromY),
+			                             new Point2D(toX, toY));
+			logger.debug("passLine = " + passLine);
+			if(!isPassableArea(passLine, currentArea)){
+				logger.debug("return false(in for loop)");
+				logger.unsetContext();
+				return false;
+			}
+		}
+		logger.debug("Exiting for loop.");
+		logger.debug("return true;");
+		logger.unsetContext();
+		return true;
+	}
 	// A*
 	public List<EntityID> AStar(Area from, Area to){
 		logger.setContext("AStar");
@@ -95,7 +213,7 @@ public final class NAITORouter{
 					if(entity instanceof Area){
 						Area neighbour = (Area)entity;
 						logger.info("Candidate: " + neighbour);
-					//	int currentCost = estimateCost(from, to, neighbour, minCostArea);
+						int currentCost = estimateCost(from, to, neighbour);
 					//	int g = g.get(currentArea) + distance(currentArea/*minCostArea*/ , neighbour); //distance = neighbour's distance.
 					//	int h = h(neighbour); //euclid distance.
 					//	if(!OPEN.containsValue(neighbour) || g.get(neighbour) > g ){
@@ -106,7 +224,7 @@ public final class NAITORouter{
 					// //xxまでの部分がゴソッといらなくなる
 						logger.debug("currentCost = " + currentCost);
 						//if(CLOSED.contains(neighbour)){
-						if(OPEN.contains(neighbour)){
+						if(OPEN.contains(neighbour) || CLOSED.contains(neighbour)){
 							logger.debug("CLOSED.contains(" + neighbour + ")");
 							if(! estimates.containsKey(neighbour)){
 								//Bad.
@@ -123,7 +241,10 @@ public final class NAITORouter{
 								ancestors.remove(neighbour);
 								ancestors.put(neighbour, minCostArea);
 								System.out.println("++  edit "+neighbour + ";;;" + minCostArea);
-								//OPEN.add(neighbour);
+								if(CLOSED.contains(neighbour)){
+									CLOSED.remove(neighbour);
+									OPEN.add(neighbour);
+								}
 								break; //exit for loop.
 							}
 						}else{
@@ -186,9 +307,9 @@ public final class NAITORouter{
 		}
 		ArrayList<EntityID> result = new ArrayList<EntityID>();
 		int hoge = 0;System.out.println("++      foal"+goal);
-		System.out.println(ancestors.containsKey(goal)+"A*とかマジファック +++ " + ancestors);
+		System.out.println(ancestors.containsKey(goal)+" +++ " + ancestors);
 		for(Area ret = goal; ret != null ;ret = ancestors.get(ret)){
-			result.add(ret);
+			result.add(ret.getID());
 			//System.out.println((hoge++) + ";;;" + ret);
 		}
 		Collections.reverse(result);
@@ -346,9 +467,6 @@ public final class NAITORouter{
 		logger.info("return " + result);
 		logger.unsetContext();
 		return result;
-	}
-	public boolean isPassable(Area previous, Area current, Area next){
-		return false; //for compile.
 	}
     /**
 	   経路の幅優先探索

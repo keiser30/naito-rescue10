@@ -235,11 +235,20 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 //***** メソッドのラッパー群 *****//
 	public void move(StandardEntity target){
 		//ダイクストラ法の経路探索が実装できるまで，breadthFirstSearchを使う
+		/*
 		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
 		if(path != null){
 			logger.info("path = " + path);
 			move(path);
 		}else{
+		}
+		*/
+		//List<EntityID> path = search.AStar((Area)getLocation(), (Area)target);
+		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
+		if(path != null){
+			move(path);
+		}else{
+			System.out.println("Path is NULL.");
 		}
 	}
 	public void move(StandardEntity target, int x, int y){
