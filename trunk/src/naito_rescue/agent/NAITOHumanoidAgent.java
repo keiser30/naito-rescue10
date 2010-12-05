@@ -50,7 +50,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 teamMembers = new ArrayList<Human>();
 		 
 		
-/*
+
 		 //チーム分け
 		 isLeader = isMember = isOnTeam = false;
 		 createCrowlingTeam();
@@ -62,7 +62,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 		currentTaskList.add(new MoveTask(this, model, (Area)b));
 		 	}
 		 }
-*/
+
 	}
 	
 	@Override
@@ -264,7 +264,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	//建物探訪をするチームを作成する
 	public void createCrowlingTeam(){
 		//どの種類のエージェントが探訪を担当するか決定する
-		int max = maxInt(atSize, pfSize, fbSize);
+		//int max = maxInt(atSize, pfSize, fbSize);
 		
 		/*
 		if(atSize == max && atSize > CROWLABLE_NUM){
@@ -297,7 +297,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			}
 			*/
 			if(this instanceof NAITOFireBrigade){
-				if(pfList.get(0).getID().getValue() == me().getID().getValue()){
+				if(fbList.get(0).getID().getValue() == me().getID().getValue()){
 					isLeader = true;
 				}else{
 					isMember = true;
@@ -306,7 +306,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				decideCrowlingBuildings();
 			}
 			if(this instanceof NAITOAmbulanceTeam){
-				if(pfList.get(0).getID().getValue() == me().getID().getValue()){
+				if(atList.get(0).getID().getValue() == me().getID().getValue()){
 					isLeader = true;
 				}else{
 					isMember = true;
