@@ -33,25 +33,33 @@ public final class NAITORouter{
     }
 	
 	//isPassable => delegete
+	// 委譲がとんでもないことになってきている
 	public boolean isPassable(List<EntityID> path){
-		logger.setContext("isPassable()");
-		if(path.size() == 2){
-			logger.trace("path.size() = 2 (" + path + ")");
-			logger.debug("Delegate to isPassableFromCenterToNext()");
-			logger.unsetContext();
-			return isPassableFromCenterToNext(path);
-		}else if(path.size() > 2){
-			logger.trace("path.size() > 2 (" + path + ")");
-			logger.debug("Delegate to isPassableAll()");
-			logger.unsetContext();
-			return isPassableAll(path);
-		}else{
-			//error.
-			logger.info("path.size() != 2 && path.size() <= 2 ... error.");
-			return true;
+		if(path.get(0).getValue() == owner.getLocation().getID().getValue()){
 		}
+		
+		if(!isPassableFromAgentToNext(path.get(0))){
+			return false;
+		}
+		return isPassablePath(path);
 	}
-	
+	private boolean isPassableFromAgentToNext(EntityID nextAreaID){
+		Area nextArea = (Area) (world.getEntity(nextAreaID));
+		Area currentArea = owner.getLocation();
+		
+		int fromX = owner.getX();
+		int fromY = owner.getY();
+		
+		Edge adjacentEdge = currentArea.getEdgeTo(nextArea);
+		if(adjacentEdge == null){
+			//error.
+		}
+		int toX = ( adjacentEdge.getEndX() - adjacentEdge.getStartX() ) / 2;
+		int toY = ( adjacentEdge.getEndY() - adjacentEdge.getStartY() ) / 2;
+		
+		Line2D passLine = new Line2D(new Point2D(fromX, fromY), new Point2D(toX, toY));
+		return isPassableArea(passLine, currentArea);
+	}
 	private boolean isPassableArea(Line2D passLine, Area area){
 		logger.setContext("isPassableArea()");
 		
@@ -94,6 +102,7 @@ public final class NAITORouter{
 		logger.unsetContext();
 		return true;
 	}
+	/*
 	private boolean isPassableFromCenterToNext(List<EntityID> path){
 		logger.setContext("isPassableFromCenterToNext");
 		Area from = (Area) (world.getEntity(path.get(0)));
@@ -112,6 +121,7 @@ public final class NAITORouter{
 		logger.unsetContext();
 		return isPassableArea(passLine, from);
 	}
+	*/
 	private boolean isPassableAll(List<EntityID> path){
 		logger.setContext("isPassableAll()");
 		if(!isPassableFromCenterToNext(path)){
@@ -120,6 +130,7 @@ public final class NAITORouter{
 			return false;
 		}
 		//2番目の要素から見ていく
+		//0
 		logger.debug("Entering for loop...");
 		for(int i = 1; i < path.size()-1; i++){
 			Area currentArea = (Area)(world.getEntity(path.get(i)));
