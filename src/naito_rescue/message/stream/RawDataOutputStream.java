@@ -1,3 +1,5 @@
+package naito_rescue.message.stream;
+
 import java.util.*;
 import java.io.*;
 
