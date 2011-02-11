@@ -5,8 +5,8 @@ import java.util.*;
 
 import static naito_rescue.debug.DebugUtil.*;
 import naito_rescue.message.*;
-import naito_rescue.manager.*;
-import naito_rescue.stream.*;
+import naito_rescue.message.manager.*;
+import naito_rescue.message.stream.*;
 import naito_rescue.agent.*;
 
 public abstract class NAITOMessage

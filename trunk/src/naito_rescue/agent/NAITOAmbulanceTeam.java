@@ -11,6 +11,7 @@ import rescuecore2.standard.entities.*;
 
 import naito_rescue.*;
 import naito_rescue.message.*;
+import naito_rescue.message.manager.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
 
