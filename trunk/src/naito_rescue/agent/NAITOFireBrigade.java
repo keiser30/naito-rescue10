@@ -36,7 +36,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	}
 
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
-
+		super.think(time, changed, heard);
 	}
 	
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum(){

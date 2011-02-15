@@ -41,7 +41,7 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 
 	
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
-
+		super.think(time, changed, heard);
 	}
 
 

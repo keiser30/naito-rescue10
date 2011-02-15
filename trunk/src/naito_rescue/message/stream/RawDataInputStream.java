@@ -31,4 +31,7 @@ public class RawDataInputStream
 	public char readChar() throws IOException{
 		return input.readChar();
 	}
+	public byte[] getRawData(){
+		return rawdata;
+	}
 }

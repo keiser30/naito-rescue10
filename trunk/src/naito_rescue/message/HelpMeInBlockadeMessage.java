@@ -62,6 +62,6 @@ public class HelpMeInBlockadeMessage extends NAITOBaseMessage
 	
 	@Override
 	public String toString(){
-		return "HelpMeInBlockadeMessage(" + road_id + ")";
+		return "HelpMeInBlockadeMessage(" + road_id + "):" + this.id + "";
 	}
 }

@@ -101,8 +101,8 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	ViewInformationManager              viewInfoManager;
 	
 	//ロガー，メッセージマネージャ
-	protected MyLogger            logger;
-	protected AgentMessageManager msgManager;
+	protected MyLogger             logger;
+	protected NAITOMessageManager  msgManager;
 	
 	
 	protected static final EntityTools.IDComparator ID_COMP = new EntityTools.IDComparator();
@@ -111,7 +111,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	@Override
     protected void postConnect() {
     	logger = new MyLogger(this, false);
-    	msgManager = new AgentMessageManager(this);
+    	msgManager = new NAITOMessageManager(this);
     	//search = new MySearch(model, this);
     	search = new NAITORouter(this);
     	
@@ -175,10 +175,10 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		 reportedVictimInBuilding = new ArrayList<Building>();
 		 
 		 //コンフィグからのプロパティ設定
-		 useSpeak              = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
-		 maxRepairDistance     = config.getIntValue(REPAIR_DISTANCE_KEY);
-		 viewDistance          = config.getIntValue(VIEW_DISTANCE_KEY, 30000);
-		 startActionTime       = config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY);
+		useSpeak              = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
+		maxRepairDistance     = config.getIntValue(REPAIR_DISTANCE_KEY);
+		viewDistance          = config.getIntValue(VIEW_DISTANCE_KEY, 30000);
+		startActionTime       = config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY);
         maxWater              = config.getIntValue(MAX_WATER_KEY);
         maxExtinguishDistance = config.getIntValue(MAX_DISTANCE_KEY);
         maxExtinguishPower    = config.getIntValue(MAX_POWER_KEY);
@@ -202,7 +202,13 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		this.changed = changed;
 		this.me = me();
 		
-		
+		for(Command hear : heard){
+			if(hear instanceof AKSpeak){
+				logger.info("1 AKSpeak has received.");
+				msgManager.receiveMessages((AKSpeak)hear);
+			}
+		}
+
 		viewInfoManager.update(changed);
     }
     

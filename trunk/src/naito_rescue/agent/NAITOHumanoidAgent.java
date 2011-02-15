@@ -18,39 +18,25 @@ import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
 
 
-public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITOAgent<E> implements MessageConstants
+public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITOAgent<E>
 {
 
 	private static final int            CROWLABLE_NUM = 5;
-	
+	private static final int            DEFAULT_CHANNNEL = 1;
 	protected ArrayList<Building>       crowlingBuildings;
 	protected ArrayList<Human>          teamMembers;
 	
 	protected boolean                   isLeader;
 	protected boolean                   isMember;
 	protected boolean                   isOnTeam;
-
-	protected int                       MY_MESSAGE_ADDRESS_TYPE;
 	
 	@Override
     protected void postConnect() {
 		 super.postConnect();
 		 
-		 if(this instanceof NAITOFireBrigade){
-		 	MY_MESSAGE_ADDRESS_TYPE = ADDR_FB;
-		 }else if(this instanceof NAITOPoliceForce){
-		 	MY_MESSAGE_ADDRESS_TYPE = ADDR_PF;
-		 }else if(this instanceof NAITOAmbulanceTeam){
-		 	MY_MESSAGE_ADDRESS_TYPE = ADDR_AT;
-		 }else{
-		 	MY_MESSAGE_ADDRESS_TYPE = ADDR_UNKNOWN;
-		 }
-
 		 crowlingBuildings = new ArrayList<Building>();
 		 teamMembers = new ArrayList<Human>();
 		 
-		
-
 		 //チーム分け
 		 isLeader = isMember = isOnTeam = false;
 		 createCrowlingTeam();
@@ -72,6 +58,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		logger.setTime(time);
 		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			return;
+		}else if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+			logger.info("Let's Go.");
+			subscribe(DEFAULT_CHANNNEL); //デフォルトで1番のチャンネルを用いる
 		}
 
 		//currentTaskListに関する処理
@@ -85,7 +74,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//閉塞を報告してから3ターンたってもまだ啓開されていない
 		//かつ，自分がまだ閉塞のそばにいる
 		// -> 自分が閉塞の中に詰まっている可能性が高いので，再度報告する
-		reportBlockadeAboutSelf();
+		//reportBlockadeAboutSelf();
 
 		//自分の視界に燃えている建物がある場合
 		//とりあえずその情報をFBに送りつける
@@ -97,6 +86,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 
 	//メッセージの取得
+	/*
 	public List<naito_rescue.message.Message> receiveMessage(AKSpeak speak){
 		if(speak.getContent() == null || speak.getContent().length <= 0){
 			return null;
@@ -116,6 +106,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		
 		return msgList;
 	}
+	*/
 //---------- report関連 ----------
 	//過去に閉塞を報告したエリアについて，
 	//. 自分がまだそのエリアにいて，
@@ -123,6 +114,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	//. 閉塞を報告してから2ターン以上経過している
 	//場合に，再度PFに対して閉塞を報告する.
 	//(自分が閉塞に詰まって動けなくなっている可能性が高い)
+	/*
 	private void reportBlockadeAboutSelf(){
 		if(!(this instanceof NAITOPoliceForce)){
 			for(Area reported : reportedBlockedRoad.keySet()){
@@ -140,16 +132,17 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			}
 		}
 	}
+	*/
 	private void reportCivilianInView(){
 		List<Civilian> civilians = getViewCivilians();
 		for(Civilian c : civilians){
-			StandardEntity civilian_location = c.getPosition(model);
+			StandardEntity civPos = c.getPosition(model);
 			//道路を突っ走ってる市民に対してLoadを実行しようとするとコケる気がする...
-			if(civilian_location instanceof Building && !reportedVictimInBuilding.contains((Building)civilian_location)){
-				logger.info("Report victim. victim = " + c + ", location = " + civilian_location);
-				RescueMessage rescue_msg = msgManager.createRescueMessage(-1, ADDR_AT, false, civilian_location.getID());
-				msgManager.sendMessage(rescue_msg);
-				reportedVictimInBuilding.add((Building)civilian_location);
+			if(civPos instanceof Building && !reportedVictimInBuilding.contains((Building)civPos)){
+				logger.info("Report victim. victim = " + c + ", location = " + civPos);
+				CivilianInBuildingMessage mes = new CivilianInBuildingMessage(civPos.getID());
+				msgManager.sendMessage(mes, DEFAULT_CHANNNEL);
+				reportedVictimInBuilding.add((Building)civPos);
 			}
 		}
 	}
@@ -159,9 +152,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			if(b.isOnFire() && !reportedBurningBuilding.contains(b)){
 				logger.info("Report Burning Building. building = " + b);
 				StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
-				ExtinguishMessage ex_msg = msgManager.createExtinguishMessage(-1, ADDR_FB, false, b.getID(), (b.isGroundAreaDefined()?b.getGroundArea():1000));
-				msgManager.sendMessage(ex_msg);
-				reportedBurningBuilding.add(b);
+				FireMessage mes = new FireMessage(b.getID());
+				msgManager.sendMessage(mes, DEFAULT_CHANNNEL);
 			}
 		}
 	}
@@ -173,8 +165,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
 				if( !(reportedBlockedRoad.containsKey( (Area)location )) ){
 					logger.info("Report Blockade. blocked road = " + location);
-					ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
-					msgManager.sendMessage(clear_msg);
+					BlockedRoadMessage mes = new BlockedRoadMessage(getLocation().getID());
+					msgManager.sendMessage(mes, DEFAULT_CHANNNEL);
 					
 					reportedBlockedRoad.put((Area)location, time);
 				}

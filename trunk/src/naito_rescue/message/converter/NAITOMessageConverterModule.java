@@ -6,8 +6,6 @@ import java.util.zip.*;
 
 import static naito_rescue.debug.DebugUtil.*;
 import naito_rescue.message.*;
-import naito_rescue.message.communication.*;
-import naito_rescue.message.intermediate.*;
 import naito_rescue.message.stream.*;
 import naito_rescue.agent.*;
 
@@ -19,22 +17,15 @@ import rescuecore2.standard.entities.*;
 import rescuecore2.standard.messages.*;
 import rescuecore2.misc.geometry.*;
 
-public class NAITOMessageConverterModule implements IMessageConverter
+public class NAITOMessageConverterModule implements IMessageConverterModule
 {
 	/**
 	*  decodeMessages();
-	*  AKSpeak.getContent();の中身から
 	*  受信したメッセージの列を復号する
 	*/
-	public List<NAITOMessage> decodeMessages(AKSpeak speak){
+	public List<? extends NAITOMessage> decodeMessages(RawDataInputStream stream){
 		List<NAITOMessage> list = new ArrayList<NAITOMessage>();
-		
-		byte[] rawdata = speak.getContent();
-		if(rawdata == null || rawdata.length <= 0){
-			return null;
-		}
-		byte[] decompressedData = decompress(rawdata); //解凍
-		RawDataInputStream stream = new RawDataInputStream(decompressedData);
+		//RawDataInputStream stream = new RawDataInputStream(rawdata);
 		
 		// メッセージタイプがNULL(メッセージ列の末尾)に達するか、
 		// ERROR(何らかの原因でメッセージを復号できなかった場合)に
@@ -87,33 +78,12 @@ public class NAITOMessageConverterModule implements IMessageConverter
 		}// end while
 		return list;
 	}
-	// zip圧縮された通信データを解凍して返す
-	private static byte[] decompress(byte[] compress){
-		try{
-			Inflater decomp = new Inflater();
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			
-			decomp.setInput(compress);
-			byte[] buf = new byte[1024];
-			while(!decomp.finished()){
-				int len = decomp.inflate(buf);
-				baos.write(buf, 0, len);
-			}
-			
-			byte[] result = baos.toByteArray();
-			
-			p("解凍前の配列長 = " + compress.length);
-			p("解凍後の配列長 = " + result.length);
-			return result;
-		}catch(Exception e){e.printStackTrace();}
-		return null;
-	}
 	/**
 	*  encodeMessages();
 	*  メッセージのリストから
-	*  byte型配列にエンコードする
+	*  RawDataOutputStream型にエンコする
 	*/
-	public byte[] encodeMessages(List<? extends NAITOMessage> list){
+	public RawDataOutputStream encodeMessages(List<? extends NAITOMessage> list){
 		RawDataOutputStream stream = new RawDataOutputStream();
 		try{
 			for(NAITOMessage m : list){
@@ -125,32 +95,11 @@ public class NAITOMessageConverterModule implements IMessageConverter
 			}
 			// 末尾に、MessageType.NULLを書き込む
 			stream.writeByte(MessageType.NULL.type());
-			byte[] compress = compress(stream.toByteArray()); //圧縮
+			// byte[] compress = compress(stream.toByteArray()); //圧縮
+			//byte[] compress = stream.toByteArray();
 			//p("return;");
-			return compress;
-		}catch(Exception e){e.printStackTrace();}
-		return null;
-	}
-	private static byte[] compress(byte[] rawdata){
-		try{
-			Deflater comp = new Deflater();
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			
-			comp.setLevel(Deflater.BEST_COMPRESSION);
-			comp.setInput(rawdata);
-			comp.finish();
-			
-			byte[] buf = new byte[1024];
-			while(!comp.finished()){
-				int len = comp.deflate(buf);
-				baos.write(buf, 0, len);
-			}
-			
-			byte[] result = baos.toByteArray();
-			
-			p("圧縮前の配列長 = " + rawdata.length);
-			p("圧縮後の配列長 = " + result.length);
-			return result;
+			//return compress;
+			return stream;
 		}catch(Exception e){e.printStackTrace();}
 		return null;
 	}

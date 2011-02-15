@@ -19,8 +19,8 @@ import rescuecore2.misc.geometry.*;
 
 public abstract class NAITOBaseMessage extends NAITOMessage
 {
-	private int id = -1;
-	private short sendTime = -1;
+	protected int id = -1;
+	protected short sendTime = -1;
 	
 	public RawDataOutputStream encode(){
 		RawDataOutputStream stream = new RawDataOutputStream();
