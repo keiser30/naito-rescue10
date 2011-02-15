@@ -67,6 +67,8 @@ public class NAITOMessageManager
 		logger.info("receiveMessages(); end.");
 		return decoded;
 	}
+	//送信の終わったメッセージをリストから削除することで
+	//全て送信できたかorできなかったかを，呼び出し側で判別することができる
     public void sendMessages(List<? extends NAITOMessage> list, int ch){
         for(NAITOMessage m : list){
             // NAITOBaseMessageに属するものでidが未生成のものがあれば
