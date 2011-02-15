@@ -6,7 +6,6 @@ import java.util.zip.*;
 
 import static naito_rescue.debug.DebugUtil.*;
 import naito_rescue.message.*;
-import naito_rescue.message.communication.*;
 import naito_rescue.message.stream.*;
 import naito_rescue.agent.*;
 
