@@ -24,19 +24,25 @@ import rescuecore2.misc.geometry.*;
 public class NAITOMessageManager
 {
 	private NAITOAgent owner;
+	private final int DEFAULT_CHANNEL_CAPACITY = 255; //まぁ大体は
+	private int channelCapacity = DEFAULT_CHANNEL_CAPACITY;
 	private final List<NAITOMessage> EMPTY_LIST = new ArrayList<NAITOMessage>();
-	private List<? extends NAITOMessage> receivedHistory;
-	private List<? extends NAITOMessage> sendedHistory;
-	private List<? extends NAITOMessage> lazyList;
+	private List<NAITOMessage> receivedHistory;
+	private List<NAITOMessage> remainder;
+	private List<NAITOMessage> sendedHistory;
+	private List<NAITOMessage> lazyList;
+	private List<NAITOMessage> cannot;
 	private IMessageConverterModule converter;
 	private ICompressorModule       compressor;
 	private MyLogger                logger;
 	
 	public NAITOMessageManager(NAITOAgent owner){
 		this.owner = owner;
+		this.remainder = new ArrayList<NAITOMessage>();
 		this.receivedHistory = new ArrayList<NAITOMessage>();
 		this.sendedHistory = new ArrayList<NAITOMessage>();
 		this.lazyList = new ArrayList<NAITOMessage>();
+		this.cannot = new ArrayList<NAITOMessage>();
 		
 		converter = new NAITOMessageConverterModule();
 		compressor = new NAITOCompressorModule();
@@ -61,28 +67,28 @@ public class NAITOMessageManager
 		logger.info("receiveMessages(); end.");
 		return decoded;
 	}
-	public void sendMessages(List<? extends NAITOMessage> list, int ch){
-		for(NAITOMessage m : list){
-			// NAITOBaseMessageに属するものでidが未生成のものがあれば
-			// idを生成する
-			if(m instanceof NAITOBaseMessage){
-				NAITOBaseMessage bm = (NAITOBaseMessage)m;
-				if(bm.getID() == -1) generateBaseMessageID(bm);
-			}
-		}
-		RawDataOutputStream stream = converter.encodeMessages(list);
-		byte[] encoded = compressor.compress(stream);
-		
-		logger.info("NAITOMessageManager.sendMessages();");
-		logger.info("-- sended " + list.size() + " messages. --");
-		for(NAITOMessage m : list){
-			logger.debug(m.toString());
-		}
-		logger.debug("encoded array length = " + encoded.length);
-		logger.info("sendMessages(); end.");
-		
-		owner.speak(ch, encoded);
-	} 
+    public void sendMessages(List<? extends NAITOMessage> list, int ch){
+        for(NAITOMessage m : list){
+            // NAITOBaseMessageに属するものでidが未生成のものがあれば
+            // idを生成する
+            if(m instanceof NAITOBaseMessage){
+                NAITOBaseMessage bm = (NAITOBaseMessage)m;
+                if(bm.getID() == -1) generateBaseMessageID(bm);
+            }
+        }
+        RawDataOutputStream stream = converter.encodeMessages(list);
+        byte[] encoded = compressor.compress(stream);
+        
+        logger.info("NAITOMessageManager.sendMessages();");
+        logger.info("-- sended " + list.size() + " messages. --");
+        for(NAITOMessage m : list){
+            logger.debug(m.toString());
+        }
+        logger.debug("encoded array length = " + encoded.length);
+        logger.info("sendMessages(); end.");
+        
+        owner.speak(ch, encoded);
+    } 
 	public void sendMessage(NAITOMessage msg, int ch){
 		sendMessages(Arrays.asList(msg), ch);
 	}
@@ -90,6 +96,12 @@ public class NAITOMessageManager
 		for(NAITOMessage m : list){
 			lazyList.add(m);
 		}
+	}
+	public void accumulateMessage(NAITOMessage m){
+		accumulateMessages(Arrays.asList(m));
+	}
+	public void flushAccumulatedMessages(){
+		
 	}
 	private void generateBaseMessageID(NAITOBaseMessage bm){
 		// 3桁のランダムな数字列
