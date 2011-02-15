@@ -27,7 +27,7 @@ public class NAITOMessageManager
 	private final List<NAITOMessage> EMPTY_LIST = new ArrayList<NAITOMessage>();
 	private List<? extends NAITOMessage> receivedHistory;
 	private List<? extends NAITOMessage> sendedHistory;
-	private List<? extends NAITOMessage> remaind;
+	private List<? extends NAITOMessage> lazyList;
 	private IMessageConverterModule converter;
 	private ICompressorModule       compressor;
 	private MyLogger                logger;
@@ -36,6 +36,7 @@ public class NAITOMessageManager
 		this.owner = owner;
 		this.receivedHistory = new ArrayList<NAITOMessage>();
 		this.sendedHistory = new ArrayList<NAITOMessage>();
+		this.lazyList = new ArrayList<NAITOMessage>();
 		
 		converter = new NAITOMessageConverterModule();
 		compressor = new NAITOCompressorModule();
@@ -84,6 +85,11 @@ public class NAITOMessageManager
 	} 
 	public void sendMessage(NAITOMessage msg, int ch){
 		sendMessages(Arrays.asList(msg), ch);
+	}
+	public void accumulateMessages(List<? extends NAITOMessage> list){
+		for(NAITOMessage m : list){
+			lazyList.add(m);
+		}
 	}
 	private void generateBaseMessageID(NAITOBaseMessage bm){
 		// 3桁のランダムな数字列
