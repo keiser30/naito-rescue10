@@ -39,4 +39,7 @@ public class RawDataOutputStream
 	public byte[] toByteArray(){
 		return baos.toByteArray();
 	}
+	public int length(){
+		return baos.toByteArray().length;
+	}
 }

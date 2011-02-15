@@ -39,7 +39,7 @@ public class CivilianInBuildingMessage extends NAITOBaseMessage
 		this();
 		setIDs(Arrays.asList(id));
 	}
-	public CivilianInBuildingMessage(int buildingID){
+	public CivilianInBuildingMessage(NAITOAgent owner, int buildingID){
 		this();
 		setIDs(new int[]{buildingID});
 	}
@@ -104,6 +104,7 @@ public class CivilianInBuildingMessage extends NAITOBaseMessage
 			str.append(ids[ids.length-1] + "");
 		}
 		str.append(")");
+		str.append(":" + this.id + "");
 		return str.toString();
 	}
 

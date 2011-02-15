@@ -104,6 +104,7 @@ public class BlockedRoadMessage extends NAITOBaseMessage
 			str.append(ids[ids.length-1] + "");
 		}
 		str.append(")");
+		str.append(":" + this.id + "");
 		return str.toString();
 	}
 

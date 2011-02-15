@@ -21,7 +21,7 @@ import naito_rescue.message.manager.*;
 *  啓開隊だよ
 *
 */
-public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements MessageConstants
+public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 {
 	
 	@Override
@@ -36,8 +36,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce> implements
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
-
-
+		super.think(time, changed, heard);
 	}
 
 
