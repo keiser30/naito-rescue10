@@ -1,5 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 
-if [ $1 -d ] ; then
+if [ -d $1 ] ; then
 	find $1 -name "*.java" | xargs gedit &
 fi
