@@ -102,7 +102,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	
 	//ロガー，メッセージマネージャ
 	protected MyLogger             logger;
-	protected NAITOMessageManager  msgManager;
+	protected NAITOMessageManager  messageManager;
 	
 	
 	protected static final EntityTools.IDComparator ID_COMP = new EntityTools.IDComparator();
@@ -111,7 +111,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	@Override
     protected void postConnect() {
     	logger = new MyLogger(this, false);
-    	msgManager = new NAITOMessageManager(this);
+    	messageManager = new NAITOMessageManager(this);
     	//search = new MySearch(model, this);
     	search = new NAITORouter(this);
     	
@@ -205,7 +205,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		for(Command hear : heard){
 			if(hear instanceof AKSpeak){
 				logger.info("1 AKSpeak has received.");
-				msgManager.receiveMessages((AKSpeak)hear);
+				messageManager.receiveMessages((AKSpeak)hear);
 			}
 		}
 

@@ -92,7 +92,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			return null;
 		}
 		
-		List<naito_rescue.message.Message> msgList = msgManager.receiveMessage(speak);
+		List<naito_rescue.message.Message> msgList = messageManager.receiveMessage(speak);
 		if(msgList == null){
 			return null;
 		}
@@ -124,8 +124,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				   (this.time - reportedBlockedRoad.get(reported)) >= 2){
 					
 					logger.info("Help me. reported = " + reported);
-					ClearMessage clear_msg = msgManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
-					msgManager.sendMessage(clear_msg);
+					ClearMessage clear_msg = messageManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
+					messageManager.sendMessage(clear_msg);
 					reportedBlockedRoad.put(reported, this.time);
 					
 				}
@@ -141,7 +141,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			if(civPos instanceof Building && !reportedVictimInBuilding.contains((Building)civPos)){
 				logger.info("Report victim. victim = " + c + ", location = " + civPos);
 				CivilianInBuildingMessage mes = new CivilianInBuildingMessage(civPos.getID());
-				msgManager.sendMessage(mes, DEFAULT_CHANNNEL);
+				messageManager.sendMessage(mes, DEFAULT_CHANNNEL);
 				reportedVictimInBuilding.add((Building)civPos);
 			}
 		}
@@ -153,7 +153,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				logger.info("Report Burning Building. building = " + b);
 				StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
 				FireMessage mes = new FireMessage(b.getID());
-				msgManager.sendMessage(mes, DEFAULT_CHANNNEL);
+				messageManager.sendMessage(mes, DEFAULT_CHANNNEL);
 			}
 		}
 	}
@@ -166,7 +166,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				if( !(reportedBlockedRoad.containsKey( (Area)location )) ){
 					logger.info("Report Blockade. blocked road = " + location);
 					BlockedRoadMessage mes = new BlockedRoadMessage(getLocation().getID());
-					msgManager.sendMessage(mes, DEFAULT_CHANNNEL);
+					messageManager.sendMessage(mes, DEFAULT_CHANNNEL);
 					
 					reportedBlockedRoad.put((Area)location, time);
 				}
