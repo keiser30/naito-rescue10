@@ -43,7 +43,7 @@ public class NAITOCompressorModule implements ICompressorModule
 	
 	public byte[] compress(RawDataOutputStream stream){
 		try{
-			if(stream.length == 0) return null;
+			if(stream.length() == 0) return null;
 			Deflater comp = new Deflater();
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			

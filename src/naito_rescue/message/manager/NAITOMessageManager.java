@@ -69,27 +69,27 @@ public class NAITOMessageManager
 	}
 	//送信の終わったメッセージをリストから削除することで
 	//全て送信できたかorできなかったかを，呼び出し側で判別することができる
-    public void sendMessages(List<? extends NAITOMessage> list, int ch){
-        for(NAITOMessage m : list){
-            // NAITOBaseMessageに属するものでidが未生成のものがあれば
-            // idを生成する
-            if(m instanceof NAITOBaseMessage){
-                NAITOBaseMessage bm = (NAITOBaseMessage)m;
-                if(bm.getID() == -1) generateBaseMessageID(bm);
-            }
+    public void sendMessages(List<NAITOMessage> list, int ch){
+		for(NAITOMessage m : list){
+			// NAITOBaseMessageに属するものでidが未生成のものがあれば
+			// idを生成する
+			if(m instanceof NAITOBaseMessage){
+				NAITOBaseMessage bm = (NAITOBaseMessage)m;
+				if(bm.getID() == -1) generateBaseMessageID(bm);
+			}
         }
-        RawDataOutputStream stream = converter.encodeMessages(list);
-        byte[] encoded = compressor.compress(stream);
-        
-        logger.info("NAITOMessageManager.sendMessages();");
-        logger.info("-- sended " + list.size() + " messages. --");
-        for(NAITOMessage m : list){
-            logger.debug(m.toString());
-        }
-        logger.debug("encoded array length = " + encoded.length);
-        logger.info("sendMessages(); end.");
-        
-        owner.speak(ch, encoded);
+		RawDataOutputStream stream = converter.encodeMessages(list);
+		byte[] encoded = compressor.compress(stream);
+
+		logger.info("NAITOMessageManager.sendMessages();");
+		logger.info("-- sended " + list.size() + " messages. --");
+		for(NAITOMessage m : list){
+			logger.debug(m.toString());
+		}
+		logger.debug("encoded array length = " + encoded.length);
+		logger.info("sendMessages(); end.");
+
+		owner.speak(ch, encoded);
     } 
 	public void sendMessage(NAITOMessage msg, int ch){
 		sendMessages(Arrays.asList(msg), ch);
@@ -102,8 +102,9 @@ public class NAITOMessageManager
 	public void accumulateMessage(NAITOMessage m){
 		accumulateMessages(Arrays.asList(m));
 	}
-	public void flushAccumulatedMessages(){
-		
+	public void flushAccumulatedMessages(int ch){
+		if(lazyList == null || lazyList.isEmpty()) return;
+		sendMessages(lazyList, ch);
 	}
 	private void generateBaseMessageID(NAITOBaseMessage bm){
 		// 3桁のランダムな数字列
