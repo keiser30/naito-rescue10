@@ -22,7 +22,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 {
 
 	private static final int            CROWLABLE_NUM = 5;
-	private static final int            DEFAULT_CHANNNEL = 1;
+	private static final int            DEFAULT_CHANNEL = 1;
 	protected ArrayList<Building>       crowlingBuildings;
 	protected ArrayList<Human>          teamMembers;
 	
@@ -60,7 +60,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			return;
 		}else if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			logger.info("Let's Go.");
-			subscribe(DEFAULT_CHANNNEL); //デフォルトで1番のチャンネルを用いる
+			subscribe(DEFAULT_CHANNEL); //デフォルトで1番のチャンネルを用いる
 		}
 
 		//currentTaskListに関する処理
@@ -83,6 +83,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		//自分の視界にある建物の中に市民がいる場合
 		//とりあえずその情報をATに送りつける
 		reportCivilianInView();
+		
+		messageManager.flushAccumulatedMessages(DEFAULT_CHANNEL);
 	}
 
 	//メッセージの取得
@@ -141,7 +143,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			if(civPos instanceof Building && !reportedVictimInBuilding.contains((Building)civPos)){
 				logger.info("Report victim. victim = " + c + ", location = " + civPos);
 				CivilianInBuildingMessage mes = new CivilianInBuildingMessage(civPos.getID());
-				messageManager.sendMessage(mes, DEFAULT_CHANNNEL);
+				messageManager.accumulateMessage(mes);
 				reportedVictimInBuilding.add((Building)civPos);
 			}
 		}
@@ -153,7 +155,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				logger.info("Report Burning Building. building = " + b);
 				StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
 				FireMessage mes = new FireMessage(b.getID());
-				messageManager.sendMessage(mes, DEFAULT_CHANNNEL);
+				messageManager.accumulateMessage(mes);
 			}
 		}
 	}
@@ -166,7 +168,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				if( !(reportedBlockedRoad.containsKey( (Area)location )) ){
 					logger.info("Report Blockade. blocked road = " + location);
 					BlockedRoadMessage mes = new BlockedRoadMessage(getLocation().getID());
-					messageManager.sendMessage(mes, DEFAULT_CHANNNEL);
+					messageManager.accumulateMessage(mes);
 					
 					reportedBlockedRoad.put((Area)location, time);
 				}
