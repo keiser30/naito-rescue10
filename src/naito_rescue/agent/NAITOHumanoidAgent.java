@@ -45,7 +45,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 if(isMember && !crowlingBuildings.isEmpty()){
 		 	logger.info("Crowling. \n" + crowlingBuildings);
 		 	for(Building b : crowlingBuildings){
-		 		currentTaskList.add(new MoveTask(this, model, (Area)b));
+		 		currentTaskList.add(new MoveTask(this, b));
 		 	}
 		 }
 
@@ -63,9 +63,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			subscribe(DEFAULT_CHANNEL); //デフォルトで1番のチャンネルを用いる
 		}
 
-		//currentTaskListに関する処理
-		//currentTaskが終了していたら，そいつをリストから削除する
-		removeFinishedTask();
 		
 		//自分の今いる場所に閉塞がある場合
 		//情報をPFに送る
@@ -177,14 +174,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 	}
 //---------- //report関連 ----------
 
-	private void removeFinishedTask(){
-		if(currentTask != null && currentTask.isFinished()){
-			
-			logger.info("Remove currentTask. currentTask = " + currentTask);
-			currentTaskList.remove(currentTask);
-			currentTask = null;
-		}
-	}
 
 //---------- 視界情報の取得関連 ----------
 	public List<Building> getViewBuildings(){
@@ -222,39 +211,6 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
     }
 //---------- //視界情報の取得関連 ----------
 
-	public void addTaskIfNew(Task tt){
-		if(tt instanceof ExtinguishTask){
-			ExtinguishTask et = (ExtinguishTask)tt;
-			for(Task t : currentTaskList){
-				if(t instanceof ExtinguishTask){
-					Building b = ((ExtinguishTask)t).getTarget();
-					if(b.getID().getValue() == et.getTarget().getID().getValue()){
-						return;
-					}
-				}
-			}
-			currentTaskList.add(et);
-		}else if(tt instanceof ClearTask){
-			ClearTask ct = (ClearTask)tt;
-			for(Task t : currentTaskList){
-				if(t instanceof ClearTask){
-					Area target = ((ClearTask)t).getTarget();
-					if(target.getID().getValue() == ct.getTarget().getID().getValue())
-						return;
-				}
-			}
-			currentTaskList.add(ct);
-		}
-	}
-	private int maxInt(Integer... nums){
-		int max = 0;
-		for(int i = 0;i < nums.length;i++){
-			if(nums[i] > max){
-				max = nums[i];
-			}
-		}
-		return max;
-	}
 	//建物探訪をするチームを作成する
 	public void createCrowlingTeam(){
 		//どの種類のエージェントが探訪を担当するか決定する
@@ -375,43 +331,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 		logger.info(pretty_crowling.toString());
 	}
-	
-	/**
-	*  currentTaskListを降順ソートして1番目の要素を返す
-	*  (Taskのランク値の大きい方が優先される)
-	*/
-	protected static Comparator<Task> task_comp = new Comparator<Task>(){
-		public int compare(Task t1, Task t2){
-			return t2.getRank() - t1.getRank();
-		}
-	};
-	public Task getHighestRankTask(){
-		
 
-		if(currentTaskList.isEmpty()){
-			//初期タスクの設定がここになる
-			/*
-			
-			for(StandardEntity entity : allBuildings){
-				currentTaskList.add(new MoveTask(this, model, (Area)entity));
-			}
-			*/
-			return null;
-		}
-		int maxRank = Integer.MIN_VALUE;
-		Task resultTask = currentTaskList.get(0); //念のため初めのタスクをいれておく
-		Task tempTask;
-		for(int i = 0;i < currentTaskList.size();i++){
-			tempTask = currentTaskList.get(i);
-			
-			if(tempTask.getRank() > maxRank){
-				maxRank = tempTask.getRank();
-				resultTask = tempTask;
-			}
-		}
-		
-		return resultTask;
-	}
 	
 	@Override
 	public String toString(){

@@ -59,8 +59,8 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	protected int                       viewDistance;          //視界範囲
 	protected int                       startActionTime;       //行動を開始できる時刻
 	protected int                       maxWater;              //最大給水量(FB)
-	protected int                       maxExtinguishDistance; //消火可能範囲
-	protected int                       maxExtinguishPower;    //消火水量
+	public    int                       maxExtinguishDistance; //消火可能範囲
+	public    int                       maxExtinguishPower;    //消火水量
 	protected boolean                   useSpeak;              //AKSpeakを用いるかどうか
 	
 	//FB, PF, ATのリスト
@@ -273,6 +273,9 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	public void move(List<EntityID> path, int x, int y){
 		logger.info("path = " + path + ", (x, y) = (" + x + ", " + y + ")");
 		sendMove(time, path, x, y);
+	}
+	public void extinguish(EntityID target){
+		extinguish(target, maxExtinguishPower);
 	}
 	public void extinguish(EntityID target, int water){
 		logger.info("extinguish(" + target + ", " + water + ");");

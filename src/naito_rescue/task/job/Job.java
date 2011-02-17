@@ -10,4 +10,14 @@ import java.io.*;
 
 public abstract class Job
 {
+	protected NAITOHumanoidAgent owner;
+	protected StandardWorldModel model;
+	
+	public Job(NAITOHumanoidAgent owner){
+		this.owner = owner;
+		this.model = owner.getWorldModel();
+	}
+	
+	public abstract boolean isFinished();
+	public abstract void    act();
 }
