@@ -27,5 +27,14 @@ public class MoveJob extends Job
 	public void act(){
 		owner.move(target);
 	}
+	
+	@Override
+	public String toString(){
+		StringBuffer sb = new StringBuffer();
+		sb.append("\t MoveJob:\n");
+		sb.append("\t\t Target = " + target + "\n");
+		sb.append("\t => isFinished? " + isFinished());
+		return sb.toString();
+	}
 }
 

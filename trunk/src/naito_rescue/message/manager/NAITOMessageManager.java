@@ -31,7 +31,6 @@ public class NAITOMessageManager
 	private List<NAITOMessage> remainder;
 	private List<NAITOMessage> sendedHistory;
 	private List<NAITOMessage> lazyList;
-	private List<NAITOMessage> cannot;
 	private IMessageConverterModule converter;
 	private ICompressorModule       compressor;
 	private MyLogger                logger;
@@ -42,14 +41,13 @@ public class NAITOMessageManager
 		this.receivedHistory = new ArrayList<NAITOMessage>();
 		this.sendedHistory = new ArrayList<NAITOMessage>();
 		this.lazyList = new ArrayList<NAITOMessage>();
-		this.cannot = new ArrayList<NAITOMessage>();
 		
 		converter = new NAITOMessageConverterModule();
 		compressor = new NAITOCompressorModule();
 		logger    = owner.getLogger();
 	}
 	
-	public List<? extends NAITOMessage> receiveMessages(AKSpeak speak){
+	public List<NAITOMessage> receiveMessages(AKSpeak speak){
 		byte[] compressedRawData = speak.getContent();
 		if(compressedRawData == null || compressedRawData.length == 0){
 			logger.info("zero message has received. ==> return empty list.");
@@ -57,7 +55,7 @@ public class NAITOMessageManager
 		}
 		
 		RawDataInputStream stream = compressor.decompress(compressedRawData);
-		List<? extends NAITOMessage> decoded = converter.decodeMessages(stream);
+		List<NAITOMessage> decoded = converter.decodeMessages(stream);
 
 		logger.info("NAITOMessageManager.receiveMessages();");
 		logger.info("-- received " + decoded.size() + " messages. --");

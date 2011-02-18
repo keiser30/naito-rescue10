@@ -34,8 +34,8 @@ public class NAITOCompressorModule implements ICompressorModule
 			
 			RawDataInputStream result = new RawDataInputStream(baos.toByteArray());
 			
-			p("解凍前の配列長 = " + compress.length);
-			p("解凍後の配列長 = " + result.getRawData().length);
+			////p("解凍前の配列長 = " + compress.length);
+			////p("解凍後の配列長 = " + result.getRawData().length);
 			return result;
 		}catch(Exception e){e.printStackTrace();}
 		return null;
@@ -61,8 +61,8 @@ public class NAITOCompressorModule implements ICompressorModule
 			
 			byte[] result = baos.toByteArray();
 			
-			p("圧縮前の配列長 = " + rawdata.length);
-			p("圧縮後の配列長 = " + result.length);
+			//p("圧縮前の配列長 = " + rawdata.length);
+			//p("圧縮後の配列長 = " + result.length);
 			return result;
 		}catch(Exception e){e.printStackTrace();}
 		return null;

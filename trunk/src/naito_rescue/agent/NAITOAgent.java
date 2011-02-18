@@ -15,6 +15,7 @@ import rescuecore2.messages.*;
 
 import naito_rescue.*;
 import naito_rescue.agent.*;
+import naito_rescue.object.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
 import naito_rescue.message.*;
@@ -32,8 +33,12 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	protected NAITORouter         search;
 	protected E                   me;
 	
+	//Message
+	protected List<NAITOMessage>         receivedNow;
+	
 	//Task-Job関連
-	protected ArrayList<Task>            currentTaskList;
+	//protected ArrayList<Task>            currentTaskList;
+	protected TreeSet<Task>              currentTaskList;
 	protected Task                       currentTask;
 	protected Job                        currentJob;
 	
@@ -44,6 +49,9 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	protected Collection<StandardEntity> policeforces;
 	protected Collection<StandardEntity> ambulanceteams;
 	protected Collection<StandardEntity> civilians;
+	
+	protected Map<EntityID, NAITOBuilding>        allNAITOBuildings;
+	protected Map<EntityID, NAITORoad>            allNAITORoads;
 	
 	//コンフィグからとってくる情報のキー(URN)
 	private static final String          SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
@@ -115,6 +123,8 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
     	//search = new MySearch(model, this);
     	search = new NAITORouter(this);
     	
+    	receivedNow = new ArrayList<NAITOMessage>();
+    	
 		 /**
 		  * 各種建物, エージェントに関する情報を収集する
 		  */
@@ -125,7 +135,17 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		 ambulanceteams = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM);
 		 civilians = model.getEntitiesOfType(StandardEntityURN.CIVILIAN);
 		 
-		 currentTaskList = new ArrayList<Task>();
+		 allNAITOBuildings = new HashMap<EntityID, NAITOBuilding>();
+		 allNAITORoads = new HashMap<EntityID, NAITORoad>();
+		 for(StandardEntity b : allBuildings){
+		 	Building building = (Building)b;
+		 	allNAITOBuildings.put(building.getID(), new NAITOBuilding(building));
+		 }
+		 for(StandardEntity r : allRoads){
+		 	Road road = (Road)r;
+		 	allNAITORoads.put(road.getID(), new NAITORoad(road));
+		 }
+		 currentTaskList = new TreeSet<Task>();
 		 
 		 fbSize = pfSize = atSize = allAgentsSize = 0;
 		 fbList = new ArrayList<FireBrigade>();
@@ -202,10 +222,15 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		this.changed = changed;
 		this.me = me();
 		
+		receivedNow.clear();
+		List<NAITOMessage> receivedNow_sublist;
 		for(Command hear : heard){
 			if(hear instanceof AKSpeak){
 				logger.info("1 AKSpeak has received.");
-				messageManager.receiveMessages((AKSpeak)hear);
+				receivedNow_sublist = messageManager.receiveMessages((AKSpeak)hear);
+				if(receivedNow_sublist != null && !receivedNow_sublist.isEmpty()){
+					receivedNow.addAll(receivedNow_sublist);
+				}
 			}
 		}
 

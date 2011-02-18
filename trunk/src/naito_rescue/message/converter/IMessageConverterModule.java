@@ -19,7 +19,7 @@ import rescuecore2.misc.geometry.*;
 
 public interface IMessageConverterModule
 {
-	public List<? extends NAITOMessage> decodeMessages(RawDataInputStream stream);
+	public List<NAITOMessage> decodeMessages(RawDataInputStream stream);
 	
 	public RawDataOutputStream encodeMessages(List<? extends NAITOMessage> list);
 }

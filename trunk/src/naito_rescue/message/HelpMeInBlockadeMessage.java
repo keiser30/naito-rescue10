@@ -45,7 +45,7 @@ public class HelpMeInBlockadeMessage extends NAITOBaseMessage
 	protected RawDataOutputStream encodeMessage(){
 		RawDataOutputStream output = new RawDataOutputStream();
 		try{
-			p("書き込むID = " + road_id.getValue());
+			////p("書き込むID = " + road_id.getValue());
 			output.writeInt(road_id.getValue());
 			return output;
 		}catch(Exception e){e.printStackTrace();}

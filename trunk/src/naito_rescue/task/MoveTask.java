@@ -25,5 +25,19 @@ public class MoveTask extends Task
 	
 	@Override
 	public void updatePriority(){
+		//0 to 2500
+		//logger.info("=== MoveTask.updatePriority(); ===");
+		//int distance = model.getDistance(owner.getLocation(), target);
+		//logger.debug("Distance to target = " + distance);
+		priority = 2500;
+	}
+	
+	@Override
+	public String toString(){
+		StringBuffer sb = new StringBuffer();
+		sb.append("MoveTask:\n");
+		sb.append("    Priority = " + priority + "\n");
+		sb.append("=> isFinished? " + isFinished());
+		return sb.toString();
 	}
 }
