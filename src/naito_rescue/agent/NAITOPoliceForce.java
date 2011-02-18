@@ -14,6 +14,7 @@ import rescuecore2.misc.geometry.*;
 import naito_rescue.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
+import naito_rescue.object.*;
 import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
 
@@ -37,6 +38,9 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
+		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+			return;
+		}
 	}
 
 

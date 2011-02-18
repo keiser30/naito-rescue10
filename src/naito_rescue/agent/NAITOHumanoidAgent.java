@@ -14,6 +14,7 @@ import rescuecore2.misc.geometry.*;
 import naito_rescue.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
+import naito_rescue.object.*;
 import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
 
@@ -42,7 +43,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 createCrowlingTeam();
 		 isOnTeam = isLeader || isMember;
 		 
-		 if(isMember && !crowlingBuildings.isEmpty()){
+		 if(isOnTeam && !crowlingBuildings.isEmpty()){
 		 	logger.info("Crowling. \n" + crowlingBuildings);
 		 	for(Building b : crowlingBuildings){
 		 		currentTaskList.add(new MoveTask(this, b));
@@ -146,31 +147,45 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 	}
 	private void reportBurningBuildingInView(){
+		logger.info("<><><> reportBurningBuildingInView(); <><><>");
 		List<Building> view_buildings = getViewBuildings();
 		for(Building b : view_buildings){
-			if(b.isOnFire() && !reportedBurningBuilding.contains(b)){
-				logger.info("Report Burning Building. building = " + b);
-				StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
-				FireMessage mes = new FireMessage(b.getID());
-				messageManager.accumulateMessage(mes);
-			}
-		}
-	}
-	private void reportBlockedRoadInLocation(){
-		if(!(this instanceof NAITOPoliceForce)){
-			StandardEntity location = getLocation();
-			if(location instanceof Area && ((Area)location).isBlockadesDefined() && !((Area)location).getBlockades().isEmpty()){
-				// 閉塞が発生しているRoadのIDを送りつける
-				//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
-				if( !(reportedBlockedRoad.containsKey( (Area)location )) ){
-					logger.info("Report Blockade. blocked road = " + location);
-					BlockedRoadMessage mes = new BlockedRoadMessage(getLocation().getID());
+			if(b.isOnFire()){
+				NAITOBuilding nBuilding = allNAITOBuildings.get(b.getID());
+				if(nBuilding != null && nBuilding.hasReportedFire()){
+					logger.info("Report Burning Building. building = " + b);
+					StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
+					FireMessage mes = new FireMessage(b.getID());
 					messageManager.accumulateMessage(mes);
-					
-					reportedBlockedRoad.put((Area)location, time);
+					nBuilding.setReportFireTime(time);
+				}
+				if(nBuilding == null){
+					logger.debug("NAITOBuilding(" + b.getID() + ") is null.");
 				}
 			}
 		}
+		logger.info("<><><> reportBurningBuildingInView(); end <><><>");
+	}
+	private void reportBlockedRoadInLocation(){
+		logger.info("<><><> reportBlockedRoadInLocation(); <><><>");
+		if(!(this instanceof NAITOPoliceForce)){
+			StandardEntity location = getLocation();
+			if(location instanceof Road && ((Road)location).isBlockadesDefined() && !((Road)location).getBlockades().isEmpty()){
+				// 閉塞が発生しているRoadのIDを送りつける
+				//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
+				NAITORoad nRoad = allNAITORoads.get(((Road)location).getID());
+				if(nRoad != null && nRoad.hasReportedBlockade()){
+					logger.info("Report Blockade. blocked road = " + location);
+					BlockedRoadMessage mes = new BlockedRoadMessage(getLocation().getID());
+					messageManager.accumulateMessage(mes);
+					nRoad.setReportBlockadeTime(time);
+				}
+				if(nRoad == null){
+					logger.debug("NAITORoad(" + ((Road)location).getID() + ") is null.");
+				}
+			}
+		}
+		logger.info("<><><> reportBlockedRoadInLocation(); end <><><>");
 	}
 //---------- //report関連 ----------
 
@@ -321,14 +336,16 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		
 		Building b = null;
 		StringBuffer pretty_crowling = new StringBuffer();
-		pretty_crowling.append("\n");
+		pretty_crowling.append("Crowling Buildings are = \n [");
 		for(StandardEntity building : allBuildings){
 			b = (Building)building;
 			if(b.getX() > crowlingX && b.getX() <= (crowlingX + w_width) &&
 			   b.getY() > crowlingY && b.getY() <= (crowlingY + w_height)){
 				crowlingBuildings.add(b);
+				pretty_crowling.append(b.toString() + ", ");
 			}
 		}
+		pretty_crowling.append("]");
 		logger.info(pretty_crowling.toString());
 	}
 

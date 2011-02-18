@@ -5,27 +5,38 @@ import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.*;
 import naito_rescue.task.job.*;
 import naito_rescue.agent.*;
+import naito_rescue.*;
 import java.util.*;
 import java.io.*;
 
-public abstract class Task
+public abstract class Task implements Comparable<Task>
 {
 	protected NAITOHumanoidAgent owner;
 	protected StandardWorldModel model;
-	protected int                priority;
+	protected MyLogger           logger;
+	protected int                priority = -1;
 	protected List<Job>          jobList;
 	
 	public Task(NAITOHumanoidAgent owner){
 		this.owner = owner;
 		this.model = owner.getWorldModel();
+		this.logger = owner.getLogger();
 		this.jobList = new ArrayList<Job>();
+		
+		//updatePriority();
 	}
 	public Job currentJob(){
+		logger.trace("*** currentJob(); ***");
 		if(jobList.isEmpty()){
 			jobList.addAll(createJobList());
 		}
+		logger.trace("Print Job List...");
 		for(Job j : jobList){
-			if(!j.isFinished()) return j;
+			logger.trace(j.toString());
+			if(!j.isFinished()){
+				logger.trace(j.getClass().getName() + " is not finished. return;");
+				return j;
+			}
 		}
 		return null;
 	}
@@ -34,11 +45,23 @@ public abstract class Task
 			jobList.addAll(createJobList());
 		}
 		for(Job j : jobList){
-			if(!j.isFinished()) return false;
+			if(!j.isFinished()){
+				return false;
+			}
 		}
 		return true;
+	}
+	public void setPriority(int p){
+		this.priority = p;
+	}
+	public int getPriority(){
+		return priority;
 	}
 	public abstract List<Job> createJobList();
 	public abstract void      updatePriority();
 	
+	@Override
+	public final int compareTo(Task otherTask){
+		return otherTask.getPriority() - this.getPriority();
+	} 
 }

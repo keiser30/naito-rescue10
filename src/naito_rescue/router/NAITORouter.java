@@ -1,4 +1,4 @@
-package naito_rescue.agent;
+package naito_rescue.router;
 
 import rescuecore2.misc.*;
 import rescuecore2.misc.geometry.*;
@@ -6,7 +6,10 @@ import rescuecore2.worldmodel.*;
 import rescuecore2.standard.entities.*;
 
 import naito_rescue.*;
+import naito_rescue.agent.*;
 import java.util.*;
+
+import static naito_rescue.debug.DebugUtil.*;
 
 public final class NAITORouter{
 	private StandardWorldModel model;

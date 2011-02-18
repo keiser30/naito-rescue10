@@ -25,4 +25,13 @@ public class ExtinguishJob extends Job
 	public void act(){
 		owner.extinguish(target.getID());
 	}
+	
+	@Override
+	public String toString(){
+		StringBuffer sb = new StringBuffer();
+		sb.append("\t ExtinguishJob:\n");
+		sb.append("\t\t Target = " + target + "\n");
+		sb.append("\t => isFinished? " + isFinished());
+		return sb.toString();
+	}
 }

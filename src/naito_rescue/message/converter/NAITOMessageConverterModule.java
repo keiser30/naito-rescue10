@@ -23,7 +23,7 @@ public class NAITOMessageConverterModule implements IMessageConverterModule
 	*  decodeMessages();
 	*  受信したメッセージの列を復号する
 	*/
-	public List<? extends NAITOMessage> decodeMessages(RawDataInputStream stream){
+	public List<NAITOMessage> decodeMessages(RawDataInputStream stream){
 		List<NAITOMessage> list = new ArrayList<NAITOMessage>();
 		//RawDataInputStream stream = new RawDataInputStream(rawdata);
 		
@@ -56,10 +56,10 @@ public class NAITOMessageConverterModule implements IMessageConverterModule
 				m = new HelpMeInBlockadeMessage();
 				break;
 			case ACK:
-				p("まだ実装してません(ｷﾘｯ");
+				//p("まだ実装してません(ｷﾘｯ");
 				break;
 			default:
-				p("Invalid Message Type: " + type);
+				//p("Invalid Message Type: " + type);
 				break;
 			}
 			if(m != null){
@@ -72,7 +72,7 @@ public class NAITOMessageConverterModule implements IMessageConverterModule
 					type = MessageType.from(stream.readByte());
 				}catch(Exception e){e.printStackTrace();}
 			}else{
-				p("m == null => return list;");
+				//p("m == null => return list;");
 				return list;
 			}
 		}// end while
@@ -97,7 +97,7 @@ public class NAITOMessageConverterModule implements IMessageConverterModule
 			stream.writeByte(MessageType.NULL.type());
 			// byte[] compress = compress(stream.toByteArray()); //圧縮
 			//byte[] compress = stream.toByteArray();
-			//p("return;");
+			////p("return;");
 			//return compress;
 			return stream;
 		}catch(Exception e){e.printStackTrace();}

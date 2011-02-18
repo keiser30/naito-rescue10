@@ -52,7 +52,7 @@ public class FireMessage extends NAITOBaseMessage
 			for(int i = 0;i < size;i++){
 				int id = in.readInt();
 				ids[i] = new EntityID(id);
-				p((i+1) + "個目のID = " + ids[i]);
+				//p((i+1) + "個目のID = " + ids[i]);
 			}
 		}catch(Exception e){e.printStackTrace();}
 	}
@@ -68,7 +68,7 @@ public class FireMessage extends NAITOBaseMessage
 			output.writeByte((byte)ids.length);
 			
 			for(int i = 0;i < ids.length;i++){
-				p("書き込むID = " + ids[i].getValue());
+				//p("書き込むID = " + ids[i].getValue());
 				output.writeInt(ids[i].getValue());
 			}
 			

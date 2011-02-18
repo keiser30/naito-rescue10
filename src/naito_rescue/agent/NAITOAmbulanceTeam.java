@@ -14,6 +14,7 @@ import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
+import naito_rescue.object.*;
 
 /**
 *  救急隊だよ
@@ -42,6 +43,9 @@ public class NAITOAmbulanceTeam extends NAITOHumanoidAgent<AmbulanceTeam>
 	
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
+		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+			return;
+		}
 	}
 
 

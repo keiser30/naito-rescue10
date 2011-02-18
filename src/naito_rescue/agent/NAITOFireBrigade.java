@@ -12,10 +12,13 @@ import rescuecore2.standard.messages.*;
 
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
+import naito_rescue.object.*;
 import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
 
-/* 平沢進のCDはやく届かないかなー */
+import static naito_rescue.debug.DebugUtil.*;
+
+/* Task-Jobを基にした行動設計 */
 public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 {
 	boolean debug = true;
@@ -37,8 +40,82 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
+		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+			return;
+		}
+		
+		addTaskInExtinguishableRange();
+		removeFinishedTask();
+		addTaskByMessage();
+		updateTaskPriority();
+		
+		if(currentTaskList.isEmpty()){
+			logger.info("currentTaskList.isEmpty(); ==> randomWalk();");
+			move(randomWalk());
+			return;
+		}
+		
+		currentTask = currentTaskList.last();
+		
+		logger.debug("currentTask.priority = " + currentTask.getPriority());
+		logger.debug("All Tasks priority debug print...");
+		StringBuffer sb = new StringBuffer();
+		for(Task t : currentTaskList){
+			sb.append(t.getPriority() + ", ");
+		}
+		logger.debug(sb.toString());
+		
+		Job currentJob = currentTask.currentJob();
+		if(currentJob != null) currentJob.act();
+		else{
+			//一番優先度の高いMoveTaskを持ってきて実行，など．
+		}
 	}
-	
+	protected void addTaskInExtinguishableRange(){
+		logger.info("** addTaskInExtinguishableRange; **");
+		for(StandardEntity b : allBuildings){
+			Building building = (Building)b;
+			
+			int distance = model.getDistance(getLocation(), building);
+			if(building.isOnFire() && distance < maxExtinguishDistance){
+				currentTaskList.add(new ExtinguishTask(this, building));
+				logger.debug("Add ExtinguishTask In Range.:" + building);
+			}
+		}
+		logger.info("** addTaskInExtinguishableRange; end **");
+	}
+
+	protected void removeFinishedTask(){
+		logger.info("** removeFinishedTask(); **");
+		for(Iterator<Task> it = currentTaskList.iterator();it.hasNext();){
+			Task t = it.next();
+			if(t.isFinished()){
+				logger.debug("Remove finished task: " + t);
+				it.remove();
+			}
+		}
+		logger.info("** removeFinishedTask(); end **");
+	}
+	protected void addTaskByMessage(){
+		logger.info("** addTaskByMessage(); **");
+		for(NAITOMessage m : receivedNow){
+			if(m instanceof FireMessage){
+				FireMessage fm = (FireMessage)m;
+				List<EntityID> ids = fm.getIDs();
+				for(EntityID id : ids){
+					Building target = (Building)(model.getEntity(id));
+					currentTaskList.add(new ExtinguishTask(this, target));
+					logger.debug("Add ExtinguishTask By Message.:" + target);
+				}
+			}
+		}
+		logger.info("** addTaskByMessage(); end **");
+	}
+	protected void updateTaskPriority(){
+		for(Task t : currentTaskList){
+			t.updatePriority();
+		}
+	}
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum(){
 		return EnumSet.of(StandardEntityURN.FIRE_BRIGADE);
 	}

@@ -8,6 +8,8 @@ import naito_rescue.agent.*;
 import java.util.*;
 import java.io.*;
 
+import static naito_rescue.debug.DebugUtil.*;
+
 public class ExtinguishTask extends Task
 {
 	Building target;
@@ -27,5 +29,16 @@ public class ExtinguishTask extends Task
 	
 	@Override
 	public void updatePriority(){
+		// int distance = model.getDistance(owner.getLocation(), target);
+		priority = 3000;
+	}
+	
+	@Override
+	public String toString(){
+		StringBuffer sb = new StringBuffer();
+		sb.append("ExtinguishTask:\n");
+		sb.append("    Priority = " + priority + "\n");
+		sb.append("=> isFinished? " + isFinished());
+		return sb.toString();
 	}
 }
