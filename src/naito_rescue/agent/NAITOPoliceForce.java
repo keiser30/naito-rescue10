@@ -10,11 +10,12 @@ import rescuecore2.log.Logger;
 
 import rescuecore2.standard.entities.*;
 import rescuecore2.misc.geometry.*;
-
 import naito_rescue.*;
+import naito_rescue.agent.*;
+import naito_rescue.object.*;
+import naito_rescue.router.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
-import naito_rescue.object.*;
 import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
 

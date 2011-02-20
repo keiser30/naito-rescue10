@@ -29,9 +29,7 @@ public class ExtinguishJob extends Job
 	@Override
 	public String toString(){
 		StringBuffer sb = new StringBuffer();
-		sb.append("\t ExtinguishJob:\n");
-		sb.append("\t\t Target = " + target + "\n");
-		sb.append("\t => isFinished? " + isFinished());
+		sb.append("ExtinguishJob(" + target.getID().getValue() + "," + isFinished() + ")");
 		return sb.toString();
 	}
 }

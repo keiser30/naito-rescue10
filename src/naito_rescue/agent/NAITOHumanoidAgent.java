@@ -12,12 +12,13 @@ import rescuecore2.standard.messages.*;
 import rescuecore2.misc.geometry.*;
 
 import naito_rescue.*;
+import naito_rescue.agent.*;
+import naito_rescue.object.*;
+import naito_rescue.router.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
-import naito_rescue.object.*;
 import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
-
 
 public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITOAgent<E>
 {
@@ -44,10 +45,16 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 isOnTeam = isLeader || isMember;
 		 
 		 if(isOnTeam && !crowlingBuildings.isEmpty()){
-		 	logger.info("Crowling. \n" + crowlingBuildings);
+		 	//logger.info("Crowling. \n" + crowlingBuildings);
+		 	/*
 		 	for(Building b : crowlingBuildings){
 		 		currentTaskList.add(new MoveTask(this, b));
 		 	}
+		 	*/
+		 	Building b1 = (Building)(model.getEntity(new EntityID(956)));
+		 	Building b2 = (Building)(model.getEntity(new EntityID(960)));
+		 	currentTaskList.add(new MoveTask(this, b1));
+		 	currentTaskList.add(new MoveTask(this, b2));
 		 }
 
 	}
@@ -60,7 +67,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			return;
 		}else if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
-			logger.info("Let's Go.");
+			//logger.info("Let's Go.");
 			subscribe(DEFAULT_CHANNEL); //デフォルトで1番のチャンネルを用いる
 		}
 
@@ -123,7 +130,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				   !(reported.getBlockades().isEmpty()) &&
 				   (this.time - reportedBlockedRoad.get(reported)) >= 2){
 					
-					logger.info("Help me. reported = " + reported);
+					//logger.info("Help me. reported = " + reported);
 					ClearMessage clear_msg = messageManager.createClearMessage(-1, ADDR_PF, false, getLocation().getID());
 					messageManager.sendMessage(clear_msg);
 					reportedBlockedRoad.put(reported, this.time);
@@ -139,7 +146,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			StandardEntity civPos = c.getPosition(model);
 			//道路を突っ走ってる市民に対してLoadを実行しようとするとコケる気がする...
 			if(civPos instanceof Building && !reportedVictimInBuilding.contains((Building)civPos)){
-				logger.info("Report victim. victim = " + c + ", location = " + civPos);
+				//logger.info("Report victim. victim = " + c + ", location = " + civPos);
 				CivilianInBuildingMessage mes = new CivilianInBuildingMessage(civPos.getID());
 				messageManager.accumulateMessage(mes);
 				reportedVictimInBuilding.add((Building)civPos);
@@ -147,45 +154,45 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		}
 	}
 	private void reportBurningBuildingInView(){
-		logger.info("<><><> reportBurningBuildingInView(); <><><>");
+		//logger.info("<><><> reportBurningBuildingInView(); <><><>");
 		List<Building> view_buildings = getViewBuildings();
 		for(Building b : view_buildings){
 			if(b.isOnFire()){
 				NAITOBuilding nBuilding = allNAITOBuildings.get(b.getID());
-				if(nBuilding != null && nBuilding.hasReportedFire()){
-					logger.info("Report Burning Building. building = " + b);
+				if(nBuilding != null && !nBuilding.hasReportedFire()){
+					//logger.info("Report Burning Building. building = " + b);
 					StandardEntityConstants.Fieryness fieryness = b.getFierynessEnum();
 					FireMessage mes = new FireMessage(b.getID());
 					messageManager.accumulateMessage(mes);
 					nBuilding.setReportFireTime(time);
 				}
 				if(nBuilding == null){
-					logger.debug("NAITOBuilding(" + b.getID() + ") is null.");
+					//logger.debug("NAITOBuilding(" + b.getID() + ") is null.");
 				}
 			}
 		}
-		logger.info("<><><> reportBurningBuildingInView(); end <><><>");
+		//logger.info("<><><> reportBurningBuildingInView(); end <><><>");
 	}
 	private void reportBlockedRoadInLocation(){
-		logger.info("<><><> reportBlockedRoadInLocation(); <><><>");
+		//logger.info("<><><> reportBlockedRoadInLocation(); <><><>");
 		if(!(this instanceof NAITOPoliceForce)){
 			StandardEntity location = getLocation();
 			if(location instanceof Road && ((Road)location).isBlockadesDefined() && !((Road)location).getBlockades().isEmpty()){
 				// 閉塞が発生しているRoadのIDを送りつける
 				//  -> 閉塞の発見と啓開は，このメッセージを受け取った啓開隊に任せる
 				NAITORoad nRoad = allNAITORoads.get(((Road)location).getID());
-				if(nRoad != null && nRoad.hasReportedBlockade()){
-					logger.info("Report Blockade. blocked road = " + location);
+				if(nRoad != null && !nRoad.hasReportedBlockade()){
+					//logger.info("Report Blockade. blocked road = " + location);
 					BlockedRoadMessage mes = new BlockedRoadMessage(getLocation().getID());
 					messageManager.accumulateMessage(mes);
 					nRoad.setReportBlockadeTime(time);
 				}
 				if(nRoad == null){
-					logger.debug("NAITORoad(" + ((Road)location).getID() + ") is null.");
+					//logger.debug("NAITORoad(" + ((Road)location).getID() + ") is null.");
 				}
 			}
 		}
-		logger.info("<><><> reportBlockedRoadInLocation(); end <><><>");
+		//logger.info("<><><> reportBlockedRoadInLocation(); end <><><>");
 	}
 //---------- //report関連 ----------
 
@@ -325,7 +332,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		separateBlock--;
 		if(separateBlock < 1) separateBlock = 1;
 
-		//roleIDの正規化...roleID=[0 ... pow(separateBlock)-1]になるように
+		//roleIDの正規化...roleID=[0 ... pow(separateBlock,2)-1]になるように
 		while(roleID >= (separateBlock * separateBlock)) roleID -= separateBlock;
 		
 		//どっからどこまでのBuildingを探訪するか決定する
@@ -346,7 +353,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			}
 		}
 		pretty_crowling.append("]");
-		logger.info(pretty_crowling.toString());
+		//logger.info(pretty_crowling.toString());
 	}
 
 	
@@ -393,14 +400,14 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
     
     //行く手を遮る閉塞を得る
     public Blockade getBlockadeOnPath(List<EntityID> path){
-    	logger.info("path = " + path);
+    	//logger.info("path = " + path);
 		for(EntityID next : path){
 			Area area = (Area)(model.getEntity(next));
 			Blockade result = getTargetBlockade(area, maxRepairDistance);
 			if(result != null){
-				logger.info("Find blockade. blockade = " + result
-				            + ", at " + area
-				            + "(ID=" + area.getID().getValue() + ")");
+				//logger.info("Find blockade. blockade = " + result
+				//            + ", at " + area
+				//            + "(ID=" + area.getID().getValue() + ")");
 				return result;
 			}
 		}
@@ -415,7 +422,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		Area location = (Area)getLocation();
 		Blockade blockade = getTargetBlockade(location, maxDistance);
 		if(blockade != null){
-			logger.info("Find blockade. blockade = " + blockade + "at " + location);
+			//logger.info("Find blockade. blockade = " + blockade + "at " + location);
 			return blockade;
 		}
         //自分のいる場所の近傍について閉塞を得る
@@ -423,11 +430,11 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
             location = (Area)(model.getEntity(next));
             blockade = getTargetBlockade(location, maxDistance);
             if (blockade != null) {
-            	logger.info("Find blockade. blockade = " + blockade + "at " + location);
+            	//logger.info("Find blockade. blockade = " + blockade + "at " + location);
                 return blockade;
             }
         }
-		logger.info("There's no blockade.");
+		//logger.info("There's no blockade.");
         return null;
   	}
     public int findDistanceTo(Blockade b, int x, int y) {
@@ -448,7 +455,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
     public Blockade getTargetBlockade(Area area, int maxDistance) {
         
 		if (!area.isBlockadesDefined()) {
-			logger.info(area + " is not defined blockade.");
+			//logger.info(area + " is not defined blockade.");
             return null;
         }
         List<EntityID> ids = area.getBlockades();
@@ -459,7 +466,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
             Blockade b = (Blockade)model.getEntity(next);
             double d = findDistanceTo(b, x, y);
             if (maxDistance < 0 || d < maxDistance) {
-            	logger.info("Find blockade. blockade = " + b);
+            	//logger.info("Find blockade. blockade = " + b);
                 return b;
             }
         }

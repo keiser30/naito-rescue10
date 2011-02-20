@@ -20,6 +20,8 @@ public final class NAITORouter{
 	HashMap<Area, Integer> estimates;
 	HashMap<Area, Area>    ancestors;
 
+	PassableChecker checker;
+	
     public NAITORouter(NAITOAgent owner) {
 		this.owner = owner;
 		this.model = owner.getWorldModel();
@@ -29,10 +31,15 @@ public final class NAITORouter{
 		CLOSED = new ArrayList<Area>();
 		estimates = new HashMap<Area, Integer>();
 		ancestors = new HashMap<Area, Area>();
+		
+		checker = new PassableChecker(owner);
 	}
 
     public List<EntityID> breadthFirstSearch(StandardEntity start, StandardEntity... goals) {
         return breadthFirstSearch(start, Arrays.asList(goals));
+    }
+    public List<EntityID> getRoute(StandardEntity goal){
+    	return breadthFirstSearch(owner.getLocation(), goal);
     }
 
     /**
@@ -94,24 +101,6 @@ public final class NAITORouter{
         } while (current != start);
         //        Logger.debug("Final path: " + path);
         return path;
-    }
-    public List<Area> passableNeighbours(){
-    	StandardEntity area = owner.getLocation();
-    	if(! (area instanceof Area)){
-    		return new ArrayList<Area>();
-    	}
-    	return passableNeighbours((Area)area);
-    }
-    public List<Area> passableNeighbours(Area a){
-    	List<Area> result = new ArrayList<Area>();
-    	
-    	List<EntityID> neighbours = a.getNeighbours();
-    	for(EntityID id : neighbours){
-    		StandardEntity entity = model.getEntity(id);
-    		if(! (entity instanceof Area)) continue;
-    		Area area = (Area)entity;
-    	}
-    	return result;
     }
 
     /**

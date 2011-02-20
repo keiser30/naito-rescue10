@@ -16,6 +16,7 @@ import rescuecore2.messages.*;
 import naito_rescue.*;
 import naito_rescue.agent.*;
 import naito_rescue.object.*;
+import naito_rescue.router.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
 import naito_rescue.message.*;
@@ -31,14 +32,15 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	protected ChangeSet           changed;
 	//protected MySearch            search;
 	protected NAITORouter         search;
+	protected PassableChecker     checker;
 	protected E                   me;
 	
 	//Message
 	protected List<NAITOMessage>         receivedNow;
 	
 	//Task-Job関連
-	//protected ArrayList<Task>            currentTaskList;
-	protected TreeSet<Task>              currentTaskList;
+	protected PriorityQueue<Task>            currentTaskList;
+	//protected TreeSet<Task>              currentTaskList;
 	protected Task                       currentTask;
 	protected Job                        currentJob;
 	
@@ -122,7 +124,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
     	messageManager = new NAITOMessageManager(this);
     	//search = new MySearch(model, this);
     	search = new NAITORouter(this);
-    	
+    	checker = new PassableChecker(this);
     	receivedNow = new ArrayList<NAITOMessage>();
     	
 		 /**
@@ -145,7 +147,8 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		 	Road road = (Road)r;
 		 	allNAITORoads.put(road.getID(), new NAITORoad(road));
 		 }
-		 currentTaskList = new TreeSet<Task>();
+		 
+		 currentTaskList = new PriorityQueue<Task>();
 		 
 		 fbSize = pfSize = atSize = allAgentsSize = 0;
 		 fbList = new ArrayList<FireBrigade>();
@@ -256,13 +259,33 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	public NAITORouter getSearch(){
 		return search;
 	}
+	public PassableChecker getPassableChecker(){
+		return checker;
+	}
 	public int getTime(){
 		return time;
 	}
 	public E getMe(){
 		return me();
 	}
-	
+	public int getX(){
+		if(me() instanceof Human){
+			return ((Human)me()).getX();
+		}else if(me() instanceof Building){
+			return ((Building)me()).getX();
+		}else{
+			return -1;
+		}
+	}
+	public int getY(){
+		if(me() instanceof Human){
+			return ((Human)me()).getY();
+		}else if(me() instanceof Building){
+			return ((Building)me()).getY();
+		}else{
+			return -1;
+		}
+	}
 //***** メソッドのラッパー群 *****//
 	public void move(StandardEntity target){
 		//ダイクストラ法の経路探索が実装できるまで，breadthFirstSearchを使う
