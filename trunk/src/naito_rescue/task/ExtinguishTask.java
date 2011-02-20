@@ -19,6 +19,9 @@ public class ExtinguishTask extends Task
 		this.target = target;
 	}
 	
+	public Building getTarget(){
+		return target;
+	}
 	@Override
 	public List<Job> createJobList(){
 		ArrayList<Job> list = new ArrayList<Job>();
@@ -36,9 +39,26 @@ public class ExtinguishTask extends Task
 	@Override
 	public String toString(){
 		StringBuffer sb = new StringBuffer();
-		sb.append("ExtinguishTask:\n");
-		sb.append("    Priority = " + priority + "\n");
-		sb.append("=> isFinished? " + isFinished());
+		sb.append("ExtinguishTask(" + target.getID().getValue() + "," + priority + "," + isFinished() + ")");
 		return sb.toString();
+	}
+	
+	@Override
+	public boolean equals(Object other){
+		logger.info("[[[ ExtinguishTask.equals(); ]]]");
+		if(!(other instanceof ExtinguishTask)){
+			logger.info("Other is not instanceof ExtinguishTask. return false;");
+			logger.info("[[[ ExtinguishTask.equals(); end. ]]]");
+			return false;
+		}
+		ExtinguishTask otherTask = (ExtinguishTask)other;
+		if(this.target.getID().getValue() != otherTask.getTarget().getID().getValue()){
+			logger.info("Other ExtinguishTask is not equal target. return false;");
+			logger.info("[[[ ExtinguishTask.equals(); ]]]");
+			return false;
+		}
+		logger.info("return true;");
+		logger.info("[[[ ExtinguishTask.equals(); ]]]");
+		return true;
 	}
 }

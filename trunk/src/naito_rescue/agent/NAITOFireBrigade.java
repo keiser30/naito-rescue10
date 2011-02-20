@@ -10,12 +10,14 @@ import rescuecore2.log.Logger;
 import rescuecore2.standard.entities.*;
 import rescuecore2.standard.messages.*;
 
+import naito_rescue.*;
+import naito_rescue.agent.*;
+import naito_rescue.object.*;
+import naito_rescue.router.*;
 import naito_rescue.task.*;
 import naito_rescue.task.job.*;
-import naito_rescue.object.*;
 import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
-
 import static naito_rescue.debug.DebugUtil.*;
 
 /* Task-Jobを基にした行動設計 */
@@ -43,46 +45,57 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			return;
 		}
-		
+		logger.info("\n");
+		logger.info("##########    NAITOFireBrigade.think();    ##########");
+		logger.info("Current Area = " + getLocation());
+		logger.info("CurrentTaskList = " + currentTaskList);
+		logger.debug("Preferred Task = " + currentTaskList.peek());
 		addTaskInExtinguishableRange();
 		removeFinishedTask();
 		addTaskByMessage();
 		updateTaskPriority();
 		
 		if(currentTaskList.isEmpty()){
-			logger.info("currentTaskList.isEmpty(); ==> randomWalk();");
+			//logger.info("currentTaskList.isEmpty(); ==> randomWalk();");
 			move(randomWalk());
 			return;
 		}
 		
-		currentTask = currentTaskList.last();
+		//logger.info("NAITOFireBrigade.currentTaskList = " + currentTaskList);
+		//currentTask = currentTaskList.last();
 		
-		logger.debug("currentTask.priority = " + currentTask.getPriority());
-		logger.debug("All Tasks priority debug print...");
+		currentTask = currentTaskList.peek();
+		if(currentTask != null) logger.info("currentTask = " + currentTask);
+		//logger.debug("currentTask.priority = " + currentTask.getPriority());
+		//logger.debug("All Tasks priority debug print...");
 		StringBuffer sb = new StringBuffer();
 		for(Task t : currentTaskList){
 			sb.append(t.getPriority() + ", ");
 		}
-		logger.debug(sb.toString());
+		//logger.debug(sb.toString());
 		
+		//ここの構造を直したい
 		Job currentJob = currentTask.currentJob();
-		if(currentJob != null) currentJob.act();
+		if(currentJob != null){
+			logger.info("currentJob = " + currentJob);
+			currentJob.act();
+		}
 		else{
 			//一番優先度の高いMoveTaskを持ってきて実行，など．
 		}
 	}
 	protected void addTaskInExtinguishableRange(){
-		logger.info("** addTaskInExtinguishableRange; **");
+		//logger.info("** addTaskInExtinguishableRange; **");
 		for(StandardEntity b : allBuildings){
 			Building building = (Building)b;
 			
 			int distance = model.getDistance(getLocation(), building);
-			if(building.isOnFire() && distance < maxExtinguishDistance){
+			if(building.isOnFire()){
 				currentTaskList.add(new ExtinguishTask(this, building));
-				logger.debug("Add ExtinguishTask In Range.:" + building);
+				//logger.debug("Add ExtinguishTask In Range.:" + building);
 			}
 		}
-		logger.info("** addTaskInExtinguishableRange; end **");
+		//logger.info("** addTaskInExtinguishableRange; end **");
 	}
 
 	protected void removeFinishedTask(){
@@ -97,7 +110,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		logger.info("** removeFinishedTask(); end **");
 	}
 	protected void addTaskByMessage(){
-		logger.info("** addTaskByMessage(); **");
+		//logger.info("** addTaskByMessage(); **");
 		for(NAITOMessage m : receivedNow){
 			if(m instanceof FireMessage){
 				FireMessage fm = (FireMessage)m;
@@ -105,15 +118,19 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 				for(EntityID id : ids){
 					Building target = (Building)(model.getEntity(id));
 					currentTaskList.add(new ExtinguishTask(this, target));
-					logger.debug("Add ExtinguishTask By Message.:" + target);
+					//logger.debug("Add ExtinguishTask By Message.:" + target);
 				}
 			}
 		}
-		logger.info("** addTaskByMessage(); end **");
+		//logger.info("** addTaskByMessage(); end **");
 	}
 	protected void updateTaskPriority(){
-		for(Task t : currentTaskList){
-			t.updatePriority();
+		Object[] tasks = currentTaskList.toArray();
+		currentTaskList.clear();
+		for(Object t : tasks){
+			Task task = (Task)t;
+			task.updatePriority();
+			currentTaskList.add(task);
 		}
 	}
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum(){

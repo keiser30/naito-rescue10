@@ -31,12 +31,10 @@ public class MoveToExtinguishPointJob extends Job
 	@Override
 	public String toString(){
 		StringBuffer sb = new StringBuffer();
-		sb.append("\t MoveToExtinguishPointJob:\n");
-		sb.append("\t\t Target = " + target + "\n");
-		sb.append("\t\t Distance from owner = " + model.getDistance(owner.getLocation(), target));
-		sb.append("\t\t (maxDistance = " + owner.maxExtinguishDistance + ")\n");
-		sb.append("\t => isFinished? " + isFinished());
-		
+		sb.append("MoveJob(" + target.getID().getValue() + "," + 
+				owner.maxExtinguishDistance + "," + 
+				model.getDistance(owner.getLocation(), target) + "," + 
+				isFinished() + ")");
 		return sb.toString();
 	}
 }

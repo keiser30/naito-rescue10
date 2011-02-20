@@ -14,7 +14,7 @@ public abstract class Task implements Comparable<Task>
 	protected NAITOHumanoidAgent owner;
 	protected StandardWorldModel model;
 	protected MyLogger           logger;
-	protected int                priority = -1;
+	protected int                priority = 0;
 	protected List<Job>          jobList;
 	
 	public Task(NAITOHumanoidAgent owner){
@@ -63,5 +63,18 @@ public abstract class Task implements Comparable<Task>
 	@Override
 	public final int compareTo(Task otherTask){
 		return otherTask.getPriority() - this.getPriority();
+		//return this.getPriority() - otherTask.getPriority();
 	} 
+	
+	@Override
+	public boolean equals(Object other){
+		logger.info("[[[ Task.equals(); ]]]");
+		
+		if(!(other instanceof Task)){
+			logger.info("Other is not equals to Task. return false; ");
+			logger.info("[[[ Task.equals(); end. ]]]");
+			return false;
+		}
+		return this.equals(other);
+	}
 }
