@@ -39,9 +39,9 @@ public class BlockedRoadMessage extends NAITOBaseMessage
 		this();
 		setIDs(Arrays.asList(id));
 	}
-	public BlockedRoadMessage(int buildingID){
+	public BlockedRoadMessage(int roadID){
 		this();
-		setIDs(new int[]{buildingID});
+		setIDs(new int[]{roadID});
 	}
 	@Override
 	protected void decodeMessage(RawDataInputStream in){

@@ -39,7 +39,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	protected List<NAITOMessage>         receivedNow;
 	
 	//Task-Job関連
-	protected PriorityQueue<Task>            currentTaskList;
+	protected PriorityQueue<Task>        currentTaskList;
 	//protected TreeSet<Task>              currentTaskList;
 	protected Task                       currentTask;
 	protected Job                        currentJob;
@@ -240,6 +240,12 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		viewInfoManager.update(changed);
     }
     
+    public void addTaskIfNew(Task task){
+    	for(Task t : currentTaskList){
+    		if(t.equals(task) return;
+    	}
+    	currentTaskList.add(task);
+    }
 //***** ゲッタとセッタ *****
 	public StandardEntity getLocation(){
 		return location();
@@ -250,6 +256,18 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	}
 	public StandardWorldModel getWorldModel(){
 		return model;
+	}
+	public int getMaxExtinguishDistance(){
+		return maxExtinguishDistance;
+	}
+	public int getMaxRepairDistance(){
+		return maxRepairDistance;
+	}
+	public int getViewDistance(){
+		return viewDistance;
+	}
+	public int getMaxExtinguishPower(){
+		return maxExtinguishPower;
 	}
 	/*
 	public MySearch getSearch(){
@@ -298,7 +316,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		}
 		*/
 		//List<EntityID> path = search.AStar((Area)getLocation(), (Area)target);
-		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
+		List<EntityID> path = search.getRoute(target);
 		if(path != null){
 			move(path);
 		}else{
@@ -306,7 +324,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		}
 	}
 	public void move(StandardEntity target, int x, int y){
-		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
+		List<EntityID> path = search.getRoute(target);
 		if(path != null){
 			logger.info("path = " + path + ", (x, y) = (" + x + ", " + y + ")");
 			move(path, x, y);

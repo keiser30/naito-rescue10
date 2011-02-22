@@ -42,40 +42,50 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			return;
 		}
+		logger.info("\n");
+		logger.info("##########    NAITOFireBrigade.think();    ##########");
+		logger.info("Current Area = " + getLocation());
+		logger.info("CurrentTaskList = " + currentTaskList);
+		logger.debug("Preferred Task = " + currentTaskList.peek());
+		
+		//こいつは遠い所から行かせた方がいいんじゃないか
+		
+		// 自分のいる場所から隣接エリアへ通行不可となっている閉塞を啓開する
+		// (本当はPure Task-Jobでやりたい)
+		Area location = (Area)(getLocation());
+		}
 	}
 
 
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
 		return EnumSet.of(StandardEntityURN.POLICE_FORCE);
-    } 
-
-	private List<Road> getBlockedRoads(ChangeSet changed){
-		
-		ArrayList<Road> result = new ArrayList<Road>();
-		//まず視界情報について検査
-		for(EntityID id : changed.getChangedEntities()){
-			StandardEntity entity = model.getEntity(id);
-			if(entity instanceof Road){
-				Road r = (Road)entity;
-				if(r.isBlockadesDefined() && !r.getBlockades().isEmpty()){
-					
-					result.add(r);
-				}
-			}
-		}
-		//次にallRoadsについて検査
-		for(StandardEntity road : allRoads){
-			if(road instanceof Road){
-				Road r = (Road)road;
-				if(r.isBlockadesDefined() && !r.getBlockades().isEmpty()){
-					result.add(r);
-				}
-			}
-		}
-		if(result.isEmpty()){
-			
-		}
-		return result;
-	}
+    }
+    
+    public Blockade getTargetBlockade(Area area, int maxDistance) {
+        //logger.debug("Looking for nearest blockade in " + area);
+        logger.info("NAITOPoliceForce.getTargetBlockade(" + area + ", " + maxDistance + ")");
+		if (!area.isBlockadesDefined()) {
+            //Logger.debug("Blockades undefined");
+			logger.info("!area.isBlockadesDefined(); ==> return null;");
+            return null;
+        }
+        List<EntityID> ids = area.getBlockades();
+        // Find the first blockade that is in range.
+        int x = me().getX();
+        int y = me().getY();
+        for (EntityID next : ids) {
+            Blockade b = (Blockade)model.getEntity(next);
+            double d = findDistanceTo(b, x, y);
+            //logger.debug("Distance to " + b + " = " + d);
+            if (maxDistance < 0 || d < maxDistance) {
+                //logger.debug("In range");
+				logger.info("There is blockade.");
+				logger.debug("" + b);
+                return b;
+            }
+        }
+        logger.info("No blockades in range");
+        return null;
+    }	
 
 }
