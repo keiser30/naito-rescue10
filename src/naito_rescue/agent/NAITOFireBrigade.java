@@ -50,6 +50,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		logger.info("Current Area = " + getLocation());
 		logger.info("CurrentTaskList = " + currentTaskList);
 		logger.debug("Preferred Task = " + currentTaskList.peek());
+		
 		addTaskInExtinguishableRange();
 		removeFinishedTask();
 		addTaskByMessage();
@@ -91,7 +92,8 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			
 			int distance = model.getDistance(getLocation(), building);
 			if(building.isOnFire()){
-				currentTaskList.add(new ExtinguishTask(this, building));
+				//currentTaskList.add(new ExtinguishTask(this, building));
+				addTaskIfNew(new ExtinguishTask(this, building));
 				//logger.debug("Add ExtinguishTask In Range.:" + building);
 			}
 		}
@@ -117,7 +119,8 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 				List<EntityID> ids = fm.getIDs();
 				for(EntityID id : ids){
 					Building target = (Building)(model.getEntity(id));
-					currentTaskList.add(new ExtinguishTask(this, target));
+					//currentTaskList.add(new ExtinguishTask(this, target));
+					addTaskIfNew(new ExtinguishTask(this, target));
 					//logger.debug("Add ExtinguishTask By Message.:" + target);
 				}
 			}

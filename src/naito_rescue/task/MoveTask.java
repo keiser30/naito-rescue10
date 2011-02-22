@@ -30,9 +30,9 @@ public class MoveTask extends Task
 	@Override
 	public void updatePriority(){
 		//0 to 2500
-		//logger.info("=== MoveTask.updatePriority(); ===");
+		////logger.trace("=== MoveTask.updatePriority(); ===");
 		//int distance = model.getDistance(owner.getLocation(), target);
-		//logger.debug("Distance to target = " + distance);
+		////logger.debug("Distance to target = " + distance);
 		int p = 0;
 		PassableChecker checker = owner.getPassableChecker();
 		List<EntityID> path = owner.getSearch().getRoute(target);
@@ -56,20 +56,23 @@ public class MoveTask extends Task
 	}
 	@Override
 	public boolean equals(Object other){
-		logger.info("[[[ MoveTask.equals(); ]]]");
+		//logger.trace("[[[ MoveTask.equals(); ]]]");
 		if(!(other instanceof MoveTask)){
-			logger.info("Other is not equal MoveTask. return false; ");
-			logger.info("[[[ MoveTask.equals(); end. ]]]");
+			//logger.trace("Other is not equal MoveTask. return false; ");
+			logger.trace("MoveTask.equals() ==> return false;");
+			//logger.trace("[[[ MoveTask.equals(); end. ]]]");
 			return false;
 		}
 		MoveTask otherTask = (MoveTask)other;
 		if(this.target.getID().getValue() != otherTask.getTarget().getID().getValue()){
-			logger.info("Other MoveTask is not equal target. return false; ");
-			logger.info("[[[ MoveTask.equals(); end. ]]]");
+			//logger.trace("Other MoveTask is not equal target. return false; ");
+			//logger.trace("[[[ MoveTask.equals(); end. ]]]");
+			logger.trace("MoveTask.equals() ==> return false;");
 			return false;
 		}
-		logger.info("return true; ");
-		logger.info("[[[ MoveTask.equals(); end. ]]]");
+		//logger.trace("return true; ");
+		//logger.trace("[[[ MoveTask.equals(); end. ]]]");
+		logger.trace("MoveTask.equals() ==> return true;");
 		return true;
 	}
 }
