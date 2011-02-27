@@ -52,8 +52,8 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		logger.debug("Preferred Task = " + currentTaskList.peek());
 		
 		addTaskInExtinguishableRange();
-		removeFinishedTask();
 		addTaskByMessage();
+		removeFinishedTask();
 		updateTaskPriority();
 		
 		if(currentTaskList.isEmpty()){

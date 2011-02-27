@@ -50,19 +50,19 @@ public class NAITOMessageManager
 	public List<NAITOMessage> receiveMessages(AKSpeak speak){
 		byte[] compressedRawData = speak.getContent();
 		if(compressedRawData == null || compressedRawData.length == 0){
-			logger.info("zero message has received. ==> return empty list.");
+			//logger.info("zero message has received. ==> return empty list.");
 			return EMPTY_LIST;			
 		}
 		
 		RawDataInputStream stream = compressor.decompress(compressedRawData);
 		List<NAITOMessage> decoded = converter.decodeMessages(stream);
 
-		logger.info("NAITOMessageManager.receiveMessages();");
-		logger.info("-- received " + decoded.size() + " messages. --");
+		//logger.info("NAITOMessageManager.receiveMessages();");
+		//logger.info("-- received " + decoded.size() + " messages. --");
 		for(NAITOMessage m : decoded){
-			logger.debug(m.toString());
+			//logger.debug(m.toString());
 		}
-		logger.info("receiveMessages(); end.");
+		//logger.info("receiveMessages(); end.");
 		return decoded;
 	}
 	//送信の終わったメッセージをリストから削除することで
@@ -79,13 +79,13 @@ public class NAITOMessageManager
 		RawDataOutputStream stream = converter.encodeMessages(list);
 		byte[] encoded = compressor.compress(stream);
 
-		logger.info("NAITOMessageManager.sendMessages();");
-		logger.info("-- sended " + list.size() + " messages. --");
+		//logger.info("NAITOMessageManager.sendMessages();");
+		//logger.info("-- sended " + list.size() + " messages. --");
 		for(NAITOMessage m : list){
-			logger.debug(m.toString());
+			//logger.debug(m.toString());
 		}
-		logger.debug("encoded array length = " + encoded.length);
-		logger.info("sendMessages(); end.");
+		//logger.debug("encoded array length = " + encoded.length);
+		//logger.info("sendMessages(); end.");
 
 		owner.speak(ch, encoded);
     } 

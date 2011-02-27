@@ -23,7 +23,7 @@ public class HelpMeInBlockadeMessage extends NAITOBaseMessage
 	private EntityID road_id = null;
 	
 	public HelpMeInBlockadeMessage(){
-		this.type = MessageType.HELP;
+		this.type = MessageType.HELP_BLOCK;
 	}
 	public HelpMeInBlockadeMessage(EntityID id){
 		this();

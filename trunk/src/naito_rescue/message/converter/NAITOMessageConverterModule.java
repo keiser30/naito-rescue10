@@ -52,7 +52,7 @@ public class NAITOMessageConverterModule implements IMessageConverterModule
 			case CIVILIAN:
 				m = new CivilianInBuildingMessage();
 				break;
-			case HELP:
+			case HELP_BLOCK:
 				m = new HelpMeInBlockadeMessage();
 				break;
 			case ACK:

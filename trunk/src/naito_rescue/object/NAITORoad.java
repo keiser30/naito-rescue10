@@ -17,24 +17,14 @@ import naito_rescue.task.job.*;
 import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
 
-public class NAITORoad
+public class NAITORoad extends NAITOArea
 {
-	private Road road;
 	private int  reportBlockadeTime = -1;
 	
 	public NAITORoad(Road road){
-		this.road = road;
-	}
-	public void setReportBlockadeTime(int time){
-		this.reportBlockadeTime = time;
-	}
-	public int getReportBlockadeTime(){
-		return reportBlockadeTime;
-	}
-	public boolean hasReportedBlockade(){
-		return reportBlockadeTime != -1;
+		super(road);
 	}
 	public Road getStandardRoad(){
-		return road;
+		return (Road)object;
 	}
 }

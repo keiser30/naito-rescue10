@@ -69,12 +69,12 @@ public class DebugBuildingLayer extends AreaLayer<Building> {
 		float x = (float)(rect.getX() + (rect.getWidth() / 2));
 		float y = (float)(rect.getY() + (rect.getHeight() / 2));
 		g.setFont(g.getFont().deriveFont(Font.BOLD, 15));
-		g.setColor(Color.orange);
+		g.setColor(Color.white);
 		
 		FontMetrics metrics = g.getFontMetrics();
 		int width  = metrics.stringWidth(str);
 		int height = metrics.getHeight();
-		//g.drawString(str, (x - (width / 2)), (y + (height / 2)));
+		g.drawString(str, (x - (width / 2)), (y + (height / 2)));
 	}
     private void drawFieryness(Building b, Polygon shape, Graphics2D g) {
         if (!b.isFierynessDefined()) {
