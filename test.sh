@@ -12,4 +12,5 @@ xterm -e "cd $RCRS_BOOT_DIR; ./start.sh -m $MAP" &
 
 sleep 10
 
-./go.sh
+./go.sh &
+./viewer.sh --viewer.maximise=true

@@ -17,13 +17,11 @@ import naito_rescue.task.job.*;
 import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
 
-public class NAITOBuilding
+public class NAITOBuilding extends NAITOArea
 {
-	Building building;
 	int      reportFireTime = -1;
-	
 	public NAITOBuilding(Building building){
-		this.building = building;
+		super(building);
 	}
 	public void setReportFireTime(int time){
 		this.reportFireTime = time;
@@ -35,6 +33,6 @@ public class NAITOBuilding
 		return reportFireTime != -1;
 	}
 	public Building getStandardBuilding(){
-		return building;
+		return (Building)object;
 	}
 }

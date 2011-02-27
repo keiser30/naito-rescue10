@@ -43,7 +43,7 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 			return;
 		}
 		logger.info("\n");
-		logger.info("##########    NAITOFireBrigade.think();    ##########");
+		logger.info("##########    NAITOPoliceForce.think();    ##########");
 		logger.info("Current Area = " + getLocation());
 		logger.info("CurrentTaskList = " + currentTaskList);
 		logger.debug("Preferred Task = " + currentTaskList.peek());
@@ -52,11 +52,73 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 		
 		// 自分のいる場所から隣接エリアへ通行不可となっている閉塞を啓開する
 		// (本当はPure Task-Jobでやりたい)
+		
 		Area location = (Area)(getLocation());
+		Blockade target = getTargetBlockade(location, maxRepairDistance / 2);
+		if(target != null){
+		}
+		//addTaskByMessage();
+		removeFinishedTask();
+		updateTaskPriority();
+		
+		if(currentTaskList == null || currentTaskList.isEmpty()){
+			move(randomWalk());
+			return;
+		}
+		currentTask = currentTaskList.peek();
+		if(currentTask != null) logger.info("currentTask = " + currentTask);
+		
+		//ここの構造を直したい
+		Job currentJob = currentTask.currentJob();
+		if(currentJob != null){
+			logger.info("currentJob = " + currentJob);
+			currentJob.act();
+		}
+		else{
+			//一番優先度の高いMoveTaskを持ってきて実行，など．
+		}
+		
+	}
+	protected void removeFinishedTask(){
+		logger.info("** removeFinishedTask(); **");
+		for(Iterator<Task> it = currentTaskList.iterator();it.hasNext();){
+			Task t = it.next();
+			if(t.isFinished()){
+				logger.debug("Remove finished task: " + t);
+				it.remove();
+			}
+		}
+		logger.info("** removeFinishedTask(); end **");
+	}
+	protected void addTaskByMessage(){
+		logger.info("@@@@ NAITOPoliceForce.addTaskByMessage(); @@@@");
+		for(NAITOMessage m : receivedNow){
+			logger.debug("Process Message: " + m);
+			if(m instanceof BlockedRoadMessage){
+				BlockedRoadMessage brm = (BlockedRoadMessage)m;
+				logger.debug("One BlockedRoadMessage has received. ");
+				List<EntityID> ids = brm.getIDs();
+				for(EntityID id : ids){
+					NAITOArea nArea = allNAITOAreas.get(id);
+					if(nArea != null){
+						logger.info("Add ClearPathTask(" + nArea + ").");
+						addTaskIfNew(new ClearPathTask(this, nArea));
+					}
+				}
+			}else if(m instanceof HelpMeInBlockadeMessage){
+			}
+		}
+		logger.info("@@@@ NAITOPoliceForce.addTaskByMessage(); end. @@@@");
+	}
+	protected void updateTaskPriority(){
+		Object[] tasks = currentTaskList.toArray();
+		currentTaskList.clear();
+		for(Object t : tasks){
+			Task task = (Task)t;
+			task.updatePriority();
+			currentTaskList.add(task);
 		}
 	}
-
-
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
 		return EnumSet.of(StandardEntityURN.POLICE_FORCE);
     }

@@ -48,8 +48,19 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 if(isOnTeam && !crowlingBuildings.isEmpty()){
 		 	//logger.info("Crowling. \n" + crowlingBuildings);
 		 	
+		 	boolean iamPF = (this instanceof NAITOPoliceForce);
+		 	
+		 	//debug
+		 	if(iamPF){
+		 		NAITOArea road297 = allNAITOAreas.get(new EntityID(297));
+		 		currentTaskList.add(new ClearPathTask(this, road297));
+		 		return;
+		 	}
+		 	//end debug
 		 	for(Building b : crowlingBuildings){
-		 		currentTaskList.add(new MoveTask(this, b));
+		 		NAITOBuilding nBuilding = allNAITOBuildings.get(b.getID());
+		 		if(iamPF) currentTaskList.add(new ClearPathTask(this, nBuilding));
+		 		else currentTaskList.add(new MoveTask(this, b));
 		 	}
 		 	
 		 }
@@ -62,11 +73,14 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		
 		logger.setTime(time);
 		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+			updateVisitedNAITOArea();
 			return;
 		}else if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			//logger.info("Let's Go.");
 			subscribe(DEFAULT_CHANNEL); //デフォルトで1番のチャンネルを用いる
 		}
+		
+		updateVisitedNAITOArea();
 		
 		// 自分の座標が閉塞のShapeに含まれている場合
 		// どうにも動くことができないので，情報をPFに送る
@@ -86,7 +100,40 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		
 		messageManager.flushAccumulatedMessages(DEFAULT_CHANNEL);
 	}
-
+	private void updateVisitedNAITOArea(){
+		//logger.info("*** NAITOHumanoidAgent.updateVisitedNAITOArea(); ***");
+		Human me = (Human)(me());
+		
+		//今いる場所を更新
+		
+		//PositionHistoryからの更新
+		NAITOArea currentArea = allNAITOAreas.get(getLocation().getID());
+		if(currentArea != null){
+			currentArea.setVisitedTime(time);
+		}else{
+			logger.info("Agent's current area is null ... Why!!?");
+		}
+		int[] history = me.getPositionHistory();
+		if(history == null)
+			return;
+		if(history.length % 2 != 0){
+			logger.info("Why!!?");
+			return;
+		}
+		for(int i = 0;i < history.length-1;i += 2){
+			int x = history[i];
+			int y = history[i+1];
+			Collection<StandardEntity> col = model.getObjectsInRange(x, y, 1);
+			for(StandardEntity en : col){
+				logger.info("Location in (" + x + "," + y + ") = " + en + " has VISITED marked. ");
+				if(en instanceof Area){
+					NAITOArea area = allNAITOAreas.get(en.getID());
+					area.setVisitedTime(time);
+				}
+			}
+		}
+		//logger.info("*** NAITOHumanoidAgent.updateVisitedNAITOArea(); end. ***");
+	}
 	//メッセージの取得
 	/*
 	public List<naito_rescue.message.Message> receiveMessage(AKSpeak speak){
@@ -263,8 +310,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				decideCrowlingBuildings();
 			}
 			*/
-			teamMembers.addAll(fbList);
+			//teamMembers.addAll(fbList);
 			teamMembers.addAll(pfList);
+			/*
 			if(this instanceof NAITOFireBrigade){
 				if(fbList.get(0).getID().getValue() == me().getID().getValue()){
 					isLeader = true;
@@ -273,6 +321,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				}
 				decideCrowlingBuildings();
 			}
+			*/
 			if(this instanceof NAITOPoliceForce){
 				if(atList.get(0).getID().getValue() == me().getID().getValue()){
 					isLeader = true;
@@ -464,7 +513,19 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
         }
         return (int)best;
 	}
-	
+	public int distanceToClosestPoint(Area area){
+		List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(area.getApexList()), true);
+		double best = Double.MAX_VALUE;
+		Point2D origin = new Point2D(getX(), getY());
+		for(Line2D next : lines){
+			Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
+			double d = GeometryTools2D.getDistance(origin, closest);
+			if(d < best){
+				best = d;
+			}
+		}
+		return (int)best;
+	}
     public Blockade getTargetBlockade(Area area, int maxDistance) {
         
 		if (!area.isBlockadesDefined()) {

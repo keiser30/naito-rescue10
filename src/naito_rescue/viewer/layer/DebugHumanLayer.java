@@ -32,6 +32,8 @@ import rescuecore2.log.Logger;
 
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.AmbulanceTeam;
+import rescuecore2.standard.entities.PoliceForce;
+import rescuecore2.standard.entities.FireBrigade;
 import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.StandardEntityURN;
 
@@ -64,11 +66,18 @@ public class DebugHumanLayer extends StandardEntityViewLayer<Human> {
     
 	private Human targetHuman;
     private BasicStroke view_stroke = new BasicStroke(1.0f);
+    private BasicStroke repairble_stroke = new BasicStroke(1.0f);
+    private BasicStroke extinguish_stroke = new BasicStroke(1.0f);
 	private BasicStroke target_stroke = new BasicStroke(3.0f);
 	private static final int DEFAULT_VIEW_DISTANCE = 30000;
     private int viewDistance = DEFAULT_VIEW_DISTANCE;
+    private static final int DEFAULT_REPAIR_DISTANCE = 10000;
+    private int repairDistance = DEFAULT_REPAIR_DISTANCE;
+    private static final int DEFAULT_EXTINGUISH_DISTANCE = 50000;
+    private int extinguishDistance = DEFAULT_EXTINGUISH_DISTANCE;
     private static final String VIEW_DISTANCE_KEY = "perception.los.max-distance";
-
+    private static final String REPAIR_DISTANCE_KEY = "clear.repair.distance";
+	private static final String EXTINGUISH_DISTANCE_KEY = "fire.extinguish.max-distance";
     /**
        Construct a human view layer.
     */
@@ -95,6 +104,8 @@ public class DebugHumanLayer extends StandardEntityViewLayer<Human> {
         useIconsAction = new UseIconsAction();
         
         viewDistance = config.getIntValue(VIEW_DISTANCE_KEY, DEFAULT_VIEW_DISTANCE);
+        repairDistance = config.getIntValue(REPAIR_DISTANCE_KEY, DEFAULT_REPAIR_DISTANCE);
+        extinguishDistance = config.getIntValue(EXTINGUISH_DISTANCE_KEY, DEFAULT_EXTINGUISH_DISTANCE);
     }
 
     @Override
@@ -132,6 +143,7 @@ public class DebugHumanLayer extends StandardEntityViewLayer<Human> {
             g.setStroke(view_stroke);
             g.draw(view);
 
+			// Draw Target Human that Clicked on WorldModelViewer.
 			if(targetHuman != null && targetHuman.getID().getValue() == h.getID().getValue()){
 				targetCircle = new Ellipse2D.Double(x-(targetCircleSize/2),
 				                                    y-(targetCircleSize/2),
@@ -140,6 +152,27 @@ public class DebugHumanLayer extends StandardEntityViewLayer<Human> {
 				g.setColor(Color.red);
 				g.setStroke(target_stroke);
 				g.draw(targetCircle);
+			}
+			// draw PoliceForce Repairble Distance Circle.
+			if(h instanceof PoliceForce){
+				int   repairbleCircleSize = (t.xToScreen(location.first() + repairDistance) - x) * 2;
+				Shape repairbleCircle = new Ellipse2D.Double(x - (repairbleCircleSize / 2),
+				                                              y - (repairbleCircleSize / 2),
+				                                              repairbleCircleSize,
+				                                              repairbleCircleSize);
+			
+				g.setColor(Color.blue);
+				g.setStroke(repairble_stroke);
+				g.draw(repairbleCircle);
+			}else if(h instanceof FireBrigade){
+				int extinguishCircleSize = (t.xToScreen(location.first() + extinguishDistance) - x) * 2;
+				Shape extinguishCircle = new Ellipse2D.Double(x - (extinguishCircleSize / 2),
+				                                              y - (extinguishCircleSize / 2),
+				                                              extinguishCircleSize,
+				                                              extinguishCircleSize);
+				g.setColor(Color.orange);
+				g.setStroke(extinguish_stroke);
+				g.draw(extinguishCircle);
 			}
         }
         else {

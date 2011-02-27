@@ -33,6 +33,10 @@ public class MoveTask extends Task
 		////logger.trace("=== MoveTask.updatePriority(); ===");
 		//int distance = model.getDistance(owner.getLocation(), target);
 		////logger.debug("Distance to target = " + distance);
+		
+		//if(owner instanceof NAITOPoliceForce){
+		//	return;
+		//}
 		int p = 0;
 		PassableChecker checker = owner.getPassableChecker();
 		List<EntityID> path = owner.getSearch().getRoute(target);

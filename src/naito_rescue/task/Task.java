@@ -32,9 +32,9 @@ public abstract class Task implements Comparable<Task>
 		}
 		logger.trace("Print Job List...");
 		for(Job j : jobList){
-			logger.trace(j.toString());
+			logger.trace(j.toString() + " is now checking...");
 			if(!j.isFinished()){
-				logger.trace(j.getClass().getName() + " is not finished. return;");
+				logger.info(j.getClass().getName() + " is not finished. return;");
 				return j;
 			}
 		}

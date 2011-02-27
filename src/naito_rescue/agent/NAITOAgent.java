@@ -52,8 +52,9 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	protected Collection<StandardEntity> ambulanceteams;
 	protected Collection<StandardEntity> civilians;
 	
-	protected Map<EntityID, NAITOBuilding>        allNAITOBuildings;
-	protected Map<EntityID, NAITORoad>            allNAITORoads;
+	public Map<EntityID, NAITOBuilding>        allNAITOBuildings;
+	public Map<EntityID, NAITORoad>            allNAITORoads;
+	public Map<EntityID, NAITOArea>            allNAITOAreas;
 	
 	//コンフィグからとってくる情報のキー(URN)
 	private static final String          SAY_COMMUNICATION_MODEL = "kernel.standard.StandardCommunicationModel";
@@ -139,13 +140,18 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		 
 		 allNAITOBuildings = new HashMap<EntityID, NAITOBuilding>();
 		 allNAITORoads = new HashMap<EntityID, NAITORoad>();
+		 allNAITOAreas = new HashMap<EntityID, NAITOArea>();
 		 for(StandardEntity b : allBuildings){
 		 	Building building = (Building)b;
-		 	allNAITOBuildings.put(building.getID(), new NAITOBuilding(building));
+		 	NAITOBuilding nb = new NAITOBuilding(building);
+		 	allNAITOBuildings.put(building.getID(), nb);
+		 	allNAITOAreas.put(building.getID(), nb);
 		 }
 		 for(StandardEntity r : allRoads){
 		 	Road road = (Road)r;
-		 	allNAITORoads.put(road.getID(), new NAITORoad(road));
+		 	NAITORoad nr = new NAITORoad(road);
+		 	allNAITORoads.put(road.getID(), nr);
+		 	allNAITOAreas.put(road.getID(), nr);
 		 }
 		 
 		 currentTaskList = new PriorityQueue<Task>();
@@ -185,6 +191,31 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		 firestation     = model.getEntitiesOfType(StandardEntityURN.FIRE_STATION);
 		 policeoffice    = model.getEntitiesOfType(StandardEntityURN.POLICE_OFFICE);
 		 ambulancecenter = model.getEntitiesOfType(StandardEntityURN.AMBULANCE_CENTRE);
+		 
+		 for(StandardEntity refuge : allRefuges){
+		 	Refuge r = (Refuge)refuge;
+		 	NAITOBuilding nRefuge = new NAITOBuilding(r);
+		 	allNAITOBuildings.put(r.getID(), nRefuge);
+		 	allNAITOAreas.put(r.getID(), nRefuge);
+		 }
+		 for(StandardEntity fstation : firestation){
+		 	FireStation fs = (FireStation)fstation;
+		 	NAITOBuilding nFireStation = new NAITOBuilding(fs);
+		 	allNAITOBuildings.put(fs.getID(), nFireStation);
+		 	allNAITOAreas.put(fs.getID(), nFireStation);
+		 }
+		 for(StandardEntity poffice : policeoffice){
+		 	PoliceOffice po = (PoliceOffice)poffice;
+		 	NAITOBuilding nPoliceOffice = new NAITOBuilding(po);
+		 	allNAITOBuildings.put(po.getID(), nPoliceOffice);
+		 	allNAITOAreas.put(po.getID(), nPoliceOffice);
+		 }
+		 for(StandardEntity acenter : ambulancecenter){
+		 	AmbulanceCentre ac = (AmbulanceCentre)acenter;
+		 	NAITOBuilding nAmbulanceCentre = new NAITOBuilding(ac);
+		 	allNAITOBuildings.put(ac.getID(), nAmbulanceCentre);
+		 	allNAITOAreas.put(ac.getID(), nAmbulanceCentre);
+		 }
 		 
 		 //センターレスに関する設定
 		 fireStationLess     = firestation.isEmpty();
@@ -242,7 +273,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
     
     public void addTaskIfNew(Task task){
     	for(Task t : currentTaskList){
-    		if(t.equals(task) return;
+    		if(t.equals(task)) return;
     	}
     	currentTaskList.add(task);
     }
@@ -250,7 +281,18 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	public StandardEntity getLocation(){
 		return location();
 	}
-
+	public Map<EntityID, NAITOBuilding> 
+	getNAITOBuildingMap(){
+		return allNAITOBuildings;
+	}
+	public Map<EntityID, NAITORoad>
+	getNAITORoadMap(){
+		return allNAITORoads;
+	}
+	public Map<EntityID, NAITOArea>
+	getNAITOAreaMap(){
+		return allNAITOAreas;
+	}
 	public MyLogger getLogger(){
 		return logger;
 	}
