@@ -43,16 +43,16 @@ public class ClearPathTask extends Task
 		List<EntityID> path = owner.getSearch().getRoute(target);
 		//エージェントが今いる場所から次の場所へ移動できない場合，
 		//まずそこを啓開するジョブを追加しましょう
-		/*
-		if(!checker.isPassable(Arrays.asList(path.get(0)))){
-			logger.info("Crossed Blockade in location(" + location + ") to next (" + path.get(0) + ").");
+		
+		if(path != null && !checker.isPassable(Arrays.asList(path.get(0)))){
+			//logger.info("Crossed Blockade in location(" + location + ") to next (" + path.get(0) + ").");
 			NAITOArea nArea = (NAITOArea)(owner.allNAITOAreas.get(path.get(0)));
-			logger.info("Add ClearJob(" + nArea.getID().getValue() + ") to cross location.");
+			//logger.info("Add ClearJob(" + nArea.getID().getValue() + ") to cross location.");
 			list.add(new ClearJob(owner, nArea));
 		}else{
-			logger.info("Passable from location (" + location + ") to next (" + path.get(0) + ").");
+			//logger.info("Passable from location (" + location + ") to next (" + path.get(0) + ").");
 		}
-		*/
+		
 		
 		//logger.info("Path From: " + location);
 		//logger.info("Path To:   " + target);
@@ -83,26 +83,26 @@ public class ClearPathTask extends Task
 	//Jobを返す必要がある度に経路を再計算するため，currentJobをオーバライドする
 	@Override
 	public Job currentJob(){
-		logger.info("8<8<8< ClearPathTask.currentJob(); 8<8<8<");
+		//logger.info("8<8<8< ClearPathTask.currentJob(); 8<8<8<");
 		jobList.clear();
 		jobList.addAll(createJobList());
 		
-		logger.info("Print Job List...");
+		//logger.info("Print Job List...");
 		StringBuffer sb = new StringBuffer();
 		for(Job j : jobList){
 			sb.append(j + ", ");
 		}
-		logger.info(sb.toString());
+		//logger.info(sb.toString());
 		for(Job j : jobList){
-			logger.trace(j.toString() + " is now checking...");
+			//logger.trace(j.toString() + " is now checking...");
 			if(!j.isFinished()){
-				logger.info(j + " is not finished. return;");
-				logger.info("8<8<8< ClearPathTask.currentJob(); end. 8<8<8<");
+				//logger.info(j + " is not finished. return;");
+				//logger.info("8<8<8< ClearPathTask.currentJob(); end. 8<8<8<");
 				return j;
 			}
 		}
-		logger.info("All Jobs has been finished. return null;");
-		logger.info("8<8<8< ClearPathTask.currentJob(); end. 8<8<8<");
+		//logger.info("All Jobs has been finished. return null;");
+		//logger.info("8<8<8< ClearPathTask.currentJob(); end. 8<8<8<");
 		return null;
 	}
 	public NAITOArea getTarget(){

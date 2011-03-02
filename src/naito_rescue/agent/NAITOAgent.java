@@ -260,7 +260,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		List<NAITOMessage> receivedNow_sublist;
 		for(Command hear : heard){
 			if(hear instanceof AKSpeak){
-				logger.info("1 AKSpeak has received.");
+				//logger.info("1 AKSpeak has received.");
 				receivedNow_sublist = messageManager.receiveMessages((AKSpeak)hear);
 				if(receivedNow_sublist != null && !receivedNow_sublist.isEmpty()){
 					receivedNow.addAll(receivedNow_sublist);
@@ -352,7 +352,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		/*
 		List<EntityID> path = search.breadthFirstSearch(getLocation(), target);
 		if(path != null){
-			logger.info("path = " + path);
+			//logger.info("path = " + path);
 			move(path);
 		}else{
 		}
@@ -368,58 +368,58 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	public void move(StandardEntity target, int x, int y){
 		List<EntityID> path = search.getRoute(target);
 		if(path != null){
-			logger.info("path = " + path + ", (x, y) = (" + x + ", " + y + ")");
+			//logger.info("path = " + path + ", (x, y) = (" + x + ", " + y + ")");
 			move(path, x, y);
 		}else{	
 		}
 	}
 	public void move(List<EntityID> path){
-		logger.info("path = " + path);
+		//logger.info("path = " + path);
 		sendMove(time, path);
 	}
 
 	public void move(List<EntityID> path, int x, int y){
-		logger.info("path = " + path + ", (x, y) = (" + x + ", " + y + ")");
+		//logger.info("path = " + path + ", (x, y) = (" + x + ", " + y + ")");
 		sendMove(time, path, x, y);
 	}
 	public void extinguish(EntityID target){
 		extinguish(target, maxExtinguishPower);
 	}
 	public void extinguish(EntityID target, int water){
-		logger.info("extinguish(" + target + ", " + water + ");");
+		//logger.info("extinguish(" + target + ", " + water + ");");
 		sendExtinguish(time, target, water);
 	}
 	public void clear(EntityID target){
-		logger.info("clear(" + target + ");");
+		//logger.info("clear(" + target + ");");
 		sendClear(time, target);
 	}
 	public void load(EntityID target){
-		logger.info("load(" + target + ");");
+		//logger.info("load(" + target + ");");
 		sendLoad(time, target);
 	}
 	public void unload(){
-		logger.info("unload();");
+		//logger.info("unload();");
 		sendUnload(time);
 	}
 	public void rescue(EntityID target){
-		logger.info("rescue(" + target + ");");
+		//logger.info("rescue(" + target + ");");
 		sendRescue(time, target);
 	}
 	public void rest(){
-		logger.info("rest();");
+		//logger.info("rest();");
 		sendRest(time);
 	}
 	//全部これに統一した方が楽
 	public void speak(int channel, byte[] data){
-		logger.info("speak(" + channel + ", data);");
+		//logger.info("speak(" + channel + ", data);");
 		sendSpeak(time, channel, data);
 	}
 	public void subscribe(int... channels){
-		logger.info("subscribe(" + channels + ");");
+		//logger.info("subscribe(" + channels + ");");
 		sendSubscribe(time, channels);
 	}
 	public void say(byte[] data){
-		logger.info("say(data);");
+		//logger.info("say(data);");
 		
 //		if(useSpeak){
 //			
@@ -432,7 +432,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		sendSpeak(time, 0, data);
 	}
 	public void tell(byte[] data){
-		logger.info("tell(data);");
+		//logger.info("tell(data);");
 		sendTell(time, data);
 	}
 	

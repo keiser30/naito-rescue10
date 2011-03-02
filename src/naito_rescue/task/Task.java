@@ -26,15 +26,15 @@ public abstract class Task implements Comparable<Task>
 		//updatePriority();
 	}
 	public Job currentJob(){
-		logger.trace("*** currentJob(); ***");
+		//logger.trace("*** currentJob(); ***");
 		if(jobList.isEmpty()){
 			jobList.addAll(createJobList());
 		}
-		logger.trace("Print Job List...");
+		//logger.trace("Print Job List...");
 		for(Job j : jobList){
-			logger.trace(j.toString() + " is now checking...");
+			//logger.trace(j.toString() + " is now checking...");
 			if(!j.isFinished()){
-				logger.info(j.getClass().getName() + " is not finished. return;");
+				//logger.info(j.getClass().getName() + " is not finished. return;");
 				return j;
 			}
 		}
@@ -68,11 +68,11 @@ public abstract class Task implements Comparable<Task>
 	
 	@Override
 	public boolean equals(Object other){
-		logger.info("[[[ Task.equals(); ]]]");
+		//logger.info("[[[ Task.equals(); ]]]");
 		
 		if(!(other instanceof Task)){
-			logger.info("Other is not equals to Task. return false; ");
-			logger.info("[[[ Task.equals(); end. ]]]");
+			//logger.info("Other is not equals to Task. return false; ");
+			//logger.info("[[[ Task.equals(); end. ]]]");
 			return false;
 		}
 		return this.equals(other);

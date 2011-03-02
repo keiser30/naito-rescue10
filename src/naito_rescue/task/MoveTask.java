@@ -30,9 +30,9 @@ public class MoveTask extends Task
 	@Override
 	public void updatePriority(){
 		//0 to 2500
-		////logger.trace("=== MoveTask.updatePriority(); ===");
+		//logger.trace("=== MoveTask.updatePriority(); ===");
 		//int distance = model.getDistance(owner.getLocation(), target);
-		////logger.debug("Distance to target = " + distance);
+		//logger.debug("Distance to target = " + distance);
 		
 		//if(owner instanceof NAITOPoliceForce){
 		//	return;
@@ -63,7 +63,7 @@ public class MoveTask extends Task
 		//logger.trace("[[[ MoveTask.equals(); ]]]");
 		if(!(other instanceof MoveTask)){
 			//logger.trace("Other is not equal MoveTask. return false; ");
-			logger.trace("MoveTask.equals() ==> return false;");
+			//logger.trace("MoveTask.equals() ==> return false;");
 			//logger.trace("[[[ MoveTask.equals(); end. ]]]");
 			return false;
 		}
@@ -71,12 +71,12 @@ public class MoveTask extends Task
 		if(this.target.getID().getValue() != otherTask.getTarget().getID().getValue()){
 			//logger.trace("Other MoveTask is not equal target. return false; ");
 			//logger.trace("[[[ MoveTask.equals(); end. ]]]");
-			logger.trace("MoveTask.equals() ==> return false;");
+			//logger.trace("MoveTask.equals() ==> return false;");
 			return false;
 		}
 		//logger.trace("return true; ");
 		//logger.trace("[[[ MoveTask.equals(); end. ]]]");
-		logger.trace("MoveTask.equals() ==> return true;");
+		//logger.trace("MoveTask.equals() ==> return true;");
 		return true;
 	}
 }

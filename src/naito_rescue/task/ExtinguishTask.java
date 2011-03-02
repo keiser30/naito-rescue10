@@ -45,20 +45,20 @@ public class ExtinguishTask extends Task
 	
 	@Override
 	public boolean equals(Object other){
-		logger.info("[[[ ExtinguishTask.equals(); ]]]");
+		//logger.info("[[[ ExtinguishTask.equals(); ]]]");
 		if(!(other instanceof ExtinguishTask)){
-			logger.info("Other is not instanceof ExtinguishTask. return false;");
-			logger.info("[[[ ExtinguishTask.equals(); end. ]]]");
+			//logger.info("Other is not instanceof ExtinguishTask. return false;");
+			//logger.info("[[[ ExtinguishTask.equals(); end. ]]]");
 			return false;
 		}
 		ExtinguishTask otherTask = (ExtinguishTask)other;
 		if(this.target.getID().getValue() != otherTask.getTarget().getID().getValue()){
-			logger.info("Other ExtinguishTask is not equal target. return false;");
-			logger.info("[[[ ExtinguishTask.equals(); ]]]");
+			//logger.info("Other ExtinguishTask is not equal target. return false;");
+			//logger.info("[[[ ExtinguishTask.equals(); ]]]");
 			return false;
 		}
-		logger.info("return true;");
-		logger.info("[[[ ExtinguishTask.equals(); ]]]");
+		//logger.info("return true;");
+		//logger.info("[[[ ExtinguishTask.equals(); ]]]");
 		return true;
 	}
 }
