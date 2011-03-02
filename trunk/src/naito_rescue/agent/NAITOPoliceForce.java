@@ -42,11 +42,11 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			return;
 		}
-		logger.info("\n");
-		logger.info("##########    NAITOPoliceForce.think();    ##########");
-		logger.info("Current Area = " + getLocation());
-		logger.info("CurrentTaskList = " + currentTaskList);
-		logger.debug("Preferred Task = " + currentTaskList.peek());
+		//logger.info("\n");
+		//logger.info("##########    NAITOPoliceForce.think();    ##########");
+		//logger.info("Current Area = " + getLocation());
+		//logger.info("CurrentTaskList = " + currentTaskList);
+		//logger.debug("Preferred Task = " + currentTaskList.peek());
 		
 		//こいつは遠い所から行かせた方がいいんじゃないか
 		
@@ -66,12 +66,12 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 			return;
 		}
 		currentTask = currentTaskList.peek();
-		if(currentTask != null) logger.info("currentTask = " + currentTask);
+		if(currentTask != null) //logger.info("currentTask = " + currentTask);
 		
 		//ここの構造を直したい
 		Job currentJob = currentTask.currentJob();
 		if(currentJob != null){
-			logger.info("currentJob = " + currentJob);
+			//logger.info("currentJob = " + currentJob);
 			currentJob.act();
 		}
 		else{
@@ -80,35 +80,35 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 		
 	}
 	protected void removeFinishedTask(){
-		logger.info("** removeFinishedTask(); **");
+		//logger.info("** removeFinishedTask(); **");
 		for(Iterator<Task> it = currentTaskList.iterator();it.hasNext();){
 			Task t = it.next();
 			if(t.isFinished()){
-				logger.debug("Remove finished task: " + t);
+				//logger.debug("Remove finished task: " + t);
 				it.remove();
 			}
 		}
-		logger.info("** removeFinishedTask(); end **");
+		//logger.info("** removeFinishedTask(); end **");
 	}
 	protected void addTaskByMessage(){
-		logger.info("@@@@ NAITOPoliceForce.addTaskByMessage(); @@@@");
+		//logger.info("@@@@ NAITOPoliceForce.addTaskByMessage(); @@@@");
 		for(NAITOMessage m : receivedNow){
-			logger.debug("Process Message: " + m);
+			//logger.debug("Process Message: " + m);
 			if(m instanceof BlockedRoadMessage){
 				BlockedRoadMessage brm = (BlockedRoadMessage)m;
-				logger.debug("One BlockedRoadMessage has received. ");
+				//logger.debug("One BlockedRoadMessage has received. ");
 				List<EntityID> ids = brm.getIDs();
 				for(EntityID id : ids){
 					NAITOArea nArea = allNAITOAreas.get(id);
 					if(nArea != null){
-						logger.info("Add ClearPathTask(" + nArea + ").");
+						//logger.info("Add ClearPathTask(" + nArea + ").");
 						addTaskIfNew(new ClearPathTask(this, nArea));
 					}
 				}
 			}else if(m instanceof HelpMeInBlockadeMessage){
 			}
 		}
-		logger.info("@@@@ NAITOPoliceForce.addTaskByMessage(); end. @@@@");
+		//logger.info("@@@@ NAITOPoliceForce.addTaskByMessage(); end. @@@@");
 	}
 	protected void updateTaskPriority(){
 		Object[] tasks = currentTaskList.toArray();
@@ -125,10 +125,10 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
     
     public Blockade getTargetBlockade(Area area, int maxDistance) {
         //logger.debug("Looking for nearest blockade in " + area);
-        logger.info("NAITOPoliceForce.getTargetBlockade(" + area + ", " + maxDistance + ")");
+        //logger.info("NAITOPoliceForce.getTargetBlockade(" + area + ", " + maxDistance + ")");
 		if (!area.isBlockadesDefined()) {
             //Logger.debug("Blockades undefined");
-			logger.info("!area.isBlockadesDefined(); ==> return null;");
+			//logger.info("!area.isBlockadesDefined(); ==> return null;");
             return null;
         }
         List<EntityID> ids = area.getBlockades();
@@ -141,12 +141,12 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
             //logger.debug("Distance to " + b + " = " + d);
             if (maxDistance < 0 || d < maxDistance) {
                 //logger.debug("In range");
-				logger.info("There is blockade.");
-				logger.debug("" + b);
+				//logger.info("There is blockade.");
+				//logger.debug("" + b);
                 return b;
             }
         }
-        logger.info("No blockades in range");
+        //logger.info("No blockades in range");
         return null;
     }	
 

@@ -45,11 +45,11 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			return;
 		}
-		logger.info("\n");
-		logger.info("##########    NAITOFireBrigade.think();    ##########");
-		logger.info("Current Area = " + getLocation());
-		logger.info("CurrentTaskList = " + currentTaskList);
-		logger.debug("Preferred Task = " + currentTaskList.peek());
+		//logger.info("\n");
+		//logger.info("##########    NAITOFireBrigade.think();    ##########");
+		//logger.info("Current Area = " + getLocation());
+		//logger.info("CurrentTaskList = " + currentTaskList);
+		//logger.debug("Preferred Task = " + currentTaskList.peek());
 		
 		addTaskInExtinguishableRange();
 		addTaskByMessage();
@@ -66,7 +66,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		//currentTask = currentTaskList.last();
 		
 		currentTask = currentTaskList.peek();
-		if(currentTask != null) logger.info("currentTask = " + currentTask);
+		if(currentTask != null) //logger.info("currentTask = " + currentTask);
 		//logger.debug("currentTask.priority = " + currentTask.getPriority());
 		//logger.debug("All Tasks priority debug print...");
 		StringBuffer sb = new StringBuffer();
@@ -78,7 +78,7 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		//ここの構造を直したい
 		Job currentJob = currentTask.currentJob();
 		if(currentJob != null){
-			logger.info("currentJob = " + currentJob);
+			//logger.info("currentJob = " + currentJob);
 			currentJob.act();
 		}
 		else{
@@ -101,15 +101,15 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 	}
 
 	protected void removeFinishedTask(){
-		logger.info("** removeFinishedTask(); **");
+		//logger.info("** removeFinishedTask(); **");
 		for(Iterator<Task> it = currentTaskList.iterator();it.hasNext();){
 			Task t = it.next();
 			if(t.isFinished()){
-				logger.debug("Remove finished task: " + t);
+				//logger.debug("Remove finished task: " + t);
 				it.remove();
 			}
 		}
-		logger.info("** removeFinishedTask(); end **");
+		//logger.info("** removeFinishedTask(); end **");
 	}
 	protected void addTaskByMessage(){
 		//logger.info("** addTaskByMessage(); **");

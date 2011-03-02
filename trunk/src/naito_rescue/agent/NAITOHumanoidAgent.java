@@ -45,33 +45,22 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 createCrowlingTeam();
 		 isOnTeam = isLeader || isMember;
 		 
+		 boolean iamPF = (this instanceof NAITOPoliceForce);
 		 if(isOnTeam && !crowlingBuildings.isEmpty()){
-		 	//logger.info("Crowling. \n" + crowlingBuildings);
-		 	
-		 	boolean iamPF = (this instanceof NAITOPoliceForce);
-		 	
-		 	//debug
-		 	if(iamPF){
-		 		NAITOArea road297 = allNAITOAreas.get(new EntityID(297));
-		 		currentTaskList.add(new ClearPathTask(this, road297));
-		 		return;
-		 	}
-		 	//end debug
-		 	for(Building b : crowlingBuildings){
-		 		NAITOBuilding nBuilding = allNAITOBuildings.get(b.getID());
-		 		if(iamPF) currentTaskList.add(new ClearPathTask(this, nBuilding));
-		 		else currentTaskList.add(new MoveTask(this, b));
-		 	}
-		 	
-		 }
-
+		 	//logger.info("Crowling. \n" + crowlingBuildings);		 	
+			for(Building b : crowlingBuildings){
+				NAITOBuilding nBuilding = allNAITOBuildings.get(b.getID());
+				if(iamPF) currentTaskList.add(new ClearPathTask(this, nBuilding));
+				else currentTaskList.add(new MoveTask(this, b));
+			}
+		}
 	}
 	
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard){
 		super.think(time, changed, heard);
 		
-		logger.setTime(time);
+		//logger.setTime(time);
 		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			updateVisitedNAITOArea();
 			return;
@@ -111,13 +100,13 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		if(currentArea != null){
 			currentArea.setVisitedTime(time);
 		}else{
-			logger.info("Agent's current area is null ... Why!!?");
+			//logger.info("Agent's current area is null ... Why!!?");
 		}
 		int[] history = me.getPositionHistory();
 		if(history == null)
 			return;
 		if(history.length % 2 != 0){
-			logger.info("Why!!?");
+			//logger.info("Why!!?");
 			return;
 		}
 		for(int i = 0;i < history.length-1;i += 2){
@@ -125,7 +114,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			int y = history[i+1];
 			Collection<StandardEntity> col = model.getObjectsInRange(x, y, 1);
 			for(StandardEntity en : col){
-				logger.info("Location in (" + x + "," + y + ") = " + en + " has VISITED marked. ");
+				//logger.info("Location in (" + x + "," + y + ") = " + en + " has VISITED marked. ");
 				if(en instanceof Area){
 					NAITOArea area = allNAITOAreas.get(en.getID());
 					area.setVisitedTime(time);
@@ -310,9 +299,9 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				decideCrowlingBuildings();
 			}
 			*/
-			//teamMembers.addAll(fbList);
+			teamMembers.addAll(fbList);
 			teamMembers.addAll(pfList);
-			/*
+			
 			if(this instanceof NAITOFireBrigade){
 				if(fbList.get(0).getID().getValue() == me().getID().getValue()){
 					isLeader = true;
@@ -321,7 +310,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				}
 				decideCrowlingBuildings();
 			}
-			*/
+			
+			
 			if(this instanceof NAITOPoliceForce){
 				if(atList.get(0).getID().getValue() == me().getID().getValue()){
 					isLeader = true;
@@ -330,6 +320,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				}
 				decideCrowlingBuildings();
 			}
+			
 		/*
 		}else if(fbSize == max && fbSize > CROWLABLE_NUM){
 			//FireBrigadeが探訪する

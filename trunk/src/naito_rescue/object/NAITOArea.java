@@ -22,6 +22,7 @@ public abstract class NAITOArea
 	protected Area object;
 	protected int  reportBlockadeTime = -1;
 	protected int  visitedTime = -1;
+	protected int  estimate = Integer.MAX_VALUE;
 	
 	public NAITOArea(Area object){
 		this.object = object;
@@ -45,6 +46,12 @@ public abstract class NAITOArea
 	public boolean hasVisited(){
 		return this.visitedTime != -1;
 	}
+	public void setEstimateCost(int cost){
+		this.estimate = cost;
+	}
+	public int getEstimateCost(){
+		return estimate;
+	}
 	public boolean isBlockadesDefined(){
 		return object.isBlockadesDefined();
 	}
@@ -56,5 +63,18 @@ public abstract class NAITOArea
 	}
 	public Area getStandardArea(){
 		return object;
+	}
+	
+	@Override
+	public boolean equals(Object other){
+		if(!(other instanceof NAITOArea)){
+			return false;
+		}
+		NAITOArea otherArea = (NAITOArea)other;
+		if(this.getID().getValue() == otherArea.getID().getValue()){
+			return true;
+		}else{
+			return false;
+		}
 	}
 }
