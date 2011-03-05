@@ -17,12 +17,14 @@ import naito_rescue.task.job.*;
 import naito_rescue.message.*;
 import naito_rescue.message.manager.*;
 
+import static naito_rescue.debug.DebugUtil.*;
+
 public abstract class NAITOArea
 {
-	protected Area object;
-	protected int  reportBlockadeTime = -1;
-	protected int  visitedTime = -1;
-	protected int  estimate = Integer.MAX_VALUE;
+	protected Area   object;
+	protected int    reportBlockadeTime = -1;
+	protected int    visitedTime = -1;
+	protected double estimate = Double.MAX_VALUE;
 	
 	public NAITOArea(Area object){
 		this.object = object;
@@ -46,10 +48,10 @@ public abstract class NAITOArea
 	public boolean hasVisited(){
 		return this.visitedTime != -1;
 	}
-	public void setEstimateCost(int cost){
+	public void setEstimateCost(double cost){
 		this.estimate = cost;
 	}
-	public int getEstimateCost(){
+	public double getEstimateCost(){
 		return estimate;
 	}
 	public boolean isBlockadesDefined(){
@@ -64,9 +66,16 @@ public abstract class NAITOArea
 	public Area getStandardArea(){
 		return object;
 	}
+	public int getX(){
+		return object.getX();
+	}
+	public int getY(){
+		return object.getY();
+	}
 	
 	@Override
 	public boolean equals(Object other){
+		//p("NAITOArea.equals();");
 		if(!(other instanceof NAITOArea)){
 			return false;
 		}
@@ -76,5 +85,10 @@ public abstract class NAITOArea
 		}else{
 			return false;
 		}
+	}
+	
+	@Override
+	public String toString(){
+		return "NAITOArea(" + object.getID().getValue() + ")";
 	}
 }

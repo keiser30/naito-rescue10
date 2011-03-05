@@ -40,12 +40,21 @@ public final class NAITORouter{
         return breadthFirstSearch(start, Arrays.asList(goals));
     }
     public List<EntityID> getRoute(StandardEntity goal){
-    	return breadthFirstSearch(owner.getLocation(), goal);
+    	//logger.info("");
+    	//logger.info("+*+*+*+*+*+*+*+* NAITORouter.getRoute(); +*+*+*+*+*+*+*+*");
+    	//logger.info("breadthFirstSearch(" + owner.getLocation() + ", " + goal);
+    	List<EntityID> path1 = breadthFirstSearch(owner.getLocation(), goal);
+    	//logger.info("breadthFirstSearch Result: " + path1);
+    	//logger.info("AStar(" + owner.getLocation() + ", " + goal);
+    	List<EntityID> path2 = AStar(owner.getLocation(), goal);
+    	//logger.info("AStar Result: " + path2);
+    	
+    	return AStar(owner.getLocation(), goal);
     }
 
 	public List<EntityID> AStar(StandardEntity start, StandardEntity goal){
 		String context = start + ", " + goal + "";
-		logger.info("///// NAITORouter.AStar(" + context + ") /////");
+		//logger.info("///// NAITORouter.AStar(" + context + ") /////");
 		
 		List<NAITOArea> OPEN   = new ArrayList<NAITOArea>();
 		List<NAITOArea> CLOSED = new ArrayList<NAITOArea>();
@@ -55,61 +64,110 @@ public final class NAITORouter{
 		if(start instanceof Area && goal instanceof Area){
 			startArea = (Area)(start);
 			goalArea = (Area)(goal);
-			int cost = estimateCost(ancestors, startArea, startArea, goalArea);
+			double cost = estimateCost(ancestors, startArea, startArea, goalArea);
 			
 			NAITOArea area = (NAITOArea)(owner.allNAITOAreas.get(start.getID()));
 			area.setEstimateCost(cost);
 			OPEN.add(area);
 		}else{
-			logger.info("start (" + start + ") or goal (" + goal + ") is null. return false;");
-			logger.info("///// NAITORouter.AStar(" + context + ") end. /////");
+			//logger.info("start (" + start + ") or goal (" + goal + ") is null. return false;");
+			//logger.info("///// NAITORouter.AStar(" + context + ") end. /////");
 			return null;
 		}
 		
 		boolean found = false;
 		ancestors.put(startArea, startArea);
+		
+		pathfind:
 		do{
+			//logger.info("Before Remove: " + OPEN);
 			NAITOArea nCurrent = removeMinimumCostArea(OPEN);//OPENから，コストの見積りが最小のエリアを取り出す
-			if(nCurrent == null)
+			//logger.info("After Remove: " + OPEN);
+			//logger.info("Minimum Cost Estimated Area = " + nCurrent.getStandardArea() + ", cost = " + nCurrent.getEstimateCost());
+			if(nCurrent == null){
+				//logger.info("break; oh...");
 				break; //そんなもんはないのでループ終了
+			}
 			if(nCurrent.getID().getValue() == goal.getID().getValue()){
 				// Goal.
+				//logger.info("Path is FOUND.");
 				found = true;
-				break;
+				break pathfind;
 			}
 			List<Area> areas = getNeighbours(nCurrent.getStandardArea());
+			//logger.info("Checking Neighbour: [" + nCurrent.getStandardArea() + "] => [ " + areas + " ]");
 			for(Area area : areas){
-				int newCost = estimateCost(ancestors, startArea, area, goalArea); //コストの見積り計算
+				//logger.info("Now Checking Neighbour = " + area);
+				if(area.getID().getValue() == goal.getID().getValue()){
+					//logger.info("Path is FOUND(in Checking Neighbour)");
+					ancestors.put(area, nCurrent.getStandardArea());
+					found = true;
+					break pathfind;
+				}else if(area instanceof Building){
+					continue;
+				}
 				NAITOArea nArea = (NAITOArea)(owner.allNAITOAreas.get(area.getID()));
+				if(!ancestors.containsKey(nArea.getStandardArea()))
+					ancestors.put(nArea.getStandardArea(), nCurrent.getStandardArea());
+				//int newCost = estimateCost(ancestors, startArea, area, goalArea); //コストの見積り計算
+				//if(newCost == -1){
+				//	//logger.info("Unreachable!!(in AStar())");
+				//	continue;
+				//}
+				//int newCost = 100;
+				double newCost = euclidDistance(nArea.getStandardArea(), goalArea);
+				//logger.info("newCost = " + newCost + " (from:" + nArea.getID().getValue() + ", to:" + goalArea.getID().getValue());
 				if(!OPEN.contains(nArea) && !CLOSED.contains(nArea)){
+					//logger.info("OPEN.add(" + nArea + ");");
 					OPEN.add(nArea);
 					nArea.setEstimateCost(newCost);
-					ancestors.put(nArea.getStandardArea(), nCurrent.getStandardArea());
+					//logger.info("Set Ancestor: " + nArea + " => " + nCurrent);
+					if(!ancestors.containsKey(nArea.getStandardArea()))
+						ancestors.put(nArea.getStandardArea(), nCurrent.getStandardArea());
 				}else{
-					int oldCost = nArea.getEstimateCost();
+					double oldCost = nArea.getEstimateCost();
+					//logger.info("Re: newCost = " + newCost + " (from:" + nArea.getID().getValue() + ", to:" + goalArea.getID().getValue());
+					//logger.info("oldCost = " + oldCost + " (from:" + nArea.getID().getValue() + ", to:" + goalArea.getID().getValue());
 					if(newCost < oldCost){
+						//logger.info("Update Cost: Area = " + nArea + ", oldCost = " + oldCost + ", newCost = " + newCost);
 						nArea.setEstimateCost(newCost);
 						ancestors.remove(nArea.getStandardArea());
 						ancestors.put(nArea.getStandardArea(), nCurrent.getStandardArea());
+						//logger.info("Update Ancestor: " + nArea + " => " + nCurrent);
 						if(CLOSED.contains(nArea)){
 							CLOSED.remove(nArea);
 							OPEN.add(nArea);
+							//logger.info("CLOSED.remove(" + nArea + "); OPEN.add(" + nArea + ");");
 						}
 					}
 				}
 			}
 		}while(!found && !OPEN.isEmpty());
 		if(!found){
+			//logger.info("There's No Path From = " + startArea + " To = " + goalArea);
 			return null;
 		}
 		//closedをリストにして返す
+		Area current = (Area)(goal);
+        List<EntityID> path = new LinkedList<EntityID>();
+        do {
+        	//logger.info("current = " + current);
+            path.add(0, current.getID());
+            current = ancestors.get(current);
+            if (current == null) {
+                throw new RuntimeException("Found a node with no ancestor! Something is broken.");
+            }
+        } while (current.getID() != start.getID());
+        //logger.info("Path(AStar) to 956 is: " + path);
+        return path;
 	}
 	
 	private NAITOArea removeMinimumCostArea(List<NAITOArea> open){
-		int minCost = Integer.MAX_VALUE;
+		double minCost = Double.MAX_VALUE;
 		int index = -1;
 		for(int i = 0;i < open.size();i++){
 			NAITOArea area = open.get(i);
+			//logger.info("EstimatedCost = " + area.getEstimateCost() + ", minCost = " + minCost);
 			if(area.getEstimateCost() < minCost){
 				minCost = area.getEstimateCost();
 				index = i;
@@ -119,59 +177,117 @@ public final class NAITORouter{
 			return null;
 		return open.remove(index);
 	}
-	private int estimateCost(Map<Area, Area> ancestors, Area start, Area position, Area goal){
+	private double estimateCost(Map<Area, Area> ancestors, Area start, Area position, Area goal){
+		String context = "Map<Area, Area> ancestors, " + start + ", " + position + ", " + goal + "";
+		//logger.debug("+++++ estimateCost(" + context + ") +++++");
 		if(ancestors.isEmpty()){
+			//logger.debug("ancestors is Empty. return euclidDistance(); From start = " + start + ", To goal = " + goal);
+			
 			int startX = start.getX();
 			int startY = start.getY();
 			int endX   = goal.getX();
 			int endY   = goal.getY();
-			return euclidDistance(startX, startY, endX, endY);
+			
+			//logger.debug("+++++ estimateCost(" + context + ") end. +++++");
+			return euclidDistance(start.getX(), start.getY(), goal.getX(), goal.getY());
 		}
-		Area current = position;
-		Area previous = null;
+		
+		//logger.debug("Estimate G Value. ");
+		//logger.debug("ancestors = " + ancestors);
+		
+		
 		int estimateG = 0;
+		//position to ancestor's key (someone)
+		/*
+		Area neighbour = null;
+		List<Area> neighbours = getNeighbours(position);
+		Set<Area> keySet = ancestors.keySet();
+		for(Area n : neighbours){
+			if(keySet.contains(n)){
+				neighbour = n;
+			}
+		}
+		if(neighbour != null){
+			estimateG += estimateGValue(position, neighbour);
+		}else{
+			//logger.info("Unreachable!");
+			return -1;
+		}
+		*/
+		Area current = position; //neighbour;
+		Area previous = null;
 		do{
 			previous = current;
+			if(!ancestors.containsKey(current))
+				//logger.info("Not contains Key=" + current);
 			current = ancestors.get(current);
+			//logger.debug("Previous = " + previous + ", Current = " + current + ", call extimateGValue();");
+			//p("Previous = " + previous + ", Current = " + current + ", call extimateGValue();");
 			estimateG += estimateGValue(previous, current);
 		}while(current.getID().getValue() != start.getID().getValue());
 		
+		//logger.debug("Estimate H Value. Euclid Distance from CurrentArea's Center to GoalArea's Center.");
 		int startX = position.getX();
 		int startY = position.getY();
 		int endX   = goal.getX();
 		int endY   = goal.getY();
-		int estimateH = euclidDistance(startX, startY, endX, endY);
+		double estimateH = euclidDistance(startX, startY, endX, endY);
 		
-		int result = estimateG + estimateH;
+		//logger.debug("Estimate Result: G Value = " + estimateG + ", H Value = " + estimateH + "; return;");
+		//logger.debug("+++++ estimateCost(" + context + ") end. +++++");
+		double result = estimateG + estimateH;
 		return result;
 	}
-	private int estimateGValue(Area previous, Area current){
+	private double estimateGValue(Area previous, Area current){
+		String context = previous + ", " + current;
+		//logger.trace("----- estimateGValue(" + context + ") -----");
 		if(!previous.getNeighbours().contains(current.getID())){
+			//logger.trace("Previous Neighbour is Not contains Current Area. return -1;");
+			//logger.trace("----- estimateGValue(" + context + ") -----");
 			return -1;
+		}else if(previous.getID().getValue() == current.getID().getValue()){
+			return 0;
 		}
 		
-		int cost = 0;
+		double cost = 0;
 		
+		//logger.trace("Estimate Cost from CurrentArea's Center, to Edge's Center.");
 		Edge edgeTo = current.getEdgeTo(previous.getID());
+		
 		int  startX = current.getX();
 		int  startY = current.getY();
 		int  edgeX  = (edgeTo.getEndX() + edgeTo.getStartX()) / 2;
 		int  edgeY  = (edgeTo.getEndY() + edgeTo.getStartY()) / 2;
+		//logger.trace("Length of (" + startX + ", " + startY + ") => (" + edgeX + ", " + edgeY + ")");
 		
 		cost = euclidDistance(startX, startY, edgeX, edgeY);
+		
+		//cost = euclidDistance(current, edgeTo);
+		//logger.trace("Estimate Cost from Edge's Center, to PreviousArea's Center.");
 		
 		int endX = previous.getX();
 		int endY = previous.getY();
 		
+		//logger.trace("Length of (" + edgeX + ", " + edgeY + ") => (" + endX + ", " + endY + ")");
 		cost += euclidDistance(edgeX, edgeY, endX, endY);
+		
+		//cost += euclidDistance(edgeTo, previous);
 		return cost;
 	}
 	
-	private int euclidDistance(int startX, int startY, int endX, int endY){
+	private double euclidDistance(int startX, int startY, int endX, int endY){
 		int dX = endX - startX;
 		int dY = endY - startY;
 		
-		return (int) Math.sqrt((dX * dX) + (dY * dY));
+		//logger.info("dx = " + dX + ", dy = " + dY + "=> startX = " + startX + ", startY = " + startY + ", endX = " + endX + ", endY = " + endY + " => result = " + (int) Math.hypot(dX, dY) + " <= dx = " + dX + ", dy = " + dY);
+		//return (int) Math.sqrt((dX * dX) + (dY * dY));
+		return (int) Math.hypot(dX, dY);
+	}
+	
+	private int euclidDistance(StandardEntity e1, StandardEntity e2){
+		int result = model.getDistance(e1, e2);
+		//logger.info("euclidDistance(" + e1 + ", " + e2 + ") => result = " + result);
+		return result;
 	}
 	private List<Area> getNeighbours(Area area){
 		List<Area> result = new ArrayList<Area>();

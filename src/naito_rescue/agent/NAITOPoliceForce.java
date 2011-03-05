@@ -66,7 +66,8 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 			return;
 		}
 		currentTask = currentTaskList.peek();
-		if(currentTask != null) //logger.info("currentTask = " + currentTask);
+		//if(currentTask != null)
+		//logger.info("currentTask = " + currentTask);
 		
 		//ここの構造を直したい
 		Job currentJob = currentTask.currentJob();

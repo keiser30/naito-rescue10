@@ -40,6 +40,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		 crowlingBuildings = new ArrayList<Building>();
 		 teamMembers = new ArrayList<Human>();
 		 
+		 //end debug.
+		 /*
 		 //チーム分け
 		 isLeader = isMember = isOnTeam = false;
 		 createCrowlingTeam();
@@ -54,6 +56,7 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 				else currentTaskList.add(new MoveTask(this, b));
 			}
 		}
+		*/
 	}
 	
 	@Override
