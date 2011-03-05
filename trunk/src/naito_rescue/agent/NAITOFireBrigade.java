@@ -44,6 +44,18 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		super.think(time, changed, heard);
 		if (time < config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			return;
+		}else if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
+			//for debug.
+			logger.info("Testing for AStar Search. Move To Building(956).");
+			Building b956 = (Building)(model.getEntity(new EntityID(956)));
+			logger.info("breadthFirstSearch(" + getLocation() + ", " + b956 + ");");
+			List<EntityID> path1 = search.breadthFirstSearch(getLocation(), b956);
+			logger.info("breadthFirstSearch Result :" + path1);
+			logger.info("AStar(" + getLocation() + ", " + b956);
+			List<EntityID> path2 = search.AStar(getLocation(), b956);
+			logger.info("AStar Result: " + path2);
+			//end debug.
+			return;
 		}
 		//logger.info("\n");
 		//logger.info("##########    NAITOFireBrigade.think();    ##########");
@@ -66,7 +78,8 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 		//currentTask = currentTaskList.last();
 		
 		currentTask = currentTaskList.peek();
-		if(currentTask != null) //logger.info("currentTask = " + currentTask);
+		//if(currentTask != null)
+		//logger.info("currentTask = " + currentTask);
 		//logger.debug("currentTask.priority = " + currentTask.getPriority());
 		//logger.debug("All Tasks priority debug print...");
 		StringBuffer sb = new StringBuffer();

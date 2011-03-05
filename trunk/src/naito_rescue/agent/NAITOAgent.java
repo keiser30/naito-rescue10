@@ -366,12 +366,15 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		}
 	}
 	public void move(StandardEntity target, int x, int y){
+		search.getRoute(target);
+		/*
 		List<EntityID> path = search.getRoute(target);
 		if(path != null){
 			//logger.info("path = " + path + ", (x, y) = (" + x + ", " + y + ")");
 			move(path, x, y);
 		}else{	
 		}
+		*/
 	}
 	public void move(List<EntityID> path){
 		//logger.info("path = " + path);
