@@ -24,7 +24,7 @@ import rescuecore2.misc.geometry.*;
 public class NAITOMessageManager
 {
 	private NAITOAgent owner;
-	private final int DEFAULT_CHANNEL_CAPACITY = 255; //まぁ大体は
+	private final int DEFAULT_CHANNEL_CAPACITY = 255; 
 	private int channelCapacity = DEFAULT_CHANNEL_CAPACITY;
 	private final List<NAITOMessage> EMPTY_LIST = new ArrayList<NAITOMessage>();
 	private List<NAITOMessage> receivedHistory;
@@ -55,14 +55,19 @@ public class NAITOMessageManager
 		}
 		
 		RawDataInputStream stream = compressor.decompress(compressedRawData);
+		if(stream == null){
+			return null;
+		}
 		List<NAITOMessage> decoded = converter.decodeMessages(stream);
 
+		/*
 		//logger.info("NAITOMessageManager.receiveMessages();");
 		//logger.info("-- received " + decoded.size() + " messages. --");
 		for(NAITOMessage m : decoded){
 			//logger.debug(m.toString());
 		}
 		//logger.info("receiveMessages(); end.");
+		*/
 		return decoded;
 	}
 	//送信の終わったメッセージをリストから削除することで
@@ -76,7 +81,36 @@ public class NAITOMessageManager
 				if(bm.getID() == -1) generateBaseMessageID(bm);
 			}
         }
-		RawDataOutputStream stream = converter.encodeMessages(list);
+        RawDataOutputStream stream = new RawDataOutputStream();
+        for(NAITOMessage m : list){
+        	RawDataOutputStream temp = new RawDataOutputStream();
+        	try{
+        		temp.append(stream);
+        		temp.append(converter.encodeMessages(Arrays.asList(m)));
+        	}catch(Exception e){
+        		//logger.info("Something Wrong. Cannot append to temp.");
+        		continue;
+        	}
+        	
+        	if(compressor.compress(temp).length > 128-1){
+        		break;
+        	}
+        	else{
+        		//logger.info("stream.append(); length = " + stream.length());
+        		try{
+        			stream.append(converter.encodeMessages(Arrays.asList(m)));
+        		}catch(Exception e){
+        			//logger.info("Something Wrong. Cannot append to stream.");
+        		}
+        	}
+        }
+		// 末尾に、MessageType.NULLを書き込む
+		try{
+			stream.writeByte(MessageType.NULL.type());
+		}catch(Exception e){
+			//logger.info("Something Wrong. Cannot write Type.NULL in Message.");
+			return;
+		}
 		byte[] encoded = compressor.compress(stream);
 
 		//logger.info("NAITOMessageManager.sendMessages();");

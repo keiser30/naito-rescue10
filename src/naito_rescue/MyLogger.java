@@ -40,7 +40,7 @@ public class MyLogger
 	}
 	String      context = "";
 	
-	int         loglevel = INFO; //NOTHINGなら何もしない
+	int         loglevel = TRACE; //NOTHINGなら何もしない
 
 	public MyLogger(NAITOAgent owner, boolean isStdout){
 		if(loglevel >= NOTHING) return;

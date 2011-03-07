@@ -94,7 +94,7 @@ public class NAITOMessageConverterModule implements IMessageConverterModule
 				stream.append(rawdata);
 			}
 			// 末尾に、MessageType.NULLを書き込む
-			stream.writeByte(MessageType.NULL.type());
+			//stream.writeByte(MessageType.NULL.type());
 			// byte[] compress = compress(stream.toByteArray()); //圧縮
 			//byte[] compress = stream.toByteArray();
 			////p("return;");

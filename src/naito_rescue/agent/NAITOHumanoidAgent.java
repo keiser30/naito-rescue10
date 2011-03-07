@@ -26,6 +26,10 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 
 	private static final int            CROWLABLE_NUM = 5;
 	private static final int            DEFAULT_CHANNEL = 1;
+	protected int                       fbChannel = DEFAULT_CHANNEL; //FBに送る用のチャンネル
+	protected int                       pfChannel = DEFAULT_CHANNEL; //PFに送る用のチャンネル
+	protected int                       atChannel = DEFAULT_CHANNEL; //ATに送る用のチャンネル
+	protected int                       myChannel = DEFAULT_CHANNEL; //自分が聴く用のチャンネル
 	protected ArrayList<Building>       crowlingBuildings;
 	protected ArrayList<Human>          teamMembers;
 	
@@ -69,7 +73,8 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 			return;
 		}else if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			//logger.info("Let's Go.");
-			subscribe(DEFAULT_CHANNEL); //デフォルトで1番のチャンネルを用いる
+			decideCommunicationChannels();
+			subscribe(myChannel); //デフォルトで1番のチャンネルを用いる
 		}
 		
 		updateVisitedNAITOArea();
@@ -91,6 +96,17 @@ public abstract class NAITOHumanoidAgent<E extends StandardEntity> extends NAITO
 		reportCivilianInView();
 		
 		messageManager.flushAccumulatedMessages(DEFAULT_CHANNEL);
+	}
+	private void decideCommunicationChannels(){
+		int channelCount = config.getIntValue("comms.channels.count", -1);
+		if(channelCount == -1){
+		}else{
+			//logger.info("Channel Count = " + channelCount);
+		}
+		
+		for(int i = 0;i < channelCount;i++){
+			
+		}
 	}
 	private void updateVisitedNAITOArea(){
 		//logger.info("*** NAITOHumanoidAgent.updateVisitedNAITOArea(); ***");
