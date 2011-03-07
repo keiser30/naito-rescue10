@@ -37,7 +37,7 @@ public class NAITOCompressorModule implements ICompressorModule
 			////p("解凍前の配列長 = " + compress.length);
 			////p("解凍後の配列長 = " + result.getRawData().length);
 			return result;
-		}catch(Exception e){e.printStackTrace();}
+		}catch(Exception e){/*e.printStackTrace();*/}
 		return null;
 	}
 	

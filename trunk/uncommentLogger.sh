@@ -7,3 +7,7 @@ if [ -d $1 ] ; then
 		sed -i 's/\/\+logger\./logger\./g' $FILE
 	done
 fi
+
+if [ -f $1 ] ; then
+	sed -i 's/\/\+logger\./logger\./g' $1
+fi

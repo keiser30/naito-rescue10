@@ -28,71 +28,88 @@ public class PassableChecker
 		this.model = owner.getWorldModel();
 		this.logger = owner.getLogger();
 	}
-	/*
-	private boolean isPassableFromAgentToNeighbour(Area to){
-		//logger.debug("*** PassableChecker.isPassableFromAgentToNeighbour() ***");
-		Area from = (Area)(owner.getLocation());
-		//logger.debug("Checking From = " + from + " To Neighbour = " + to + " .");
-		if(!from.getNeighbours().contains(to.getID())){
-			//logger.debug(to + " is not neighbour of \"from\":" + from);
-			//logger.debug("return false;");
-			//logger.debug("*** PassableChecker.isPassableFromAgentToNeighbour() end. ***");
-			return false;
+	
+	public double lengthOfPath(List<EntityID> path){
+		//logger.info("");
+		if(path == null || path.size() == 0){
+			return 0;
 		}
-		
-		if(!from.isBlockadesDefined()){
-			//logger.debug("\"from\"(" + from + ") is not defined blockade.");
-			//logger.debug("return true;");
-			//logger.debug("*** PassableChecker.isPassableFromAgentToNeighbour() end. ***");
-			return true;
-		}
-		
-		List<Blockade> blockades = new ArrayList<Blockade>();
-		for(EntityID bID : from.getBlockades()){
-			Blockade blockade = (Blockade)(model.getEntity(bID));
-			blockades.add(blockade);
-		}
-		Edge edgeTo = from.getEdgeTo(to.getID());
-		double startX = owner.getX();
-		double startY = owner.getY();
-		double endX = (edgeTo.getEndX() + edgeTo.getStartX()) / 2;
-		double endY = (edgeTo.getEndY() + edgeTo.getStartY()) / 2;
-		
-		//logger.debug("edgeTo.getEndX()   = " + edgeTo.getEndX());
-		//logger.debug("edgeTo.getStartX() = " + edgeTo.getStartX());
-		//logger.debug("edgeTo.getEndY()   = " + edgeTo.getEndY());
-		//logger.debug("edgeTo.getStartY() = " + edgeTo.getStartY());
-		//logger.trace("endX        = " + endX);
-		//logger.trace("endY        = " + endY);
-		Line2D line = new Line2D(new Point2D(startX, startY), new Point2D(endX, endY));
-		
-		Point2D intersectionPoint;
-		for(Blockade blockade : blockades){
-			List<Line2D> bLines = getBlockadeLine2Ds(blockade);
-			for(Line2D bLine : bLines){
-				intersectionPoint = GeometryTools2D.getSegmentIntersectionPoint(line, bLine);
-				if(intersectionPoint != null){
-					//logger.debug("!!!!! Crossed Blockade (in isPassableFromAgentToNeighbour()) !!!!!");
-					//logger.debug("From     = " + from);
-					//logger.debug("To       = " + to);
-					//logger.debug("Blockade = " + blockade);
-					//logger.trace("Line (" + line.getOrigin() + ")=>(" + line.getEndPoint() + ") intersect Blockade.");
-					//logger.trace("bLine = (" + bLine.getOrigin() + ")=>(" + bLine.getEndPoint() + ")");
-					//logger.debug("Edge = (" + edgeTo.getStartX() + "," + edgeTo.getStartY() + ")=>("
-					//	 + edgeTo.getEndX() + "," + edgeTo.getEndY() + ")");
-					//logger.debug("Edge Center = (" + endX + "," + endY + ")");
-					//logger.debug("Intersect Point = (" + intersectionPoint + ")");
-					//logger.debug("return false;");
-					//logger.debug("*** PassableChecker.isPassableFromAgentToNeighbour() end. ***");
-					return false;
-				}
+		else if(path.size() == 1){
+			Area current = (Area)(owner.getLocation());
+			Area neighbour = (Area)(model.getEntity(path.get(0)));
+			if( !current.getNeighbours().contains(neighbour.getID()) ){
+				//logger.info("Agent Location(" + current.getID().getValue() + ")'s neighbour is not contains path.get(0)=" + neighbour.getID().getValue() + ", return 0;");
+				return 0;
 			}
 		}
-		//logger.debug("No blockades crossed.");
-		//logger.debug("*** PassableChecker.isPassableFromAgentToNeighbour() end. ***");
-		return true;
+		else if(path.size() >= 2){
+			//pathは非破壊で検査しなければならないことに注意
+			double length = 0;
+			//エージェントのいる所 => パスの0番目に至るエッジの中点まで
+			Area location = (Area)(owner.getLocation());
+			Area neighbour = (Area)(model.getEntity(path.get(0)));
+			if( !location.getNeighbours().contains(neighbour.getID()) ){
+				//logger.info("Agent Location(" + location.getID().getValue() + ")'s neighbour is not contains path.get(0)=" + neighbour.getID().getValue() + ", return 0;");
+				return 0;
+			}
+			Edge edgeTo = location.getEdgeTo(neighbour.getID());
+			if(edgeTo == null){
+				//logger.info("Edge is null; return 0;");
+				return 0;
+			}
+			int neighbourX = (edgeTo.getEndX() + edgeTo.getStartX()) / 2;
+			int neighbourY = (edgeTo.getEndY() + edgeTo.getStartY()) / 2;
+			length += euclidDistance(owner.getX(), owner.getY(), neighbourX, neighbourY);
+			
+			//1番目からpath.size()-1番目まで
+			List<EntityID> pathForCheck = new ArrayList<EntityID>();
+			pathForCheck.addAll(path);
+			pathForCheck.add(0, owner.getLocation().getID());
+			for(int i = 1; i < path.size()-1; i++){
+				Area previous = (Area)(model.getEntity( path.get(i-1) ));
+				Area current  = (Area)(model.getEntity( path.get(i)   ));
+				Area next     = (Area)(model.getEntity( path.get(i+1) ));
+				
+				Edge toPre = current.getEdgeTo(previous.getID());
+				Edge toNext = current.getEdgeTo(next.getID());
+				if(toPre == null || toNext == null){
+					//logger.info("Edge is null(in 1 to path.size() -1); return 0;");
+					return 0;
+				}
+				int startX = (toPre.getEndX() + toPre.getStartX()) / 2;
+				int startY = (toPre.getEndY() + toPre.getStartY()) / 2;
+				int endX = (toNext.getEndX() + toNext.getStartX()) / 2;
+				int endY = (toNext.getEndY() + toNext.getStartY()) / 2;
+				length += euclidDistance(startX, startY, endX, endY);
+			}
+			
+			//path.size()-2 からpath.size()-1へ
+			Area previous = (Area)(model.getEntity( path.get(path.size()-2) ));
+			Area last = (Area)(model.getEntity( path.get(path.size()-1) ));
+			Edge toPre = last.getEdgeTo(previous.getID());
+			if(toPre == null){
+				//logger.info("Edge is null(in last); return 0;");
+				return 0;
+			}
+			int startX = (toPre.getEndX() + toPre.getStartX()) / 2;
+			int startY = (toPre.getEndY() + toPre.getStartY()) / 2;
+			int endX = last.getX();
+			int endY = last.getY();
+			length += euclidDistance(startX, startY, endX, endY);
+			
+			return length;
+		}
+		//logger.info("Monsters A Go Go.");
+		return 0;
 	}
-	*/
+	private double euclidDistance(int startX, int startY, int endX, int endY){
+		int dX = endX - startX;
+		int dY = endY - startY;
+		
+		//logger.info("dx = " + dX + ", dy = " + dY + "=> startX = " + startX + ", startY = " + startY + ", endX = " + endX + ", endY = " + endY + " => result = " + (int) Math.hypot(dX, dY) + " <= dx = " + dX + ", dy = " + dY);
+		//return (int) Math.sqrt((dX * dX) + (dY * dY));
+		return (int) Math.hypot(dX, dY);
+	}
 	//pathで示される経路が通行可能かどうか
 	public boolean isPassable(List<EntityID> path){
 		String context = path.toString();

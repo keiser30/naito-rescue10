@@ -46,15 +46,33 @@ public class NAITOFireBrigade extends NAITOHumanoidAgent<FireBrigade>
 			return;
 		}else if(time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
 			//for debug.
+			/*
 			logger.info("Testing for AStar Search. Move To Building(956).");
 			Building b956 = (Building)(model.getEntity(new EntityID(956)));
 			logger.info("breadthFirstSearch(" + getLocation() + ", " + b956 + ");");
 			List<EntityID> path1 = search.breadthFirstSearch(getLocation(), b956);
 			logger.info("breadthFirstSearch Result :" + path1);
-			logger.info("AStar(" + getLocation() + ", " + b956);
+			logger.info("Length of breadthFirstSearch :" + checker.lengthOfPath(path1));
+			logger.info("AStar(" + getLocation() + ", " + b956 + ")");
 			List<EntityID> path2 = search.AStar(getLocation(), b956);
 			logger.info("AStar Result: " + path2);
+			logger.info("Length of AStar :" + checker.lengthOfPath(path2));
 			//end debug.
+			*/
+			logger.info("Testing for AStar Search. Move To All Buildings. size = (" + allBuildings.size() + ")");
+			for(StandardEntity building : allBuildings){
+				Building b = (Building)building;
+				String context = getLocation() + ", " + b;
+				logger.info("");
+				logger.info("breadthFirstSearch(" + context + ");");
+				List<EntityID> path1 = search.breadthFirstSearch(getLocation(), b);
+				logger.info("breadthFirstSearch(" + context + ") Result :" + path1);
+				logger.info("Length of breadthFirstSearch(" + context + ") = " + checker.lengthOfPath(path1));
+				logger.info("AStar(" + context + ");");
+				List<EntityID> path2 = search.AStar(getLocation(), b);
+				logger.info("AStar(" + context + ") Result :" + path2);
+				logger.info("Length of AStar             (" + context + ") = " + checker.lengthOfPath(path2));
+			}
 			return;
 		}
 		//logger.info("\n");
