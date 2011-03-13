@@ -79,8 +79,12 @@ public final class NAITORouter{
 		boolean found = false;
 		ancestors.put(startArea, startArea);
 		
+		int whilecount = 0;
 		pathfind:
 		do{
+			++whilecount;
+			//logger.info("");
+			//logger.info(whilecount + " 's Loop Start.");
 			//logger.info("OPEN Before Remove: " + OPEN);
 			NAITOArea nCurrent = removeMinimumCostArea(OPEN);//OPENから，コストの見積りが最小のエリアを取り出す)
 			if(!CLOSED.contains(nCurrent)){
@@ -100,9 +104,9 @@ public final class NAITORouter{
 				break pathfind;
 			}
 			List<Area> areas = getNeighbours(nCurrent.getStandardArea());
-			//logger.info("Checking Neighbour: [" + nCurrent.getStandardArea() + "] => [ " + areas + " ]");
+			//logger.info("Checking Neighbour: [" + nCurrent.getStandardArea().getID().getValue() + "] => [ " + areas + " ]");
 			for(Area area : areas){
-				//logger.info("Now Checking Neighbour = " + area);
+				//logger.info("Now Checking Neighbour = [" + area.getID().getValue() + "] (Current=[" + nCurrent.getStandardArea().getID().getValue() + "])");
 				if(area.getID().getValue() == goal.getID().getValue()){
 					//logger.info("Path is FOUND(in Checking Neighbour)");
 					ancestors.put(area, nCurrent.getStandardArea());
@@ -111,16 +115,15 @@ public final class NAITORouter{
 				}else if(area instanceof Building){
 					continue;
 				}
-				NAITOArea nArea = (NAITOArea)(owner.allNAITOAreas.get(area.getID()));
+				NAITOArea nArea = (NAITOArea)(owner.allNAITOAreas.get(area.getID())); //area == nArea
 				if(!ancestors.containsKey(nArea.getStandardArea()))
 					ancestors.put(nArea.getStandardArea(), nCurrent.getStandardArea());
 				double newCost = estimateCost(ancestors, startArea, area, goalArea); //コストの見積り計算
+				//logger.info("*Current=[" + nCurrent.getID().getValue() + "]->To[" + area.getID().getValue() + "],cost=" + newCost);
 				if(newCost == -1){
 					//logger.info("Unreachable!!(in AStar())");
 					continue;
 				}
-				//double newCost = euclidDistance(nArea.getStandardArea(), goalArea);
-				//logger.info("newCost = " + newCost + " (current:" + nArea.getID().getValue() + ", to:" + goalArea.getID().getValue());
 				if(!OPEN.contains(nArea) && !CLOSED.contains(nArea)){
 					//logger.info("OPEN.add(" + nArea + ");");
 					OPEN.add(nArea);
@@ -130,10 +133,15 @@ public final class NAITORouter{
 						ancestors.put(nArea.getStandardArea(), nCurrent.getStandardArea());
 				}else{
 					double oldCost = nArea.getEstimateCost();
+					//logger.info("OPEN.contains, or CLOSED contains Area(" + nArea.getID().getValue()
+					//	+ ") oldCost = " + oldCost + ", newCost = " + newCost + " (in " + whilecount + " loop.)");
+					//logger.debug("OPEN   = [" + OPEN + " ]");
+					//logger.debug("CLOSED = [" + CLOSED + " ]");
 					//logger.info("Re: newCost = " + newCost + " (from:" + nArea.getID().getValue() + ", to:" + goalArea.getID().getValue());
 					//logger.info("oldCost = " + oldCost + " (from:" + nArea.getID().getValue() + ", to:" + goalArea.getID().getValue());
 					if(newCost < oldCost){
 						//logger.info("Update Cost: Area = " + nArea + ", oldCost = " + oldCost + ", newCost = " + newCost);
+						//logger.info("**Current=[" + nCurrent.getID().getValue() + "]->To[" + area.getID().getValue() + "],newCost=" + newCost + ",oldCost=" + oldCost);
 						nArea.setEstimateCost(newCost);
 						ancestors.remove(nArea.getStandardArea());
 						ancestors.put(nArea.getStandardArea(), nCurrent.getStandardArea());
@@ -171,7 +179,7 @@ public final class NAITORouter{
 		int index = -1;
 		for(int i = 0;i < open.size();i++){
 			NAITOArea area = open.get(i);
-			//logger.info("EstimatedCost = " + area.getEstimateCost() + ", minCost = " + minCost);
+			//logger.info("Area(" + area.getID().getValue() + ") EstimatedCost = " + area.getEstimateCost() + ", minCost = " + minCost);
 			if(area.getEstimateCost() < minCost){
 				minCost = area.getEstimateCost();
 				index = i;
@@ -180,6 +188,7 @@ public final class NAITORouter{
 		if(index == -1)
 			return null;
 		//logger.info("Remove Minimum Cost Area = " + open.get(index) + ", OPEN=[" + open + "]");
+		//logger.info("");
 		return open.remove(index);
 	}
 	private double estimateCost(Map<Area, Area> ancestors, Area start, Area position, Area goal){

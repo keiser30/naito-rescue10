@@ -17,15 +17,15 @@
       (2) ant 1.7.1以上
 	    (antが使うjarファイルの揃い具合によっては，
 		より古いantでもビルドが可能かもしれません)
-		(Ubuntu10.04なら，普通に入れたantで大丈夫
+	  	(Ubuntu10.04なら，普通に入れたantで大丈夫
 		です)
-	  (3) GNU Makefile
+	    (3) GNU Makefile
 
 ビルドおよび実行について:
 
   1. ビルド
-      (1) Makefileのあるディレクトリでmakeを実行する
-	        $make
+      (1) Makefileのあるディレクトリでmake clean;makeを実行する
+	        $make clean;make
       (2) naito_rescue.jarというファイルができている
   	      ことを確認する
 
@@ -51,7 +51,7 @@
                 その後，下の(1)以降を実行してください．
       (1) "go.sh"ファイルの中にある
 	          ・KERNEL_ADDRESS
-		      ・KERNEL_PORT
+		        ・KERNEL_PORT
 		  という2つの変数を環境に合わせて書き換える
 		  (KERNEL_ADDRESS ... 接続するサーバのIPアドレス
 		   KERNEL_PORT    ... 接続するサーバのポート番号)
@@ -88,14 +88,15 @@
 
 クラス構成:
 
+naito_rescue.agent.
 	NAITOAgent
         |__NAITOHumanoidAgent
         |       |__NAITOFireBrigade
         |       |__NAITOAmbulanceTeam
         |       |__NAITOPoliceForce
         |       |
-		|       |...NAITOCivilian
-		|...<各種センターエージェント>
+	    	|       |...NAITOCivilian
+		    |...<各種センターエージェント>
 
     ※<...>は未実装
 	NAITOAgent
@@ -122,6 +123,12 @@
 	    NAITO-Rescueの市民エージェントの実装クラス．
 		postConnect(),toString(),think(),getRequestedEntityURNsEnum()
 		を必ず実装する．
+
+naito_rescue.router.
+    経路探索に用いるクラスなど
+naito_rescue.message.
+    エージェント間のメッセージ通信に
+		使うクラスなど
 
 コーディングの方法:
 
