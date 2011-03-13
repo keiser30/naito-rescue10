@@ -28,7 +28,20 @@ public class PassableChecker
 		this.model = owner.getWorldModel();
 		this.logger = owner.getLogger();
 	}
-	
+	//超大雑把な経路の長さを返す
+	public double approxLengthOfPath(List<EntityID> path){
+		EntityID preID = owner.getLocation().getID();
+		double result = 0.0;
+		for(EntityID id : path){
+			StandardEntity previous = model.getEntity(preID);
+			StandardEntity current = model.getEntity(id);
+			
+			result += model.getDistance(previous, current);
+			previous = current;
+		}
+		return result;
+	}
+	//ちょっと厳密に経路の長さを返す
 	public double lengthOfPath(List<EntityID> path){
 		//logger.info("");
 		if(path == null || path.size() == 0){

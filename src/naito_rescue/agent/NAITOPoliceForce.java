@@ -52,12 +52,14 @@ public class NAITOPoliceForce extends NAITOHumanoidAgent<PoliceForce>
 		
 		// 自分のいる場所から隣接エリアへ通行不可となっている閉塞を啓開する
 		// (本当はPure Task-Jobでやりたい)
-		
+		/*
 		Area location = (Area)(getLocation());
 		Blockade target = getTargetBlockade(location, maxRepairDistance / 2);
 		if(target != null){
 		}
+		*/
 		//addTaskByMessage();
+		addTaskByMessage();
 		removeFinishedTask();
 		updateTaskPriority();
 		

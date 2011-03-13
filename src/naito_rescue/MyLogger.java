@@ -107,11 +107,11 @@ public class MyLogger
 	 
 	private void println(String str){
 		if(loglevel >= NOTHING) return;
-		logger.println(time+":"+"["+prefix+context+"]"+str);
+		//logger.println(time+":"+"["+prefix+context+"]"+str);
 		flush();
 	}
 	public void flush(){
 		if(loglevel >= NOTHING) return;
-		logger.flush();
+		//logger.flush();
 	}
 }
