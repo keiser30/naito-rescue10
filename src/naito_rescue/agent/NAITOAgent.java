@@ -311,6 +311,18 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 	public int getMaxExtinguishPower(){
 		return maxExtinguishPower;
 	}
+	public List<FireBrigade> getFBList(){
+		return fbList;
+	}
+	public List<PoliceForce> getPFList(){
+		return pfList;
+	}
+	public List<AmbulanceTeam> getATList(){
+		return atList;
+	}
+	public List<Human> getAllAgentsList(){
+		return allAgentsList;
+	}
 	/*
 	public MySearch getSearch(){
 		return search;
@@ -481,6 +493,7 @@ public abstract class NAITOAgent<E extends StandardEntity> extends StandardAgent
 		public Set<Building> getBuildingsInView(){ return buildingsInView; }
 		public Set<Human>    getHumansInView()   { return humansInView;    }
 		public Set<Blockade> getBlockadesInView(){ return blockadesInView; }
+		public Set<Road>     getRoadsInView()    { return roadsInView;     }
 		
 		public String toString(){
 			StringBuffer ret = new StringBuffer();
